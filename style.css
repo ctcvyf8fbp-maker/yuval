@@ -1,0 +1,134 @@
+:root{
+  --sky:#EEF4FA;        /* רקע */
+  --paper:#FFFFFF;      /* משטחים */
+  --ink:#16243D;        /* טקסט ראשי */
+  --muted:#5F6C80;      /* טקסט משני */
+  --line:#C9D4E2;       /* קווים */
+  --runway:#9AA6B6;     /* מסלול שעוד לא עבר */
+  --amber:#E8A200;      /* השלב הנוכחי */
+  --ok:#2E8B57;         /* אושר */
+  --no:#C2410C;         /* נדחה */
+  --wait:#B7791F;       /* בטיפול */
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --sky:#0F1A2B; --paper:#17253A; --ink:#E7EEF7; --muted:#9FB0C5;
+    --line:#2C3D56; --runway:#4C5D75; --ok:#4CC28A; --no:#F07A4A; --wait:#E3B04B;
+    color-scheme: dark;
+  }
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0; background:var(--sky); color:var(--ink);
+  font-family:"Rubik","Segoe UI","Arial Hebrew",Arial,sans-serif;
+  font-size:16px; line-height:1.5;
+  padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px);
+}
+main,.top,.foot{max-width:1080px;margin-inline:auto;padding-inline:20px}
+
+/* כותרת וטאבים */
+.top{padding-top:28px;display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:16px}
+h1{font-size:1.6rem;font-weight:700;margin:0;letter-spacing:-.01em}
+.tabs{display:flex;gap:6px}
+.tabs button{
+  font:inherit;font-weight:500;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);
+  padding:8px 18px;border-radius:999px;cursor:pointer
+}
+.tabs button[aria-selected="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.tabs button:focus-visible,.step:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+
+/* כרטיס עלייה למטוס */
+.pass{
+  margin-top:22px;display:grid;grid-template-columns:1fr 280px;
+  background:var(--paper);border-radius:18px;overflow:hidden;
+  border:1px solid var(--line)
+}
+.pass-main{padding:24px 28px;display:flex;flex-direction:column;gap:18px}
+.pass-stub{
+  padding:24px 26px;border-inline-start:2px dashed var(--line);position:relative;
+  display:flex;flex-direction:column;gap:6px
+}
+.pass-stub::before,.pass-stub::after{
+  content:"";position:absolute;inset-inline-start:-13px;width:24px;height:24px;border-radius:50%;background:var(--sky)
+}
+.pass-stub::before{top:-12px}.pass-stub::after{bottom:-12px}
+.field{display:flex;flex-direction:column}
+.lbl{font-size:.8rem;color:var(--muted)}
+.val{font-size:1.15rem;font-weight:500}
+.val.big{font-size:2rem;font-weight:700;line-height:1.15}
+.val.dest{font-size:1.5rem;font-weight:700}
+.route{display:flex;gap:40px;flex-wrap:wrap}
+.count{font-size:2.4rem;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin-block:4px 8px}
+.bar span{display:block;height:100%;background:var(--ok);border-radius:99px;width:0;transition:width .8s ease}
+.next{margin:0;font-size:.95rem}
+.next strong{display:block}
+
+/* מפה */
+.map-wrap{margin-top:22px;background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:12px 8px 14px}
+.map-scroll{overflow-x:auto}
+#map{display:block;width:100%;min-width:640px;height:auto}
+#map text{font-family:inherit;fill:var(--ink)}
+.wp{cursor:default}
+.legend{list-style:none;margin:6px 16px 0;padding:0;display:flex;flex-wrap:wrap;gap:6px 20px;font-size:.85rem;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:50%;margin-inline-end:6px;vertical-align:-1px}
+
+/* סבבים */
+.round{margin-top:26px}
+.round-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;padding-bottom:8px;border-bottom:3px solid var(--rc)}
+.round-head h2{margin:0;font-size:1.2rem;color:var(--rc)}
+.round-head .sum{color:var(--muted);font-size:.9rem}
+.round-head .done{color:var(--ok);font-weight:500;font-size:.9rem}
+.steps{list-style:none;margin:0;padding:0}
+.step{
+  display:grid;grid-template-columns:36px 1fr 120px 90px;align-items:center;gap:12px;
+  padding:12px 10px;border-bottom:1px solid var(--line)
+}
+.step .num{
+  width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:.8rem;font-weight:700;
+  border:2px solid var(--rc);color:var(--rc)
+}
+.step.ok .num{background:var(--rc);color:#fff}
+.step .role{font-weight:500}
+.step .who{color:var(--muted)}
+.step .who.empty{opacity:.6}
+.step .date{color:var(--muted);font-size:.85rem;font-variant-numeric:tabular-nums}
+.chip{font-size:.85rem;font-weight:500;padding:3px 10px;border-radius:99px;justify-self:start;white-space:nowrap}
+.chip.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 14%,transparent)}
+.chip.wait{color:var(--wait);background:color-mix(in srgb,var(--wait) 16%,transparent)}
+.chip.no{color:var(--no);background:color-mix(in srgb,var(--no) 14%,transparent)}
+.chip.pending{color:var(--muted);background:color-mix(in srgb,var(--muted) 12%,transparent)}
+.step.current{background:color-mix(in srgb,var(--amber) 14%,transparent);border-radius:10px}
+.step.current .role::after{content:"  ✈ כאן עכשיו";color:var(--amber);font-weight:700;font-size:.85rem;white-space:nowrap}
+
+.foot{padding-block:30px;color:var(--muted);font-size:.85rem}
+
+@media (max-width:760px){
+  .pass{grid-template-columns:1fr}
+  .pass-stub{border-inline-start:0;border-top:2px dashed var(--line)}
+  .pass-stub::before,.pass-stub::after{display:none}
+  .step{grid-template-columns:32px 1fr auto;grid-template-areas:"n r c" "n r d";row-gap:2px}
+  .step .num{grid-area:n}.step .role{grid-area:r}.step .chip{grid-area:c;justify-self:end}.step .date{grid-area:d;justify-self:end}
+  .docs-grid{grid-template-columns:1fr}
+  h1{font-size:1.3rem}
+}
+@media (prefers-reduced-motion:reduce){.bar span{transition:none}}
+[hidden]{display:none !important}
+
+/* מסמכים */
+.docs{margin-top:22px}
+.docs h2{font-size:1.2rem;margin:0 0 10px}
+.docs-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.doc{margin:0;background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.doc-body{aspect-ratio:16/10;max-height:320px;display:grid;place-items:center;background:color-mix(in srgb,var(--line) 25%,transparent)}
+.doc.empty .doc-body{border:2px dashed var(--line);margin:10px;border-radius:10px;background:none;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px}
+.doc-body a{display:block;width:100%;height:100%}
+.doc-body img{width:100%;height:100%;object-fit:contain;display:block}
+.doc-link{display:flex !important;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--ink);text-decoration:none}
+.doc-link:focus-visible{outline:3px solid var(--amber);outline-offset:-3px}
+.doc-icon{font-size:2rem;opacity:.7}
+.doc-state{color:var(--muted);font-size:.95rem}
+.doc figcaption{padding:10px 14px;font-weight:500;border-top:1px solid var(--line)}
+.doc.has figcaption::after{content:"  ✔ הועלה";color:var(--ok);font-size:.85rem}
