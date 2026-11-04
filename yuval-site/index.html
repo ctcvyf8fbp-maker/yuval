@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>מעקב אישורים ליציאה לשליחות</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✈️</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+  <header class="top">
+    <h1>מעקב אישורים ליציאה לשליחות</h1>
+    <nav class="tabs" id="tabs" aria-label="בחירת נסיעה"></nav>
+  </header>
+
+  <main>
+    <!-- כרטיס עלייה למטוס -->
+    <section class="pass" aria-label="פרטי הנסיעה">
+      <div class="pass-main">
+        <div class="field">
+          <span class="lbl">שליח/ה</span>
+          <span class="val big" id="traveler"></span>
+        </div>
+        <div class="route">
+          <div class="field">
+            <span class="lbl">יעד</span>
+            <span class="val dest" id="destination"></span>
+          </div>
+          <div class="field">
+            <span class="lbl">יציאה</span>
+            <span class="val" id="departure"></span>
+          </div>
+        </div>
+      </div>
+      <div class="pass-stub">
+        <span class="lbl">אישורים שהתקבלו</span>
+        <span class="count" id="count"></span>
+        <div class="bar" aria-hidden="true"><span id="bar-fill"></span></div>
+        <p class="next" id="next"></p>
+      </div>
+    </section>
+
+    <!-- מפת הטיסה -->
+    <section class="map-wrap" aria-label="מסלול האישורים">
+      <div class="map-scroll">
+        <svg id="map" viewBox="0 0 1000 240" role="img" aria-labelledby="map-desc">
+          <desc id="map-desc">מסלול טיסה שבו כל נקודה היא אישור, והמטוס עומד בשלב הנוכחי</desc>
+        </svg>
+      </div>
+      <ul class="legend" id="legend"></ul>
+    </section>
+
+    <!-- מסמכי הנסיעה -->
+    <section class="docs" aria-labelledby="docs-title">
+      <h2 id="docs-title">מסמכי הנסיעה</h2>
+      <div class="docs-grid" id="docs"></div>
+      <div class="upload-cta" id="upload-cta" hidden></div>
+    </section>
+
+    <!-- רשימת הסבבים -->
+    <div id="rounds"></div>
+  </main>
+
+  <footer class="foot">עודכן לאחרונה: <span id="updated"></span></footer>
+
+  <script src="data.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
