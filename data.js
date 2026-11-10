@@ -26,8 +26,7 @@ const FORMS = [
   { title: "טופס 3", file: "form-3.pdf" }
 ];
 
-// קישור שדרכו כל מי שנכנס לאתר יכול לשלוח מסמך (Google Forms / Dropbox וכו').
-// מדביקים את הקישור בין המירכאות. אם ריק – הכפתור לא מופיע באתר.
+// קישור לשליחת הטופס המלא (Dropbox). מופיע בסוף הטופס המקוון.
 const UPLOAD_LINK = "https://www.dropbox.com/request/devul2bl0ould3ztszo4";
 
 const LAST_UPDATED = "2026-11-03";
@@ -43,13 +42,6 @@ const TRIPS = [
     traveler: "",        // שם השליח/ה
     destination: "",     // יעד
     departure: "",       // תאריך יציאה, למשל "2026-12-15"
-
-    // מסמכים: שם הקובץ שהעלית ל-GitHub (תמונה jpg/png או pdf)
-    // אם הקובץ עוד לא הועלה – יופיע "טרם הועלה"
-    documents: {
-      flight:   "flight-1.jpg",            // כרטיס / אישור הטיסה שנסגרה
-      approval: "mission-approval-1.jpg"   // אישור השליחות
-    },
     rounds: [
       {
         name: "סבב אישורים פנימי",
@@ -91,13 +83,6 @@ const TRIPS = [
     traveler: "",        // שם השליח/ה
     destination: "",     // יעד
     departure: "",       // תאריך יציאה, למשל "2026-12-15"
-
-    // מסמכים: שם הקובץ שהעלית ל-GitHub (תמונה jpg/png או pdf)
-    // אם הקובץ עוד לא הועלה – יופיע "טרם הועלה"
-    documents: {
-      flight:   "flight-2.jpg",            // כרטיס / אישור הטיסה שנסגרה
-      approval: "mission-approval-2.jpg"   // אישור השליחות
-    },
     rounds: [
       {
         name: "סבב אישורים פנימי",
@@ -139,13 +124,6 @@ const TRIPS = [
     traveler: "",        // שם השליח/ה
     destination: "",     // יעד
     departure: "",       // תאריך יציאה, למשל "2026-12-15"
-
-    // מסמכים: שם הקובץ שהעלית ל-GitHub (תמונה jpg/png או pdf)
-    // אם הקובץ עוד לא הועלה – יופיע "טרם הועלה"
-    documents: {
-      flight:   "flight-3.jpg",            // כרטיס / אישור הטיסה שנסגרה
-      approval: "mission-approval-3.jpg"   // אישור השליחות
-    },
     rounds: [
       {
         name: "סבב אישורים פנימי",

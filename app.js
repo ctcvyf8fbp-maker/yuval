@@ -181,57 +181,7 @@ function renderRounds(trip, current){
   });
 }
 
-// ===== מסמכים =====
-const DOCS = [
-  { key: "flight",   title: "כרטיס הטיסה",   icon: "✈" },
-  { key: "approval", title: "אישור השליחות", icon: "📄" }
-];
-function emptyTile(tile){
-  tile.classList.add("empty");
-  tile.querySelector(".doc-body").replaceChildren(el("span","doc-icon", tile.dataset.icon), el("span","doc-state","טרם הועלה"));
-}
-function renderDocs(trip){
-  const grid = document.getElementById("docs"); grid.innerHTML = "";
-  const docs = trip.documents || {};
-  DOCS.forEach(d => {
-    const file = (docs[d.key] || "").trim();
-    const tile = el("figure","doc"); tile.dataset.icon = d.icon;
-    const body = el("div","doc-body");
-    tile.append(body, el("figcaption","", d.title));
-    grid.appendChild(tile);
-    if(!file){ emptyTile(tile); return; }
-    const url = encodeURI(file) + "?v=" + encodeURIComponent(LAST_UPDATED);
-    if(/\.pdf$/i.test(file)){
-      const show = () => {
-        const link = el("a","doc-link"); link.href = url; link.target = "_blank"; link.rel = "noopener";
-        link.append(el("span","doc-icon","📑"), el("span","doc-state","פתיחת הקובץ (PDF)"));
-        body.replaceChildren(link);
-      };
-      if(location.protocol.startsWith("http")){
-        fetch(url, { method: "HEAD" }).then(r => r.ok ? show() : emptyTile(tile)).catch(() => emptyTile(tile));
-      } else show();
-    } else {
-      const link = el("a","doc-link"); link.href = url; link.target = "_blank"; link.rel = "noopener";
-      link.setAttribute("aria-label", d.title + " – פתיחה בגודל מלא");
-      const img = new Image(); img.alt = d.title;
-      img.onload = () => { link.appendChild(img); body.replaceChildren(link); tile.classList.add("has"); };
-      img.onerror = () => emptyTile(tile);
-      img.src = url;
-      body.replaceChildren(el("span","doc-state","טוען…"));
-    }
-  });
-}
 
-function renderUpload(){
-  const box = document.getElementById("upload-cta");
-  const link = (typeof UPLOAD_LINK === "string" ? UPLOAD_LINK : "").trim();
-  box.hidden = !link;
-  if(!link) return;
-  box.innerHTML = "";
-  const a = el("a","btn-upload","📤 שליחת מסמך");
-  a.href = link; a.target = "_blank"; a.rel = "noopener";
-  box.append(a, el("span","upload-hint","הקבצים נשלחים ישירות למנהלת המעקב ויופיעו כאן אחרי שתעלה אותם"));
-}
 
 // ===== טפסים למילוי =====
 let formsDone = false;
@@ -265,8 +215,6 @@ function render(){
   renderPass(trip, steps, current);
   renderMap(trip, steps, current);
   renderLegend(trip);
-  renderDocs(trip);
-  renderUpload();
   renderForms();
   renderRounds(trip, current);
   document.getElementById("updated").textContent = fmtDate(LAST_UPDATED);
@@ -315,7 +263,6 @@ function tripsFromSheet(rows){
     const old = TRIPS[k] || {};
     const t = { title: (head[3 + 2*k] || `שליח ${k+1}`).replace(/\s*[–-]\s*סטטוס$/,""),
       traveler: name(k), destination: dest(k), departure: toISO(dep(k)),
-      documents: old.documents || { flight: `flight-${k+1}.jpg`, approval: `mission-approval-${k+1}.jpg` },
       rounds: [] };
     let cur = null, last = "";
     rows.slice(hi + 1).forEach(r => {

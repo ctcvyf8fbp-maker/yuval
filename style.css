@@ -117,26 +117,7 @@ h1{font-size:1.6rem;font-weight:700;margin:0;letter-spacing:-.01em}
 @media (prefers-reduced-motion:reduce){.bar span{transition:none}}
 [hidden]{display:none !important}
 
-/* מסמכים */
-.docs{margin-top:22px}
-.docs h2{font-size:1.2rem;margin:0 0 10px}
-.docs-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.doc{margin:0;background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
-.doc-body{aspect-ratio:16/10;max-height:320px;display:grid;place-items:center;background:color-mix(in srgb,var(--line) 25%,transparent)}
-.doc.empty .doc-body{border:2px dashed var(--line);margin:10px;border-radius:10px;background:none;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px}
-.doc-body a{display:block;width:100%;height:100%}
-.doc-body img{width:100%;height:100%;object-fit:contain;display:block}
-.doc-link{display:flex !important;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--ink);text-decoration:none}
-.doc-link:focus-visible{outline:3px solid var(--amber);outline-offset:-3px}
-.doc-icon{font-size:2rem;opacity:.7}
-.doc-state{color:var(--muted);font-size:.95rem}
-.doc figcaption{padding:10px 14px;font-weight:500;border-top:1px solid var(--line)}
-.doc.has figcaption::after{content:"  ✔ הועלה";color:var(--ok);font-size:.85rem}
 
-.upload-cta{margin-top:14px;display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px}
-.btn-upload{display:inline-block;background:var(--ink);color:var(--paper);text-decoration:none;font-weight:500;padding:10px 20px;border-radius:999px}
-.btn-upload:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
-.upload-hint{color:var(--muted);font-size:.9rem}
 
 /* טפסים למילוי */
 .forms{margin-top:26px}
