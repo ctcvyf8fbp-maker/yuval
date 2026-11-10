@@ -12,7 +12,7 @@
 </head>
 <body>
   <header class="top">
-    <h1>מעקב אישורים ליציאה לשליחות</h1>
+    <h1 id="site-title">מעקב אישורים ליציאה לשליחות</h1>
     <nav class="tabs" id="tabs" aria-label="בחירת נסיעה"></nav>
   </header>
 
@@ -60,11 +60,18 @@
       <div class="upload-cta" id="upload-cta" hidden></div>
     </section>
 
+    <!-- טפסים למילוי -->
+    <section class="forms" id="forms-section" aria-labelledby="forms-title" hidden>
+      <h2 id="forms-title">📝 טפסים למילוי</h2>
+      <p class="forms-hint">ממלאים ישר באתר („מילוי מקוון”), או מורידים, ממלאים או סורקים – ושולחים חזרה בכפתור „שליחת מסמך”.</p>
+      <ul class="forms-list" id="forms-list"></ul>
+    </section>
+
     <!-- רשימת הסבבים -->
     <div id="rounds"></div>
   </main>
 
-  <footer class="foot">עודכן לאחרונה: <span id="updated"></span></footer>
+  <footer class="foot"><span id="updated-wrap">עודכן לאחרונה: <span id="updated"></span></span> <span id="sync-state"></span></footer>
 
   <script src="data.js"></script>
   <script src="app.js"></script>

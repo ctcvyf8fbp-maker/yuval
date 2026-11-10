@@ -137,3 +137,23 @@ h1{font-size:1.6rem;font-weight:700;margin:0;letter-spacing:-.01em}
 .btn-upload{display:inline-block;background:var(--ink);color:var(--paper);text-decoration:none;font-weight:500;padding:10px 20px;border-radius:999px}
 .btn-upload:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
 .upload-hint{color:var(--muted);font-size:.9rem}
+
+/* טפסים למילוי */
+.forms{margin-top:26px}
+.forms h2{font-size:1.2rem;margin:0 0 4px}
+.forms-hint{margin:0 0 12px;color:var(--muted);font-size:.9rem}
+.forms-list{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;align-items:start}
+.form-link{display:grid;grid-template-columns:auto 1fr;grid-template-areas:"i t" "i e";column-gap:12px;align-items:center;
+  padding:14px 16px;background:var(--paper);border:1px solid var(--line);border-radius:14px;color:var(--ink);text-decoration:none}
+.form-link:hover{border-color:var(--ink)}
+.form-link:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.form-icon{grid-area:i;font-size:1.6rem}
+.form-title{grid-area:t;font-weight:500}
+.form-ext{grid-area:e;color:var(--muted);font-size:.8rem}
+.form-note{margin:8px 2px 0;padding:8px 12px;border-radius:10px;font-size:.9rem;font-weight:500;
+  color:var(--ink);background:color-mix(in srgb,var(--amber) 16%,transparent);border-inline-start:3px solid var(--amber)}
+
+.form-online{display:inline-block;margin-top:8px;margin-inline-start:2px;padding:7px 14px;border-radius:999px;
+  background:var(--ink);color:var(--paper);text-decoration:none;font-weight:500;font-size:.9rem}
+.form-online:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+#sync-state{margin-inline-start:6px}

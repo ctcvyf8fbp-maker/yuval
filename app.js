@@ -233,6 +233,29 @@ function renderUpload(){
   box.append(a, el("span","upload-hint","הקבצים נשלחים ישירות למנהלת המעקב ויופיעו כאן אחרי שתעלה אותם"));
 }
 
+// ===== טפסים למילוי =====
+let formsDone = false;
+function renderForms(){
+  if(formsDone) return; formsDone = true;
+  const sec = document.getElementById("forms-section"), ul = document.getElementById("forms-list");
+  const list = (typeof FORMS !== "undefined" && Array.isArray(FORMS)) ? FORMS.filter(f => f && f.file) : [];
+  const add = f => {
+    const li = el("li");
+    const a = el("a","form-link"); a.href = encodeURI(f.file); a.setAttribute("download", f.file);
+    const ext = (f.file.split(".").pop() || "").toUpperCase();
+    a.append(el("span","form-icon", ext === "PDF" ? "📄" : "📝"), el("span","form-title", f.title || f.file), el("span","form-ext", ext + " · הורדה ⬇"));
+    li.appendChild(a);
+    if(f.online){
+      const o = el("a","form-online","✍️ מילוי מקוון"); o.href = encodeURI(f.online);
+      li.appendChild(o);
+    }
+    if(f.note && String(f.note).trim()) li.appendChild(el("p","form-note", "⚠️ " + String(f.note).trim()));
+    ul.appendChild(li); sec.hidden = false;
+  };
+  if(!location.protocol.startsWith("http")){ list.forEach(add); return; }
+  list.forEach(f => fetch(encodeURI(f.file), { method: "HEAD", cache: "no-store" }).then(r => { if(r.ok) add(f); }).catch(() => {}));
+}
+
 function render(){
   const trip = TRIPS[tripIndex];
   const steps = flatten(trip);
@@ -244,9 +267,86 @@ function render(){
   renderLegend(trip);
   renderDocs(trip);
   renderUpload();
+  renderForms();
   renderRounds(trip, current);
   document.getElementById("updated").textContent = fmtDate(LAST_UPDATED);
-  document.title = `${trip.traveler || trip.title} – מעקב אישורים`;
+  const st = (typeof SITE_TITLE === "string" && SITE_TITLE.trim()) ? SITE_TITLE.trim() : "מעקב אישורים";
+  document.getElementById("site-title").textContent = st;
+  document.title = `${trip.traveler || trip.title} – ${st}`;
+}
+
+
+// ===== סנכרון עם Google Sheets =====
+const PALETTE = ["#2E5597","#0F7C7A","#6A3D9A","#B5531F","#2E7D32"];
+function parseCSV(text){
+  const rows = []; let row = [], cell = "", q = false;
+  for(let i = 0; i < text.length; i++){
+    const ch = text[i];
+    if(q){
+      if(ch === '"'){ if(text[i+1] === '"'){ cell += '"'; i++; } else q = false; }
+      else cell += ch;
+    } else if(ch === '"') q = true;
+    else if(ch === ","){ row.push(cell); cell = ""; }
+    else if(ch === "\n" || ch === "\r"){
+      if(ch === "\r" && text[i+1] === "\n") i++;
+      row.push(cell); rows.push(row); row = []; cell = "";
+    } else cell += ch;
+  }
+  if(cell !== "" || row.length){ row.push(cell); rows.push(row); }
+  return rows.map(r => r.map(c => c.trim()));
+}
+function toISO(v){
+  v = (v || "").trim(); if(!v) return "";
+  let m = v.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/);
+  if(m) return `${m[1]}-${m[2].padStart(2,"0")}-${m[3].padStart(2,"0")}`;
+  m = v.match(/^(\d{1,2})[./-](\d{1,2})[./-](\d{2,4})$/);
+  if(m){ const y = m[3].length === 2 ? "20" + m[3] : m[3]; return `${y}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`; }
+  return "";
+}
+function tripsFromSheet(rows){
+  const hi = rows.findIndex(r => r[0] === "סבב");
+  if(hi < 0) throw new Error("no header");
+  const head = rows[hi];
+  const n = Math.floor((head.length - 3) / 2);
+  const info = label => { const r = rows.slice(0, hi).find(r => r[0] === label); return k => r ? (r[3 + 2*k] || "") : ""; };
+  const name = info("שם השליח"), dest = info("יעד"), dep = info("תאריך יציאה");
+  const trips = [];
+  for(let k = 0; k < n; k++){
+    const old = TRIPS[k] || {};
+    const t = { title: (head[3 + 2*k] || `שליח ${k+1}`).replace(/\s*[–-]\s*סטטוס$/,""),
+      traveler: name(k), destination: dest(k), departure: toISO(dep(k)),
+      documents: old.documents || { flight: `flight-${k+1}.jpg`, approval: `mission-approval-${k+1}.jpg` },
+      rounds: [] };
+    let cur = null, last = "";
+    rows.slice(hi + 1).forEach(r => {
+      if(!r[2]) return;
+      const rn = r[0] || last; last = rn;
+      if(!cur || cur.name !== rn){ cur = { name: rn, color: PALETTE[t.rounds.length % PALETTE.length], steps: [] }; t.rounds.push(cur); }
+      const st = (r[3 + 2*k] || "ממתין").trim();
+      cur.steps.push({ role: r[2], status: STATUS[st] ? st : "ממתין", date: toISO(r[4 + 2*k]) });
+    });
+    trips.push(t);
+  }
+  if(!trips.length || !trips[0].rounds.length) throw new Error("empty");
+  return trips;
+}
+function syncFromSheet(){
+  const url = (typeof SHEET_CSV_URL === "string" ? SHEET_CSV_URL : "").trim();
+  if(!url) return;
+  const state = document.getElementById("sync-state");
+  state.textContent = "· טוען מהגיליון…";
+  fetch(url + (url.includes("?") ? "&" : "?") + "_=" + Date.now(), { cache: "no-store" })
+    .then(r => { if(!r.ok) throw new Error(r.status); return r.text(); })
+    .then(txt => {
+      const trips = tripsFromSheet(parseCSV(txt));
+      TRIPS.splice(0, TRIPS.length, ...trips);
+      if(tripIndex >= TRIPS.length) tripIndex = 0;
+      document.getElementById("updated-wrap").hidden = true;
+      const now = new Date();
+      state.textContent = "✔ מסונכרן עם הגיליון · נטען ב-" + now.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
+      render();
+    })
+    .catch(() => { state.textContent = "· לא הצלחתי לטעון את הגיליון – מוצגים הנתונים השמורים"; });
 }
 
 // פתיחה לפי #trip2 בכתובת
@@ -257,3 +357,4 @@ window.addEventListener("hashchange", () => {
   if(h && TRIPS[+h[1]-1] && +h[1]-1 !== tripIndex){ tripIndex = +h[1]-1; render(); }
 });
 render();
+syncFromSheet();
