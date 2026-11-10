@@ -8,7 +8,7 @@
 // קישור ה-CSV של Google Sheets (קובץ ← שיתוף ← פרסום באינטרנט ← CSV).
 // אם יש כאן קישור – השמות, הסטטוסים והתאריכים נלקחים מהגיליון, ואין צורך לערוך את הקובץ הזה.
 // אם ריק – האתר משתמש בנתונים שבקובץ הזה (למטה).
-const SHEET_CSV_URL = "";
+const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRwsrGMi3lEkpXHRLtLPoqMyaWiv0myXN45bujUOM9JRAMrlSfwdBvn1NT8BAy96g/pub?gid=1481009664&single=true&output=csv";
 
 // הכותרת שמופיעה בראש האתר
 const SITE_TITLE = "מעקב אישורים ליציאה לשליחות";
