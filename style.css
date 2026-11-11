@@ -172,3 +172,4 @@ h1{font-size:1.6rem;font-weight:700;margin:0;letter-spacing:-.01em}
 .tabs{flex-wrap:wrap}
 .tabs button.info-tab{border-style:dashed}
 .tabs button.info-tab[aria-selected="true"]{border-style:solid}
+.empty-note{margin:22px 0;padding:14px 16px;background:var(--paper);border:1px dashed var(--line);border-radius:14px;color:var(--muted)}

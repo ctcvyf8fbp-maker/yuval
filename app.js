@@ -328,6 +328,9 @@ function render(){
   fsec.hidden = true;
   const trip = TRIPS[tripIndex];
   const steps = flatten(trip);
+  const empty = !steps.length;
+  document.querySelector(".map-wrap").hidden = empty;
+  document.getElementById("empty-note").hidden = !empty;
   let current = steps.findIndex(s => s.status !== "אושר");
   if(current === -1) current = steps.length;      // הכול אושר – המטוס ביעד
   renderTabs();
@@ -387,8 +390,10 @@ function tripsFromSheet(rows){
     rows.slice(hi + 1).forEach(r => {
       if(!r[2]) return;
       const rn = r[0] || last; last = rn;
+      // תא סטטוס ריק = האישור הזה לא שייך ללשונית הזו (כך לכל לשונית יש סבב משלה)
+      const st = (r[3 + 2*k] || "").trim();
+      if(!st) return;
       if(!cur || cur.name !== rn){ cur = { name: rn, color: PALETTE[t.rounds.length % PALETTE.length], steps: [] }; t.rounds.push(cur); }
-      const st = (r[3 + 2*k] || "ממתין").trim();
       cur.steps.push({ role: r[2], status: STATUS[st] ? st : "ממתין", date: toISO(r[4 + 2*k]) });
     });
     trips.push(t);
@@ -398,7 +403,7 @@ function tripsFromSheet(rows){
   trips.forEach(t => { const k = specialKind(t.title); if(k) special.push({ kind: k, label: t.title }); });
   if(special.length) specialTabs = special;
   const real = trips.filter(t => !specialKind(t.title));
-  if(!real.length || !real[0].rounds.length) throw new Error("empty");
+  if(!real.length || !real.some(t => t.rounds.length)) throw new Error("empty");
   return real;
 }
 function syncFromSheet(){
