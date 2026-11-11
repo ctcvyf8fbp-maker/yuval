@@ -360,6 +360,7 @@ function renderOverlay(){
     if(o.align === "center") pos += `left:${(x / W * 100).toFixed(3)}%;transform:translateX(-50%);`;
     else if(o.align === "left") pos += `left:${(x / W * 100).toFixed(3)}%;direction:ltr;`;
     else pos += `right:${((W - x) / W * 100).toFixed(3)}%;`;
+    if(o.ltr) pos += "direction:ltr;unicode-bidi:isolate;";
     pages[p].push(`<span class="ovt" style="${pos}">${esc(text)}</span>`);
   };
   const tick = (p, x, y) => put(p, x, y + 1, "✓", { align: "center", size: 11 });
@@ -381,6 +382,7 @@ function renderOverlay(){
     }
     if(it.sig){ if(sig && sig.signed()) pages[it.p].push(`<img class="ovs" alt="" src="${sig.url()}" style="left:${(it.x/W*100).toFixed(3)}%;top:${(it.y/H*100).toFixed(3)}%;width:${(it.w/W*100).toFixed(3)}%;height:${(it.h/H*100).toFixed(3)}%;object-fit:contain">`); return; }
     if(it.signDate){ if(dateInp && dateInp.value) put(it.p, it.x, it.y, fmt(dateInp.value), it); return; }
+    if(it.combo){ const t = it.combo.map(k => fmtV(vals[k] || "", it)).filter(Boolean).join(" – "); if(t) put(it.p, it.x, it.y, t, { ...it, ltr: true }); return; }
     const v = vals[it.id];
     if(it.check){
       const list = Array.isArray(v) ? v : [v];

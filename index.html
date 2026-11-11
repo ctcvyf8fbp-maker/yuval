@@ -9,6 +9,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="מעקב שליחות">
+  <meta name="theme-color" content="#16243D">
 </head>
 <body>
   <header class="top">
@@ -34,6 +39,7 @@
             <span class="val" id="departure"></span>
           </div>
         </div>
+        <p class="countdown" id="countdown" hidden></p>
       </div>
       <div class="pass-stub">
         <span class="lbl">אישורים שהתקבלו</span>
@@ -57,6 +63,7 @@
     <section class="forms" id="forms-section" aria-labelledby="forms-title" hidden>
       <h2 id="forms-title">📝 מסמכים וטפסים</h2>
       <p class="forms-hint">ממלאים באתר („מילוי מקוון”) או מורידים וממלאים – ושולחים בכפתור „שליחת מסמך” שבסוף הטופס, או ב„העלאת קובץ”.</p>
+      <p class="docs-summary" id="docs-summary" hidden></p>
       <div class="my-folder" id="my-folder" hidden></div>
       <ul class="forms-list" id="forms-list"></ul>
     </section>
@@ -69,6 +76,11 @@
     <section class="info mission-only" id="info-section" hidden aria-labelledby="info-title">
       <h2 id="info-title">📚 מידע לשליח</h2>
       <div class="info-grid" id="info-list"></div>
+      <details class="a2hs"><summary>📲 איך שמים את האתר במסך הבית של הטלפון</summary>
+        <p><strong>אייפון (Safari):</strong> לוחצים על כפתור השיתוף <span aria-hidden="true">⬆️</span> ← „הוספה למסך הבית” ← „הוסף”.</p>
+        <p><strong>אנדרואיד (Chrome):</strong> לוחצים על ⋮ למעלה ← „הוספה למסך הבית” / „התקנת האפליקציה”.</p>
+        <p>מעכשיו האתר נפתח מהאייקון ✈️ כמו אפליקציה.</p>
+      </details>
       <p class="takam-note">⚖️ במקרה של סתירה בין החוברת לבין הוראות התכ״ם – <strong>הוראות התכ״ם גוברות</strong>. ההוראות מתעדכנות מעת לעת, ולכן כדאי לבדוק תמיד את הנוסח העדכני באתר התכ״ם.</p>
     </section>
 
@@ -83,6 +95,7 @@
     <section class="checklist mission-only" id="checklist-section" hidden aria-labelledby="cl-title">
       <h2 id="cl-title">✅ צ׳ק ליסט לשליחות</h2>
       <p class="forms-hint">מסמנים ✓ על כל משימה שסיימת. הסימונים נשמרים במכשיר שלך. בסוף – חותמים על אישור שסיימת הכול.</p>
+      <p class="cl-status" id="cl-status" hidden></p>
       <div class="cl-progress"><span id="cl-count"></span><div class="bar" aria-hidden="true"><span id="cl-bar"></span></div></div>
       <div id="cl-list"></div>
       <div class="cl-done"><a class="fbtn primary" id="cl-sign" href="form.html?f=checklist">✍️ סיימתי – חתימה על אישור סיום</a></div>

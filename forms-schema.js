@@ -58,6 +58,34 @@ const O101 = (() => {
   };
 })();
 
+
+// ---------- מיקומי מילוי על גבי הטפסים הסרוקים ----------
+const OCOMMIT = { pages: ["preview-commitment-1.jpg", "preview-commitment-2.jpg"], items: [
+  { p: 1, signDate: true, x: 427, y: 584, align: "center" },
+  { p: 1, id: "name", x: 336, y: 584, align: "center" },
+  { p: 1, id: "id", x: 245, y: 584, align: "center" },
+  { p: 1, sig: true, x: 108, y: 562, w: 88, h: 24 }
+]};
+const OINSTR = { pages: ["preview-instructions-1.jpg"], items: [
+  { p: 0, id: "pn", x: 433, y: 327, align: "center" },
+  { p: 0, id: "rank", x: 354, y: 327, align: "center" },
+  { p: 0, id: "name", x: 256, y: 327, align: "center" },
+  { p: 0, id: "corps", x: 154, y: 327, align: "center" },
+  { p: 0, signDate: true, x: 335, y: 583, align: "center" },
+  { p: 0, sig: true, x: 203, y: 562, w: 66, h: 22 }
+]};
+const OMDATES = { pages: ["preview-missiondates-1.jpg"], items: [
+  { p: 0, combo: ["from", "to"], x: 318, y: 189, size: 7.5, date: true },
+  { p: 0, id: "role", x: 150, y: 194, align: "center", size: 8 },
+  { p: 0, table: "family", rows: [273, 291, 309, 327, 344], cols: {
+      name: { x: 470, size: 8.5 }, age: { x: 362, align: "center" }, from: { x: 272, align: "center", date: true, size: 8 },
+      to: { x: 193, align: "center", date: true, size: 8 }, notes: { x: 160, size: 8 } } },
+  { p: 0, id: "name", x: 432, y: 418, align: "center" },
+  { p: 0, id: "id", x: 354, y: 418, align: "center" },
+  { p: 0, signDate: true, x: 266, y: 418, align: "center" },
+  { p: 0, sig: true, x: 138, y: 398, w: 66, h: 22 }
+]};
+
 const FORM_SCHEMAS = {
 
   // ---------------------------------------------------------------- 101
@@ -186,7 +214,7 @@ const FORM_SCHEMAS = {
 
   // ---------------------------------------------------------- התחייבות
   "commitment": {
-    preview: ["preview-commitment-1.jpg", "preview-commitment-2.jpg"], previewPdf: "form-commitment.pdf",
+    preview: ["preview-commitment-1.jpg", "preview-commitment-2.jpg"], previewPdf: "form-commitment.pdf", overlay: OCOMMIT,
     title: "כתב התחייבות והוראה בלתי חוזרת",
     sections: [
       { title: "1. מתן הוראה לכיסוי חובות מתקופת השליחות", fields: [
@@ -220,7 +248,7 @@ const FORM_SCHEMAS = {
 
   // ------------------------------------------------------- קיום הוראות
   "instructions": {
-    preview: ["preview-instructions-1.jpg", "preview-instructions-2.jpg", "preview-instructions-3.jpg", "preview-instructions-4.jpg", "preview-instructions-5.jpg", "preview-instructions-6.jpg"], previewPdf: "form-instructions.pdf",
+    preview: ["preview-instructions-1.jpg", "preview-instructions-2.jpg", "preview-instructions-3.jpg", "preview-instructions-4.jpg", "preview-instructions-5.jpg", "preview-instructions-6.jpg"], previewPdf: "form-instructions.pdf", overlay: OINSTR,
     title: "הצהרה – קיום הוראות משהב״ט",
     sections: [
       { fields: [
@@ -305,7 +333,7 @@ const FORM_SCHEMAS = {
 
   // ------------------------------------------------ הצהרה על תאריכי שליחות
   "missiondates": {
-    preview: ["preview-missiondates-1.jpg"], previewPdf: "form-mission-dates.pdf",
+    preview: ["preview-missiondates-1.jpg"], previewPdf: "form-mission-dates.pdf", overlay: OMDATES,
     title: "הצהרה על תאריכי שליחות",
     sections: [
       { title: "ימולא על ידי השליח", fields: [

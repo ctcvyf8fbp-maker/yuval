@@ -59,6 +59,13 @@ function renderPass(trip, steps, current){
   document.getElementById("traveler").textContent = trip.traveler || "טרם הוזן שם";
   document.getElementById("destination").textContent = trip.destination || "טרם הוזן";
   document.getElementById("departure").textContent = fmtDate(trip.departure) || "—";
+  const cd = document.getElementById("countdown");
+  if(trip.departure && /^\d{4}-\d{2}-\d{2}$/.test(trip.departure)){
+    const d = daysBetween(todayISO(), trip.departure);
+    cd.hidden = false;
+    cd.textContent = d > 1 ? `✈ עוד ${d} ימים ליציאה` : d === 1 ? "✈ מחר יוצאים!" : d === 0 ? "✈ היום יוצאים!" : `יצא/ה לפני ${-d} ימים`;
+    cd.className = "countdown" + (d >= 0 && d <= 14 ? " soon" : "");
+  } else cd.hidden = true;
   document.getElementById("count").textContent = `${approved} / ${steps.length}`;
   document.getElementById("bar-fill").style.width = (steps.length ? approved / steps.length * 100 : 0) + "%";
   const next = document.getElementById("next");
@@ -68,6 +75,7 @@ function renderPass(trip, steps, current){
   } else if(current < steps.length){
     const s = steps[current];
     next.append(el("span","lbl","השלב הבא"), el("strong","", s.role), el("span","lbl", s.round));
+    if(s.date){ const w = daysBetween(s.date, todayISO()); if(w >= 0) next.append(el("span","wait-days" + (w > OVERDUE() ? " late" : ""), `⏳ ממתין ${w} ימים`)); }
   } else {
     next.append(el("strong","", "✈ כל האישורים התקבלו – אפשר לצאת!"));
   }
@@ -182,8 +190,12 @@ function renderRounds(trip, current){
         el("span","num", k+1),
         el("span","role", s.role),
         el("span","chip " + st.cls, st.text),
-        el("span","date", fmtDate(s.date))
+        el("span","date", s.status === "אושר" ? fmtDate(s.date) : (s.date ? "נשלח " + fmtDate(s.date) : ""))
       );
+      if(s.status !== "אושר" && s.date){
+        const w = daysBetween(s.date, todayISO());
+        if(w > OVERDUE()){ li.classList.add("late"); li.querySelector(".role").append(el("span","late-tag", ` ⚠ ממתין ${w} ימים`)); }
+      }
       ul.appendChild(li); idx++;
     });
     sec.append(head, ul); wrap.appendChild(sec);
@@ -191,6 +203,25 @@ function renderRounds(trip, current){
 }
 
 
+
+
+// ===== עזרים: מעקב מסמכים, ימים =====
+const docWords = () => (typeof DOC_ROWS_WORDS !== "undefined" && Array.isArray(DOC_ROWS_WORDS)) ? DOC_ROWS_WORDS : ["מסמכים"];
+const norm = s => String(s || "").replace(/["'״׳–\-\s]/g, "");
+function docStatus(trip, title){
+  const docs = (trip && trip.docs) || {}; const keys = Object.keys(docs);
+  if(!keys.length) return null;
+  const n = norm(title);
+  const k = keys.find(k => { const m = norm(k); return m && (n.includes(m) || m.includes(n)); });
+  if(k === undefined) return null;
+  const v = docs[k];
+  if(/^(התקבל|התקבלו|אושר|הושלם|✓|v|כן)$/i.test(v)) return "ok";
+  if(/^(בטיפול|בתהליך)$/.test(v)) return "wait";
+  return "missing";
+}
+const todayISO = () => { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0,10); };
+const daysBetween = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000);
+const OVERDUE = () => (typeof OVERDUE_DAYS === "number" ? OVERDUE_DAYS : 7);
 
 // ===== טפסים למילוי =====
 const fileOk = {};   // תוצאות בדיקה אם קובץ ההורדה קיים
@@ -202,6 +233,7 @@ function renderForms(trip){
   const up = folder || (typeof UPLOAD_LINK === "string" ? UPLOAD_LINK : "").trim();
   const online = location.protocol.startsWith("http");
   ul.innerHTML = "";
+  let tracked = 0, got = 0;
   const box = document.getElementById("my-folder");
   box.innerHTML = ""; box.hidden = !folder;
   if(folder){
@@ -212,6 +244,9 @@ function renderForms(trip){
     const li = el("li","form-card");
     const head = el("div","form-head");
     head.append(el("span","form-num", i + 1), el("span","form-title", f.title));
+    const ds = docStatus(trip, f.title);
+    if(ds){ tracked++; if(ds === "ok") got++;
+      head.append(el("span","doc-badge " + ds, ds === "ok" ? "✓ התקבל" : ds === "wait" ? "⏳ בטיפול" : "חסר")); li.classList.add("ds-" + ds); }
     li.append(head);
     const acts = el("div","form-acts");
     if(f.online){
@@ -234,7 +269,11 @@ function renderForms(trip){
     ul.append(li);
   });
   sec.hidden = !list.length;
+  const sum = document.getElementById("docs-summary");
+  sum.hidden = !tracked;
+  if(tracked) sum.innerHTML = `<strong>התקבלו ${got} מתוך ${tracked} מסמכים</strong>` + (trip.traveler ? ` · ${esc(trip.traveler)}` : "") + (got === tracked ? " · ✓ הכול הגיע!" : "");
 }
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
 
 // ===== מידע, זכויות וצ׳ק ליסט (רק בלשוניות שליחות) =====
 const isMission = trip => {
@@ -294,6 +333,11 @@ function renderMission(trip, up){
 }
 function renderInfoView(){
   renderChecklist();
+  const mt = TRIPS.find(isMission) || TRIPS[0] || {};
+  const st = docStatus(mt, "צ׳ק ליסט");
+  const b = document.getElementById("cl-status");
+  b.hidden = !st;
+  if(st) { b.className = "cl-status " + st; b.textContent = "סטטוס אצל מנהלת המעקב: " + (st === "ok" ? "✓ הצ׳ק ליסט הושלם ואושר" : st === "wait" ? "⏳ בבדיקה" : "עוד לא התקבל אישור סיום"); }
   // השליחה מהצ׳ק ליסט: לתיקייה של לשונית השליחות הראשונה, ואם אין – לקישור הכללי
   const t = TRIPS.find(isMission) || TRIPS[0] || {};
   const up = ((t.folder || "") + "").trim() || (typeof UPLOAD_LINK === "string" ? UPLOAD_LINK : "").trim();
@@ -393,11 +437,13 @@ function tripsFromSheet(rows){
     const old = TRIPS[k] || {};
     const t = { title: (head[3 + 2*k] || `שליח ${k+1}`).replace(/\s*[–-]\s*סטטוס$/,""),
       traveler: name(k), destination: dest(k), departure: toISO(dep(k)), folder: folder(k),
-      rounds: [] };
+      rounds: [], docs: {} };
     let cur = null, last = "";
     rows.slice(hi + 1).forEach(r => {
       if(!r[2]) return;
       const rn = r[0] || last; last = rn;
+      // שורות „מסמכים” – מעקב קבלת מסמכים (לא סבב אישורים)
+      if(docWords().some(w => rn.includes(w))){ t.docs[r[2]] = (r[3 + 2*k] || "").trim(); return; }
       // תא ריק = „ממתין”. כדי שאישור לא יופיע בלשונית מסוימת – כותבים בתא שלה „-” או „לא רלוונטי”
       const st = (r[3 + 2*k] || "").trim() || "ממתין";
       if(/^[-–—]$/.test(st) || st === "לא רלוונטי") return;
