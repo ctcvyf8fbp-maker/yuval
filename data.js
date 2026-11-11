@@ -54,7 +54,7 @@ const INFO_TAB_WORDS = ["מידע"];
 // עמודה בגיליון שהכותרת שלה כוללת אחת מהמילים האלה = לשונית המסמכים והטפסים (בלי סבב אישורים)
 const FORMS_TAB_WORDS = ["טפסים"];
 // עמודה בגיליון שהכותרת שלה כוללת אחת מהמילים האלה = לשונית הצ׳ק ליסט
-const CHECKLIST_TAB_WORDS = ["ליסט"];
+const CHECKLIST_TAB_WORDS = ["ליסט", "לסיט", "צ׳ק", "צ'ק", "צק", "checklist"];
 
 // קישור Dropbox לשליחת מסמכים – משמש את כפתורי „העלאת קובץ” ואת סוף הטפסים המקוונים.
 const UPLOAD_LINK = "https://www.dropbox.com/request/devul2bl0ould3ztszo4";

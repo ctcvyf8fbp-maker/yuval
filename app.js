@@ -63,7 +63,9 @@ function renderPass(trip, steps, current){
   document.getElementById("bar-fill").style.width = (steps.length ? approved / steps.length * 100 : 0) + "%";
   const next = document.getElementById("next");
   next.innerHTML = "";
-  if(current < steps.length){
+  if(!steps.length){
+    next.append(el("strong","", "עוד לא הוגדרו אישורים ללשונית הזו"));
+  } else if(current < steps.length){
     const s = steps[current];
     next.append(el("span","lbl","השלב הבא"), el("strong","", s.role), el("span","lbl", s.round));
   } else {
@@ -396,9 +398,9 @@ function tripsFromSheet(rows){
     rows.slice(hi + 1).forEach(r => {
       if(!r[2]) return;
       const rn = r[0] || last; last = rn;
-      // תא סטטוס ריק = האישור הזה לא שייך ללשונית הזו (כך לכל לשונית יש סבב משלה)
-      const st = (r[3 + 2*k] || "").trim();
-      if(!st) return;
+      // תא ריק = „ממתין”. כדי שאישור לא יופיע בלשונית מסוימת – כותבים בתא שלה „-” או „לא רלוונטי”
+      const st = (r[3 + 2*k] || "").trim() || "ממתין";
+      if(/^[-–—]$/.test(st) || st === "לא רלוונטי") return;
       if(!cur || cur.name !== rn){ cur = { name: rn, color: PALETTE[t.rounds.length % PALETTE.length], steps: [] }; t.rounds.push(cur); }
       cur.steps.push({ role: r[2], status: STATUS[st] ? st : "ממתין", date: toISO(r[4 + 2*k]) });
     });
@@ -407,7 +409,9 @@ function tripsFromSheet(rows){
   // עמודה בגיליון שהכותרת שלה כוללת „מידע” – היא לא שליח: היא לשונית המידע והצ׳ק ליסט
   const special = [];
   trips.forEach(t => { const k = specialKind(t.title); if(k) special.push({ kind: k, label: t.title }); });
-  if(special.length) specialTabs = special;
+  // לשוניות מגיליון קובעות שם וסדר; לשונית שאין לה עמודה בגיליון מופיעה בכל זאת בסוף
+  const defaults = [{ kind: "forms", label: "טפסים למילוי" }, { kind: "info", label: "מידע לשליח" }, { kind: "checklist", label: "צ׳ק ליסט לשליח" }];
+  specialTabs = special.concat(defaults.filter(d => !special.some(s => s.kind === d.kind)));
   const real = trips.filter(t => !specialKind(t.title));
   if(!real.length || !real.some(t => t.rounds.length)) throw new Error("empty");
   return real;
