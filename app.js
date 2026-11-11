@@ -37,14 +37,19 @@ function renderTabs(){
   const nav = document.getElementById("tabs");
   nav.innerHTML = "";
   nav.setAttribute("role","tablist");
-  nav.hidden = TRIPS.length < 2;            // טאבים רק כשיש יותר מנסיעה אחת
+  nav.hidden = false;
   TRIPS.forEach((t,i) => {
     const b = el("button", "", /^שליח \d+$/.test(t.title || "") ? (t.traveler || t.title) : t.title);
     b.setAttribute("role","tab");
-    b.setAttribute("aria-selected", i === tripIndex);
-    b.onclick = () => { tripIndex = i; location.hash = "trip" + (i+1); render(); };
+    b.setAttribute("aria-selected", view === "trip" && i === tripIndex);
+    b.onclick = () => { view = "trip"; tripIndex = i; location.hash = "trip" + (i+1); render(); };
     nav.appendChild(b);
   });
+  const ib = el("button", "info-tab", "📚 מידע וצ׳ק ליסט לשליח");
+  ib.setAttribute("role","tab");
+  ib.setAttribute("aria-selected", view === "info");
+  ib.onclick = () => { view = "info"; location.hash = "info"; render(); window.scrollTo(0,0); };
+  nav.appendChild(ib);
 }
 
 function renderPass(trip, steps, current){
@@ -280,16 +285,29 @@ function renderChecklist(){
   upd();
 }
 function renderMission(trip, up){
-  const show = isMission(trip);
-  document.querySelectorAll(".mission-only").forEach(s => s.hidden = !show);
-  document.getElementById("forms-section").hidden = !show || document.getElementById("forms-section").hidden;
-  if(!show) return;
+  // מסמכים וטפסים – רק בלשוניות שליחות (לא באוריינטציה)
+  if(!isMission(trip)) document.getElementById("forms-section").hidden = true;
+}
+function renderInfoView(){
   renderInfo(); renderChecklist();
-  const sign = document.getElementById("cl-sign");
-  sign.href = "form.html?f=checklist" + (up ? "&up=" + encodeURIComponent(up) : "");
+  // השליחה מהצ׳ק ליסט: לתיקייה של לשונית השליחות הראשונה, ואם אין – לקישור הכללי
+  const t = TRIPS.find(isMission) || TRIPS[0] || {};
+  const up = ((t.folder || "") + "").trim() || (typeof UPLOAD_LINK === "string" ? UPLOAD_LINK : "").trim();
+  document.getElementById("cl-sign").href = "form.html?f=checklist" + (up ? "&up=" + encodeURIComponent(up) : "");
 }
 
+let view = "trip";   // "trip" = לשונית שליח/נסיעה, "info" = מידע וצ׳ק ליסט
 function render(){
+  const isInfo = view === "info";
+  document.querySelectorAll(".trip-only").forEach(s => s.hidden = isInfo);
+  document.querySelectorAll(".mission-only").forEach(s => s.hidden = !isInfo);
+  if(isInfo){
+    renderTabs(); renderInfoView();
+    const st = (typeof SITE_TITLE === "string" && SITE_TITLE.trim()) ? SITE_TITLE.trim() : "מעקב אישורים";
+    document.getElementById("site-title").textContent = st;
+    document.title = `מידע וצ׳ק ליסט לשליח – ${st}`;
+    return;
+  }
   const trip = TRIPS[tripIndex];
   const steps = flatten(trip);
   let current = steps.findIndex(s => s.status !== "אושר");
@@ -383,9 +401,11 @@ function syncFromSheet(){
 // פתיחה לפי #trip2 בכתובת
 const m = location.hash.match(/^#trip(\d+)$/);
 if(m && TRIPS[+m[1]-1]) tripIndex = +m[1]-1;
+if(location.hash === "#info") view = "info";
 window.addEventListener("hashchange", () => {
   const h = location.hash.match(/^#trip(\d+)$/);
-  if(h && TRIPS[+h[1]-1] && +h[1]-1 !== tripIndex){ tripIndex = +h[1]-1; render(); }
+  if(location.hash === "#info" && view !== "info"){ view = "info"; render(); }
+  else if(h && TRIPS[+h[1]-1] && (+h[1]-1 !== tripIndex || view !== "trip")){ view = "trip"; tripIndex = +h[1]-1; render(); }
 });
 render();
 syncFromSheet();

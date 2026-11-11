@@ -18,7 +18,7 @@
 
   <main>
     <!-- כרטיס עלייה למטוס -->
-    <section class="pass" aria-label="פרטי הנסיעה">
+    <section class="pass trip-only" aria-label="פרטי הנסיעה">
       <div class="pass-main">
         <div class="field">
           <span class="lbl">שליח/ה</span>
@@ -44,7 +44,7 @@
     </section>
 
     <!-- מפת הטיסה -->
-    <section class="map-wrap" aria-label="מסלול האישורים">
+    <section class="map-wrap trip-only" aria-label="מסלול האישורים">
       <div class="map-scroll">
         <svg id="map" viewBox="0 0 1000 240" role="img" aria-labelledby="map-desc">
           <desc id="map-desc">מסלול טיסה שבו כל נקודה היא אישור, והמטוס עומד בשלב הנוכחי</desc>
@@ -54,7 +54,7 @@
     </section>
 
     <!-- טפסים למילוי -->
-    <section class="forms" id="forms-section" aria-labelledby="forms-title" hidden>
+    <section class="forms trip-only" id="forms-section" aria-labelledby="forms-title" hidden>
       <h2 id="forms-title">📝 מסמכים וטפסים</h2>
       <p class="forms-hint">ממלאים באתר („מילוי מקוון”) או מורידים וממלאים – ושולחים בכפתור „שליחת מסמך” שבסוף הטופס, או ב„העלאת קובץ”.</p>
       <div class="my-folder" id="my-folder" hidden></div>
@@ -62,24 +62,24 @@
     </section>
 
     <!-- רשימת הסבבים -->
+    <div id="rounds" class="trip-only"></div>
+
     <!-- מידע לשליח -->
-    <section class="info mission-only" id="info-section" aria-labelledby="info-title">
+    <section class="info mission-only" id="info-section" hidden aria-labelledby="info-title">
       <h2 id="info-title">📚 מידע לשליח</h2>
       <div class="info-grid" id="info-list"></div>
       <p class="takam-note">⚖️ במקרה של סתירה בין החוברת לבין הוראות התכ״ם – <strong>הוראות התכ״ם גוברות</strong>. ההוראות מתעדכנות מעת לעת, ולכן כדאי לבדוק תמיד את הנוסח העדכני באתר התכ״ם.</p>
     </section>
 
     <!-- זכויות השליח -->
-    <section class="rights mission-only" id="rights-section" aria-labelledby="rights-title">
+    <section class="rights mission-only" id="rights-section" hidden aria-labelledby="rights-title">
       <h2 id="rights-title">🧭 הזכויות שלך כשליח/ה</h2>
       <p class="forms-hint">סיכום מתוך הצ׳ק ליסט לפני שליחות. הנוסח המחייב – הוראות התכ״ם.</p>
       <div class="rights-grid" id="rights-list"></div>
     </section>
 
-    <div id="rounds"></div>
-
     <!-- צ'ק ליסט -->
-    <section class="checklist mission-only" id="checklist-section" aria-labelledby="cl-title">
+    <section class="checklist mission-only" id="checklist-section" hidden aria-labelledby="cl-title">
       <h2 id="cl-title">✅ צ׳ק ליסט לשליחות</h2>
       <p class="forms-hint">מסמנים ✓ על כל משימה שסיימת. הסימונים נשמרים במכשיר שלך. בסוף – חותמים על אישור שסיימת הכול.</p>
       <div class="cl-progress"><span id="cl-count"></span><div class="bar" aria-hidden="true"><span id="cl-bar"></span></div></div>

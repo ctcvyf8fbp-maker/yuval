@@ -169,3 +169,6 @@ h1{font-size:1.6rem;font-weight:700;margin:0;letter-spacing:-.01em}
 .cl-contact{font-size:.85rem}
 .cl-item.on strong{text-decoration:line-through;color:var(--muted)}
 .cl-done{margin-top:8px}
+.tabs{flex-wrap:wrap}
+.tabs button.info-tab{border-style:dashed}
+.tabs button.info-tab[aria-selected="true"]{border-style:solid}
