@@ -46,7 +46,7 @@ function renderTabs(){
     nav.appendChild(b);
   });
   specialTabs.forEach(s => {
-    const ib = el("button", "info-tab", (s.kind === "info" ? "📚 " : "📝 ") + s.label);
+    const ib = el("button", "info-tab", ({ info: "📚 ", forms: "📝 ", checklist: "✅ " }[s.kind] || "") + s.label);
     ib.setAttribute("role","tab");
     ib.setAttribute("aria-selected", view === s.kind);
     ib.onclick = () => { view = s.kind; location.hash = s.kind; render(); window.scrollTo(0,0); };
@@ -291,7 +291,7 @@ function renderMission(trip, up){
   if(!isMission(trip)) document.getElementById("forms-section").hidden = true;
 }
 function renderInfoView(){
-  renderInfo(); renderChecklist();
+  renderChecklist();
   // השליחה מהצ׳ק ליסט: לתיקייה של לשונית השליחות הראשונה, ואם אין – לקישור הכללי
   const t = TRIPS.find(isMission) || TRIPS[0] || {};
   const up = ((t.folder || "") + "").trim() || (typeof UPLOAD_LINK === "string" ? UPLOAD_LINK : "").trim();
@@ -299,24 +299,30 @@ function renderInfoView(){
 }
 
 // לשוניות מיוחדות: "forms" = מסמכים וטפסים, "info" = מידע וצ׳ק ליסט (בלי סבב אישורים)
-let specialTabs = [{ kind: "forms", label: "מסמכים וטפסים" }, { kind: "info", label: "מידע וצ׳ק ליסט לשליח" }];
+let specialTabs = [{ kind: "forms", label: "טפסים למילוי" }, { kind: "info", label: "מידע לשליח" }, { kind: "checklist", label: "צ׳ק ליסט לשליח" }];
 function specialKind(title){
   title = title || "";
   const fw = (typeof FORMS_TAB_WORDS !== "undefined" && Array.isArray(FORMS_TAB_WORDS)) ? FORMS_TAB_WORDS : ["טפסים"];
   const iw = (typeof INFO_TAB_WORDS !== "undefined" && Array.isArray(INFO_TAB_WORDS)) ? INFO_TAB_WORDS : ["מידע"];
+  const cw = (typeof CHECKLIST_TAB_WORDS !== "undefined" && Array.isArray(CHECKLIST_TAB_WORDS)) ? CHECKLIST_TAB_WORDS : ["ליסט"];
   if(fw.some(x => x && title.includes(x))) return "forms";
+  if(cw.some(x => x && title.includes(x))) return "checklist";
   if(iw.some(x => x && title.includes(x))) return "info";
   return "";
 }
 let view = "trip";   // "trip" = לשונית שליח/נסיעה, "info" = מידע וצ׳ק ליסט
 function render(){
-  const isInfo = view === "info", isForms = view === "forms";
-  document.querySelectorAll(".trip-only").forEach(s => s.hidden = isInfo || isForms);
-  document.querySelectorAll(".mission-only").forEach(s => s.hidden = !isInfo);
+  const isInfo = view === "info", isForms = view === "forms", isCL = view === "checklist";
+  const special = isInfo || isForms || isCL;
+  document.querySelectorAll(".trip-only").forEach(s => s.hidden = special);
+  document.getElementById("info-section").hidden = !isInfo;
+  document.getElementById("rights-section").hidden = !isInfo;
+  document.getElementById("checklist-section").hidden = !isCL;
   const fsec = document.getElementById("forms-section");
-  if(isInfo || isForms){
+  if(special){
     renderTabs();
-    if(isInfo) renderInfoView();
+    if(isInfo) renderInfo();
+    else if(isCL) renderInfoView();
     else renderForms(TRIPS.find(isMission) || TRIPS[0] || {});
     fsec.hidden = !isForms;
     const st = (typeof SITE_TITLE === "string" && SITE_TITLE.trim()) ? SITE_TITLE.trim() : "מעקב אישורים";
@@ -430,10 +436,11 @@ const m = location.hash.match(/^#trip(\d+)$/);
 if(m && TRIPS[+m[1]-1]) tripIndex = +m[1]-1;
 if(location.hash === "#info") view = "info";
 if(location.hash === "#forms") view = "forms";
+if(location.hash === "#checklist") view = "checklist";
 window.addEventListener("hashchange", () => {
   const h = location.hash.match(/^#trip(\d+)$/);
   const k = location.hash.slice(1);
-  if((k === "info" || k === "forms") && view !== k){ view = k; render(); }
+  if((k === "info" || k === "forms" || k === "checklist") && view !== k){ view = k; render(); }
   else if(h && TRIPS[+h[1]-1] && (+h[1]-1 !== tripIndex || view !== "trip")){ view = "trip"; tripIndex = +h[1]-1; render(); }
 });
 render();

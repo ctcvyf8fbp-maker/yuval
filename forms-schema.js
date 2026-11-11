@@ -13,6 +13,7 @@ const FORM_SCHEMAS = {
 
   // ---------------------------------------------------------------- 101
   "101": {
+    preview: ["preview-101-1.jpg", "preview-101-2.jpg"], previewPdf: "form-101.pdf",
     title: "טופס 101 – כרטיס עובד",
     subtitle: "ובקשה להקלה ולתיאום מס על ידי המעסיק · לפי תקנות מס הכנסה (ניכוי ממשכורת ומשכר עבודה), התשנ״ג–1993",
     header: true,
@@ -23,7 +24,6 @@ const FORM_SCHEMAS = {
       ]},
       { title: "חלק א׳ – פרטי המעסיק", note: "ימולא על ידי המעסיק – אין צורך למלא." },
       { title: "חלק ב׳ – פרטי העובד/ת",
-        note: "יש לצרף צילום תעודת זהות כולל ספח (אם צורף בעבר – רק אם היו שינויים).",
         fields: [
         { id: "id", label: "מספר זהות (9 ספרות)", type: "id", required: true },
         { id: "passport", label: "מספר דרכון (למי שאין מספר זהות)", type: "text" },
@@ -137,6 +137,7 @@ const FORM_SCHEMAS = {
 
   // ---------------------------------------------------------- התחייבות
   "commitment": {
+    preview: ["preview-commitment-1.jpg", "preview-commitment-2.jpg"], previewPdf: "form-commitment.pdf",
     title: "כתב התחייבות והוראה בלתי חוזרת",
     sections: [
       { title: "1. מתן הוראה לכיסוי חובות מתקופת השליחות", fields: [
@@ -170,6 +171,7 @@ const FORM_SCHEMAS = {
 
   // ------------------------------------------------------- קיום הוראות
   "instructions": {
+    preview: ["preview-instructions-1.jpg", "preview-instructions-2.jpg", "preview-instructions-3.jpg", "preview-instructions-4.jpg", "preview-instructions-5.jpg", "preview-instructions-6.jpg"], previewPdf: "form-instructions.pdf",
     title: "הצהרה – קיום הוראות משהב״ט",
     sections: [
       { fields: [
@@ -254,6 +256,7 @@ const FORM_SCHEMAS = {
 
   // ------------------------------------------------ הצהרה על תאריכי שליחות
   "missiondates": {
+    preview: ["preview-missiondates-1.jpg"], previewPdf: "form-mission-dates.pdf",
     title: "הצהרה על תאריכי שליחות",
     sections: [
       { title: "ימולא על ידי השליח", fields: [

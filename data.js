@@ -20,8 +20,7 @@ const SITE_TITLE = "מעקב אישורים ליציאה לשליחות";
 // upload = true → כפתור „העלאת קובץ” (נשלח ל-Dropbox שבשורה UPLOAD_LINK)
 // note   = הערה שמופיעה מתחת (אפשר למחוק את השורה אם אין)
 const FORMS = [
-  { title: "טופס 101 – כרטיס עובד", file: "form-101.pdf", online: "form.html?f=101",
-    note: "יש לצרף צילום תעודת זהות כולל ספח." },
+  { title: "טופס 101 – כרטיס עובד", file: "form-101.pdf", online: "form.html?f=101" },
   { title: "כתב התחייבות והוראה בלתי חוזרת", file: "form-commitment.pdf", online: "form.html?f=commitment",
     note: "החתימה נעשית בנוכחות קצין הנסיעות הזרועי." },
   { title: "הצהרה – קיום הוראות משהב״ט", file: "form-instructions.pdf", online: "form.html?f=instructions" },
@@ -54,6 +53,8 @@ const NO_DOCS_TITLES = ["אוריינטציה"];
 const INFO_TAB_WORDS = ["מידע"];
 // עמודה בגיליון שהכותרת שלה כוללת אחת מהמילים האלה = לשונית המסמכים והטפסים (בלי סבב אישורים)
 const FORMS_TAB_WORDS = ["טפסים"];
+// עמודה בגיליון שהכותרת שלה כוללת אחת מהמילים האלה = לשונית הצ׳ק ליסט
+const CHECKLIST_TAB_WORDS = ["ליסט"];
 
 // קישור Dropbox לשליחת מסמכים – משמש את כפתורי „העלאת קובץ” ואת סוף הטפסים המקוונים.
 const UPLOAD_LINK = "https://www.dropbox.com/request/devul2bl0ould3ztszo4";
