@@ -45,11 +45,13 @@ function renderTabs(){
     b.onclick = () => { view = "trip"; tripIndex = i; location.hash = "trip" + (i+1); render(); };
     nav.appendChild(b);
   });
-  const ib = el("button", "info-tab", "📚 מידע וצ׳ק ליסט לשליח");
-  ib.setAttribute("role","tab");
-  ib.setAttribute("aria-selected", view === "info");
-  ib.onclick = () => { view = "info"; location.hash = "info"; render(); window.scrollTo(0,0); };
-  nav.appendChild(ib);
+  specialTabs.forEach(s => {
+    const ib = el("button", "info-tab", (s.kind === "info" ? "📚 " : "📝 ") + s.label);
+    ib.setAttribute("role","tab");
+    ib.setAttribute("aria-selected", view === s.kind);
+    ib.onclick = () => { view = s.kind; location.hash = s.kind; render(); window.scrollTo(0,0); };
+    nav.appendChild(ib);
+  });
 }
 
 function renderPass(trip, steps, current){
@@ -296,18 +298,34 @@ function renderInfoView(){
   document.getElementById("cl-sign").href = "form.html?f=checklist" + (up ? "&up=" + encodeURIComponent(up) : "");
 }
 
+// לשוניות מיוחדות: "forms" = מסמכים וטפסים, "info" = מידע וצ׳ק ליסט (בלי סבב אישורים)
+let specialTabs = [{ kind: "forms", label: "מסמכים וטפסים" }, { kind: "info", label: "מידע וצ׳ק ליסט לשליח" }];
+function specialKind(title){
+  title = title || "";
+  const fw = (typeof FORMS_TAB_WORDS !== "undefined" && Array.isArray(FORMS_TAB_WORDS)) ? FORMS_TAB_WORDS : ["טפסים"];
+  const iw = (typeof INFO_TAB_WORDS !== "undefined" && Array.isArray(INFO_TAB_WORDS)) ? INFO_TAB_WORDS : ["מידע"];
+  if(fw.some(x => x && title.includes(x))) return "forms";
+  if(iw.some(x => x && title.includes(x))) return "info";
+  return "";
+}
 let view = "trip";   // "trip" = לשונית שליח/נסיעה, "info" = מידע וצ׳ק ליסט
 function render(){
-  const isInfo = view === "info";
-  document.querySelectorAll(".trip-only").forEach(s => s.hidden = isInfo);
+  const isInfo = view === "info", isForms = view === "forms";
+  document.querySelectorAll(".trip-only").forEach(s => s.hidden = isInfo || isForms);
   document.querySelectorAll(".mission-only").forEach(s => s.hidden = !isInfo);
-  if(isInfo){
-    renderTabs(); renderInfoView();
+  const fsec = document.getElementById("forms-section");
+  if(isInfo || isForms){
+    renderTabs();
+    if(isInfo) renderInfoView();
+    else renderForms(TRIPS.find(isMission) || TRIPS[0] || {});
+    fsec.hidden = !isForms;
     const st = (typeof SITE_TITLE === "string" && SITE_TITLE.trim()) ? SITE_TITLE.trim() : "מעקב אישורים";
     document.getElementById("site-title").textContent = st;
-    document.title = `מידע וצ׳ק ליסט לשליח – ${st}`;
+    const lab = (specialTabs.find(s => s.kind === view) || {}).label || "";
+    document.title = `${lab} – ${st}`;
     return;
   }
+  fsec.hidden = true;
   const trip = TRIPS[tripIndex];
   const steps = flatten(trip);
   let current = steps.findIndex(s => s.status !== "אושר");
@@ -316,7 +334,6 @@ function render(){
   renderPass(trip, steps, current);
   renderMap(trip, steps, current);
   renderLegend(trip);
-  renderForms(trip);
   renderMission(trip, ((trip.folder || "") + "").trim() || (typeof UPLOAD_LINK === "string" ? UPLOAD_LINK : "").trim());
   renderRounds(trip, current);
   document.getElementById("updated").textContent = fmtDate(LAST_UPDATED);
@@ -376,8 +393,13 @@ function tripsFromSheet(rows){
     });
     trips.push(t);
   }
-  if(!trips.length || !trips[0].rounds.length) throw new Error("empty");
-  return trips;
+  // עמודה בגיליון שהכותרת שלה כוללת „מידע” – היא לא שליח: היא לשונית המידע והצ׳ק ליסט
+  const special = [];
+  trips.forEach(t => { const k = specialKind(t.title); if(k) special.push({ kind: k, label: t.title }); });
+  if(special.length) specialTabs = special;
+  const real = trips.filter(t => !specialKind(t.title));
+  if(!real.length || !real[0].rounds.length) throw new Error("empty");
+  return real;
 }
 function syncFromSheet(){
   const url = (typeof SHEET_CSV_URL === "string" ? SHEET_CSV_URL : "").trim();
@@ -402,9 +424,11 @@ function syncFromSheet(){
 const m = location.hash.match(/^#trip(\d+)$/);
 if(m && TRIPS[+m[1]-1]) tripIndex = +m[1]-1;
 if(location.hash === "#info") view = "info";
+if(location.hash === "#forms") view = "forms";
 window.addEventListener("hashchange", () => {
   const h = location.hash.match(/^#trip(\d+)$/);
-  if(location.hash === "#info" && view !== "info"){ view = "info"; render(); }
+  const k = location.hash.slice(1);
+  if((k === "info" || k === "forms") && view !== k){ view = k; render(); }
   else if(h && TRIPS[+h[1]-1] && (+h[1]-1 !== tripIndex || view !== "trip")){ view = "trip"; tripIndex = +h[1]-1; render(); }
 });
 render();
