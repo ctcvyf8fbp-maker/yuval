@@ -13,20 +13,34 @@ const SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRwsrGMi3
 // הכותרת שמופיעה בראש האתר
 const SITE_TITLE = "מעקב אישורים ליציאה לשליחות";
 
-// טפסים שהשליחים יכולים להוריד, למלא ולשלוח חזרה (בכפתור "שליחת מסמך").
-// מעלים ל-GitHub קובץ בשם form-1.pdf (או form-1.docx) – והוא מופיע באתר לבד.
-// title = השם שיופיע באתר. file = שם הקובץ בדיוק כמו שהעלית.
-// note = הערה שמופיעה מתחת לטופס (אפשר להשאיר "" אם אין).
-// טופס שהקובץ שלו עוד לא הועלה – פשוט לא מופיע.
+// ===== מסמכים וטפסים – מופיעים באתר לפי הסדר הזה =====
+// title  = השם שמופיע באתר
+// file   = קובץ להורדה (אם הקובץ לא הועלה ל-GitHub – כפתור ההורדה פשוט לא מופיע)
+// online = קישור למילוי מקוון
+// upload = true → כפתור „העלאת קובץ” (נשלח ל-Dropbox שבשורה UPLOAD_LINK)
+// note   = הערה שמופיעה מתחת (אפשר למחוק את השורה אם אין)
 const FORMS = [
-  { title: "טופס איש קשר למקרי חירום", file: "form-1.pdf",
-    online: "form-contact.html",
+  { title: "טופס 101 – כרטיס עובד", file: "form-101.pdf", online: "form.html?f=101",
+    note: "יש לצרף צילום תעודת זהות כולל ספח." },
+  { title: "כתב התחייבות והוראה בלתי חוזרת", file: "form-commitment.pdf", online: "form.html?f=commitment",
+    note: "החתימה נעשית בנוכחות קצין הנסיעות הזרועי." },
+  { title: "הצהרה – קיום הוראות משהב״ט", file: "form-instructions.pdf", online: "form.html?f=instructions" },
+  { title: "צילום תלוש שכר", upload: true,
+    note: "מצלמים או סורקים את תלוש השכר האחרון. בשם הקובץ מציינים את השם שלכם." },
+  { title: "שאלון רפואי – כל המשפחה", online: "form.html?f=medical",
+    note: "ממלאים עבור כל אחד מבני המשפחה המצטרפים לשליחות." },
+  { title: "טופס איש קשר למקרי חירום", file: "form-1.pdf", online: "form-contact.html",
     note: "איש הקשר חייב להיות קרוב משפחה מדרגה ראשונה." },
-  { title: "טופס 2", file: "form-2.pdf" },
-  { title: "טופס 3", file: "form-3.pdf" }
+  { title: "קורות חיים מצומצם", file: "form-cv-short.pdf", online: "form.html?f=cvshort" },
+  { title: "קורות חיים מלאים", upload: true,
+    note: "מעלים את קובץ קורות החיים (Word או PDF)." },
+  { title: "הצהרה על תאריכי שליחות", file: "form-mission-dates.pdf", online: "form.html?f=missiondates" },
+  { title: "הצהרת שליח בדבר אישור מועדי היציאה לשליחות", file: "form-departure.pdf", online: "form.html?f=departure" },
+  { title: "פרטי דרכון ותעודת זהות", online: "form.html?f=passport",
+    note: "עבור השליח/ה ועבור כל בן/בת משפחה שמצטרף/ת. אפשר לצלם ישירות מהטלפון." }
 ];
 
-// קישור לשליחת הטופס המלא (Dropbox). מופיע בסוף הטופס המקוון.
+// קישור Dropbox לשליחת מסמכים – משמש את כפתורי „העלאת קובץ” ואת סוף הטפסים המקוונים.
 const UPLOAD_LINK = "https://www.dropbox.com/request/devul2bl0ould3ztszo4";
 
 const LAST_UPDATED = "2026-11-03";

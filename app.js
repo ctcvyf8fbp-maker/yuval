@@ -52,7 +52,7 @@ function renderPass(trip, steps, current){
   document.getElementById("traveler").textContent = trip.traveler || "טרם הוזן שם";
   document.getElementById("destination").textContent = trip.destination || "טרם הוזן";
   document.getElementById("departure").textContent = fmtDate(trip.departure) || "—";
-  document.getElementById("count").textContent = `${approved} / ${steps.length}`;
+  document.getElementById("count").textContent = `${approved} מתוך ${steps.length}`;
   document.getElementById("bar-fill").style.width = (steps.length ? approved / steps.length * 100 : 0) + "%";
   const next = document.getElementById("next");
   next.innerHTML = "";
@@ -188,22 +188,27 @@ let formsDone = false;
 function renderForms(){
   if(formsDone) return; formsDone = true;
   const sec = document.getElementById("forms-section"), ul = document.getElementById("forms-list");
-  const list = (typeof FORMS !== "undefined" && Array.isArray(FORMS)) ? FORMS.filter(f => f && f.file) : [];
-  const add = f => {
-    const li = el("li");
-    const a = el("a","form-link"); a.href = encodeURI(f.file); a.setAttribute("download", f.file);
-    const ext = (f.file.split(".").pop() || "").toUpperCase();
-    a.append(el("span","form-icon", ext === "PDF" ? "📄" : "📝"), el("span","form-title", f.title || f.file), el("span","form-ext", ext + " · הורדה ⬇"));
-    li.appendChild(a);
-    if(f.online){
-      const o = el("a","form-online","✍️ מילוי מקוון"); o.href = encodeURI(f.online);
-      li.appendChild(o);
+  const list = (typeof FORMS !== "undefined" && Array.isArray(FORMS)) ? FORMS.filter(f => f && f.title) : [];
+  const up = (typeof UPLOAD_LINK === "string" ? UPLOAD_LINK : "").trim();
+  const online = location.protocol.startsWith("http");
+  list.forEach((f, i) => {
+    const li = el("li","form-card");
+    const head = el("div","form-head");
+    head.append(el("span","form-num", i + 1), el("span","form-title", f.title));
+    li.append(head);
+    const acts = el("div","form-acts");
+    if(f.online){ const o = el("a","fbtn primary","✍️ מילוי מקוון"); o.href = f.online; acts.append(o); }
+    if(f.file){
+      const d = el("a","fbtn","⬇ הורדה"); d.href = encodeURI(f.file); d.setAttribute("download", f.file);
+      if(online){ d.hidden = true; fetch(encodeURI(f.file), { method: "HEAD", cache: "no-store" }).then(r => { if(r.ok) d.hidden = false; }).catch(() => {}); }
+      acts.append(d);
     }
-    if(f.note && String(f.note).trim()) li.appendChild(el("p","form-note", "⚠️ " + String(f.note).trim()));
-    ul.appendChild(li); sec.hidden = false;
-  };
-  if(!location.protocol.startsWith("http")){ list.forEach(add); return; }
-  list.forEach(f => fetch(encodeURI(f.file), { method: "HEAD", cache: "no-store" }).then(r => { if(r.ok) add(f); }).catch(() => {}));
+    if(f.upload && up){ const u = el("a","fbtn primary","📤 העלאת קובץ"); u.href = up; u.target = "_blank"; u.rel = "noopener"; acts.append(u); }
+    li.append(acts);
+    if(f.note && String(f.note).trim()) li.append(el("p","form-note", "⚠️ " + String(f.note).trim()));
+    ul.append(li);
+  });
+  sec.hidden = !list.length;
 }
 
 function render(){

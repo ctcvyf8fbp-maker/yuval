@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>מילוי מקוון</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --sky:#EEF4FA; --paper:#FFFFFF; --ink:#16243D; --muted:#5F6C80; --line:#C9D4E2;
+  --amber:#E8A200; --ok:#2E8B57; --no:#C2410C; color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --sky:#0F1A2B; --paper:#17253A; --ink:#E7EEF7; --muted:#9FB0C5; --line:#2C3D56; --ok:#4CC28A; --no:#F07A4A; color-scheme:dark; }
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--sky);color:var(--ink);font-family:"Rubik","Segoe UI","Arial Hebrew",Arial,sans-serif;line-height:1.5;
+  padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+.wrap{max-width:780px;margin:0 auto;padding:24px 20px 60px}
+a.back{color:var(--muted);text-decoration:none;font-size:.9rem}
+h1{font-size:1.45rem;margin:8px 0 2px}
+.sub{color:var(--muted);margin:0 0 10px;font-size:.92rem}
+.privacy{font-size:.85rem;color:var(--muted);margin:0 0 18px}
+.intro{margin:0 0 16px}
+.note{padding:9px 13px;border-radius:10px;background:color-mix(in srgb,var(--amber) 16%,transparent);border-inline-start:3px solid var(--amber);font-size:.92rem;margin:0 0 12px}
+fieldset{border:1px solid var(--line);background:var(--paper);border-radius:14px;padding:18px 18px 10px;margin:0 0 18px;min-width:0}
+legend{font-weight:700;padding:0 6px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px}
+.full{grid-column:1/-1}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:.9rem;font-weight:500;margin-bottom:10px}
+.req{color:var(--no)}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--paper);border:1.5px solid var(--line);border-radius:8px;padding:9px 10px;font-weight:400;width:100%}
+textarea{min-height:70px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:3px solid color-mix(in srgb,var(--amber) 60%,transparent);border-color:var(--amber)}
+.bad{border-color:var(--no)!important}
+.group{margin-bottom:12px}
+.group .gl{font-size:.9rem;font-weight:500;margin-bottom:6px}
+.opt{display:flex;gap:8px;align-items:flex-start;font-size:.92rem;margin:4px 0;cursor:pointer}
+.opt input{width:auto;margin-top:4px;accent-color:var(--ink)}
+.group.bad{outline:2px solid var(--no);outline-offset:4px;border-radius:6px}
+.para{margin:6px 0 10px}
+.para.indent{padding-inline-start:18px}
+.tbl{overflow-x:auto;margin-bottom:8px}
+.tbl table{border-collapse:collapse;width:100%;min-width:520px}
+.tbl th{font-size:.82rem;font-weight:500;color:var(--muted);text-align:start;padding:4px 4px}
+.tbl td{padding:3px 4px}
+.tbl td input[type=checkbox]{width:20px;height:20px}
+.rep{border:1px dashed var(--line);border-radius:12px;padding:12px 12px 4px;margin-bottom:12px}
+.rep-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-weight:700}
+.btn{font:inherit;font-weight:500;border:1.5px solid var(--line);background:var(--paper);color:var(--ink);padding:8px 16px;border-radius:999px;cursor:pointer;text-decoration:none;display:inline-block}
+.btn.small{padding:4px 12px;font-size:.85rem}
+.btn.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.btn:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.img-prev{max-width:100%;max-height:200px;border-radius:8px;margin-top:6px;display:block}
+.sig-box{border:1.5px dashed var(--line);border-radius:10px;background:#fff;touch-action:none;width:100%;height:160px;display:block}
+.sig-row{display:flex;justify-content:space-between;align-items:center;margin:6px 0 12px;font-size:.85rem;color:var(--muted)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.err{color:var(--no);font-weight:500;margin:10px 0 0;min-height:1.5em}
+.done{display:none;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:18px}
+.done.show{display:block}
+.done ol{margin:8px 0 14px;padding-inline-start:20px}
+.missing{background:var(--paper);border-radius:14px;padding:24px;text-align:center}
+@media (max-width:560px){ .grid{grid-template-columns:1fr} }
+
+/* ===== גרסת ההדפסה ===== */
+#doc{display:none}
+@media print{
+  @page{size:A4;margin:15mm}
+  body{background:#fff;color:#000;padding:0}
+  .wrap{display:none}
+  #doc{display:block;color:#000;font-family:Arial,"Arial Hebrew",sans-serif;font-size:11.5pt;line-height:1.45}
+  #doc .hd{text-align:center;font-weight:700;line-height:1.3;margin-bottom:14px}
+  #doc h2{font-size:14pt;text-align:center;text-decoration:underline;margin:0 0 4px}
+  #doc .dsub{text-align:center;font-size:9.5pt;margin:0 0 14px}
+  #doc h3{font-size:12pt;text-decoration:underline;margin:14px 0 6px;break-after:avoid}
+  #doc .rows{display:grid;grid-template-columns:1fr 1fr;gap:3px 20px}
+  #doc .row{display:flex;gap:6px;break-inside:avoid}
+  #doc .row.full{grid-column:1/-1}
+  #doc .k{white-space:nowrap}
+  #doc .v{border-bottom:1px solid #000;flex:1;padding:0 4px;min-height:1.3em}
+  #doc p{margin:4px 0 8px}
+  #doc p.indent{padding-inline-start:16px}
+  #doc ul.chk{list-style:none;margin:2px 0 8px;padding:0}
+  #doc ul.chk li{margin:1px 0}
+  #doc table{border-collapse:collapse;width:100%;margin:4px 0 10px;font-size:10pt}
+  #doc th,#doc td{border:1px solid #000;padding:3px 5px;text-align:start;vertical-align:top}
+  #doc th{background:#eee}
+  #doc .item{border:1px solid #999;padding:6px 10px;margin:6px 0;break-inside:avoid}
+  #doc .item h4{margin:0 0 4px;font-size:11pt}
+  #doc img.ph{max-width:60mm;max-height:60mm;border:1px solid #999;display:block;margin:4px 0}
+  #doc .sign{display:flex;gap:30px;margin-top:18px;align-items:flex-end;break-inside:avoid}
+  #doc .sign img{height:55px;border-bottom:1px solid #000;display:block;max-width:240px}
+  #doc .off{margin-top:22px;border-top:1px solid #000;padding-top:8px;break-inside:avoid}
+  #doc .off .lines{display:flex;gap:24px;margin-top:22px}
+  #doc .off .lines span{flex:1;border-top:1px solid #000;padding-top:2px;font-size:9.5pt;text-align:center}
+}
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap"></div>
+<div id="doc" aria-hidden="true"></div>
+
+<script src="data.js"></script>
+<script src="forms-schema.js"></script>
+<script>
+// ===== מנוע הטפסים – בדרך כלל אין צורך לשנות כאן =====
+const wrap = document.getElementById("wrap");
+const key = new URLSearchParams(location.search).get("f");
+const S = (typeof FORM_SCHEMAS !== "undefined") ? FORM_SCHEMAS[key] : null;
+const el = (t, c, txt) => { const e = document.createElement(t); if(c) e.className = c; if(txt !== undefined) e.textContent = txt; return e; };
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
+const fmt = iso => { if(!iso || !/^\d{4}-\d{2}-\d{2}$/.test(iso)) return iso || ""; const [y,m,d] = iso.split("-"); return `${d}/${m}/${y}`; };
+const validId = v => { v = String(v).trim(); if(!/^\d{5,9}$/.test(v)) return false; v = v.padStart(9,"0");
+  let s = 0; for(let i = 0; i < 9; i++){ let n = +v[i] * ((i % 2) + 1); s += n > 9 ? n - 9 : n; } return s % 10 === 0; };
+let dirty = false;
+let parts = [], sig, dateInp;
+
+if(!S){
+  const m = el("div","missing");
+  m.append(el("h1","","הטופס לא נמצא"), el("p","","ייתכן שהקישור שגוי."));
+  const a = el("a","btn","→ חזרה לאתר"); a.href = "index.html"; m.append(a);
+  wrap.append(m);
+} else build();
+
+// ---------- בניית שדה בודד: מחזיר { el, get, check } ----------
+function field(f, idp){
+  const name = idp + (f.id || "");
+  if(f.type === "para"){
+    const p = el("p","para" + (f.indent ? " indent" : ""), f.text);
+    return { el: p, para: true };
+  }
+  if(f.type === "radio" || f.type === "checks"){
+    const g = el("div","group" + (f.full ? " full" : ""));
+    if(f.label){ const l = el("div","gl", f.label); if(f.required) l.append(" ", el("span","req","*")); g.append(l); }
+    const inputs = f.options.map((o, i) => {
+      const lab = el("label","opt"); const inp = el("input");
+      inp.type = f.type === "radio" ? "radio" : "checkbox"; inp.name = name; inp.value = o;
+      lab.append(inp, el("span","",o)); g.append(lab); return inp;
+    });
+    return { el: g, f,
+      get: () => f.type === "radio" ? (inputs.find(i => i.checked)?.value || "") : inputs.filter(i => i.checked).map(i => i.value),
+      check(){ g.classList.remove("bad"); if(f.required && !this.get().length){ g.classList.add("bad"); return g; } } };
+  }
+  if(f.type === "table"){
+    const box = el("div","tbl full"); const t = el("table"); const thead = el("thead"); const hr = el("tr");
+    f.cols.forEach(c => hr.append(el("th","",c.label))); thead.append(hr); const tb = el("tbody"); t.append(thead, tb); box.append(t);
+    const rows = [];
+    const addRow = () => {
+      const tr = el("tr"); const cells = {};
+      f.cols.forEach(c => { const td = el("td"); const inp = el("input"); inp.type = c.type === "check" ? "checkbox" : (c.type || "text");
+        if(c.type === "number") inp.inputMode = "numeric"; inp.setAttribute("aria-label", c.label); td.append(inp); tr.append(td); cells[c.id] = inp; });
+      tb.append(tr); rows.push(cells);
+    };
+    for(let i = 0; i < (f.rows || 1); i++) addRow();
+    const add = el("button","btn small","+ " + (f.addLabel || "הוספת שורה")); add.type = "button"; add.onclick = addRow; box.append(add);
+    return { el: box, f,
+      get: () => rows.map(r => Object.fromEntries(f.cols.map(c => [c.id, c.type === "check" ? r[c.id].checked : r[c.id].value.trim()])))
+                     .filter(r => f.cols.some(c => c.type !== "check" && r[c.id])) };
+  }
+  if(f.type === "repeat"){
+    const box = el("div","full"); const list = el("div"); box.append(list); const items = [];
+    const addItem = () => {
+      const it = el("div","rep"); const head = el("div","rep-head"); const ttl = el("span");
+      const rm = el("button","btn small","הסרה"); rm.type = "button";
+      head.append(ttl, rm); it.append(head); const g = el("div","grid"); it.append(g);
+      const subs = f.fields.map(sf => { const o = field(sf, ""); g.append(o.el); return o; });
+      const rec = { it, subs }; items.push(rec); list.append(it);
+      rm.onclick = () => { if(items.length <= (f.min || 0)) return; items.splice(items.indexOf(rec),1); it.remove(); renum(); };
+      renum();
+    };
+    const renum = () => items.forEach((r,i) => { r.it.querySelector(".rep-head span").textContent = `${f.itemLabel || "פריט"} ${i+1}`; });
+    for(let i = 0; i < (f.min || 1); i++) addItem();
+    const add = el("button","btn small","+ " + (f.addLabel || "הוספה")); add.type = "button"; add.onclick = addItem; box.append(add);
+    return { el: box, f,
+      get: () => items.map(r => r.subs.filter(s => !s.para).map(s => ({ f: s.f, v: s.get() }))),
+      check(){ let first; items.forEach(r => r.subs.forEach(s => { const b = s.check && s.check(); if(b && !first) first = b; })); return first; } };
+  }
+  if(f.type === "image"){
+    const lab = el("label","f" + (f.full ? " full" : "")); lab.append(f.label);
+    const inp = el("input"); inp.type = "file"; inp.accept = "image/*"; const prev = el("img","img-prev"); prev.hidden = true; prev.alt = f.label;
+    let data = "";
+    inp.onchange = () => { const file = inp.files[0]; if(!file) return; const r = new FileReader();
+      r.onload = () => { const im = new Image(); im.onload = () => { const k = Math.min(1, 1400 / Math.max(im.width, im.height));
+        const c = document.createElement("canvas"); c.width = im.width * k; c.height = im.height * k; c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+        data = c.toDataURL("image/jpeg", .85); prev.src = data; prev.hidden = false; dirty = true; }; im.src = r.result; }; r.readAsDataURL(file); };
+    lab.append(inp, prev);
+    return { el: lab, f, get: () => data, check(){} };
+  }
+  // שדות רגילים
+  const lab = el("label","f" + (f.full || f.type === "textarea" ? " full" : ""));
+  lab.append(f.label); if(f.required) lab.append(" ", el("span","req","*"));
+  let inp;
+  if(f.type === "select"){ inp = el("select"); inp.append(new Option("בחירה…","")); f.options.forEach(o => inp.append(new Option(o,o))); }
+  else if(f.type === "textarea"){ inp = el("textarea"); }
+  else { inp = el("input"); inp.type = f.type === "id" ? "text" : (f.type || "text");
+    if(f.type === "id"){ inp.inputMode = "numeric"; inp.maxLength = 9; }
+    if(f.type === "number") inp.inputMode = "numeric"; }
+  if(f.placeholder) inp.placeholder = f.placeholder;
+  if(f.value) inp.value = f.value;
+  inp.name = name; lab.append(inp);
+  return { el: lab, f, get: () => inp.value.trim(),
+    check(){ inp.classList.remove("bad"); const v = inp.value.trim();
+      if(f.required && !v){ inp.classList.add("bad"); return inp; }
+      if(f.type === "id" && v && !validId(v)){ inp.classList.add("bad"); inp.title = "מספר זהות לא תקין"; return inp; } } };
+}
+
+// ---------- בניית העמוד ----------
+function build(){
+  document.title = S.title + " – מילוי מקוון";
+  const back = el("a","back","→ חזרה לאתר"); back.href = "index.html";
+  wrap.append(back, el("h1","",S.title));
+  if(S.subtitle) wrap.append(el("p","sub",S.subtitle));
+  wrap.append(el("p","privacy","🔒 הפרטים לא נשמרים באתר ולא נשלחים לשום מקום – הם נשארים במכשיר שלך עד שתשלחו את הקובץ."));
+  if(S.intro) wrap.append(el("p","intro",S.intro));
+  const form = el("form"); form.noValidate = true; wrap.append(form);
+  S.sections.forEach(sec => {
+    const fs = el("fieldset"); if(sec.title) fs.append(el("legend","",sec.title));
+    if(sec.note) fs.append(el("p","note",sec.note));
+    const g = el("div","grid"); fs.append(g);
+    const fl = (sec.fields || []).map(f => { const o = field(f, ""); g.append(o.el); if(o.para) o.el.classList.add("full"); return o; });
+    if(!sec.fields) fs.querySelector(".grid").remove();
+    parts.push({ sec, fl }); form.append(fs);
+  });
+  // חתימה ותאריך
+  if(S.sign){
+    const fs = el("fieldset"); fs.append(el("legend","","חתימה"));
+    const cv = el("canvas","sig-box"); cv.setAttribute("aria-label","אזור חתימה – חותמים עם האצבע או העכבר");
+    const row = el("div","sig-row"); const clr = el("button","btn small","ניקוי"); clr.type = "button";
+    row.append(el("span","","חותמים עם האצבע או העכבר"), clr);
+    const dl = el("label","f"); dl.append("תאריך"); dateInp = el("input"); dateInp.type = "date"; dateInp.value = new Date().toISOString().slice(0,10); dl.append(dateInp);
+    fs.append(cv, row, dl); form.append(fs);
+    sig = signature(cv, clr);
+  }
+  const act = el("div","actions"); const sb = el("button","btn primary","הפקת הטופס"); sb.type = "submit"; act.append(sb);
+  const err = el("p","err"); err.setAttribute("role","alert");
+  form.append(act, err);
+  const done = el("section","done"); done.setAttribute("aria-live","polite");
+  done.innerHTML = `<strong>✔ הטופס מוכן.</strong><ol><li>לוחצים „שמירה כ-PDF” ובחלון שנפתח בוחרים <b>שמירה כ-PDF</b> (בטלפון: שיתוף ← שמירה בקבצים).</li><li>שולחים את הקובץ בכפתור „שליחת מסמך”.</li></ol>`;
+  const da = el("div","actions"); const pb = el("button","btn primary","שמירה כ-PDF / הדפסה"); pb.type = "button"; pb.onclick = () => window.print();
+  da.append(pb);
+  const up = (typeof UPLOAD_LINK === "string" ? UPLOAD_LINK : "").trim();
+  if(up){ const sl = el("a","btn","📤 שליחת מסמך"); sl.href = up; sl.target = "_blank"; sl.rel = "noopener"; da.append(sl); }
+  done.append(da); wrap.append(done);
+
+  form.addEventListener("input", () => dirty = true);
+  window.addEventListener("beforeunload", e => { if(dirty){ e.preventDefault(); e.returnValue = ""; } });
+  form.addEventListener("submit", e => {
+    e.preventDefault(); err.textContent = "";
+    let first;
+    parts.forEach(p => p.fl.forEach(o => { const b = o.check && o.check(); if(b && !first) first = b; }));
+    if(first){ err.textContent = "יש להשלים או לתקן את השדות המסומנים באדום."; first.scrollIntoView({ block: "center" }); if(first.focus) first.focus(); return; }
+    if(S.sign && !sig.signed()){ err.textContent = "יש לחתום בתיבת החתימה."; sig.cv.scrollIntoView({ block: "center" }); return; }
+    renderDoc(); done.classList.add("show"); done.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+}
+
+// ---------- חתימה ----------
+function signature(cv, clr){
+  const ctx = cv.getContext("2d"); let drawing = false, signed = false;
+  const size = () => { const r = cv.getBoundingClientRect(), d = window.devicePixelRatio || 1; const img = signed ? cv.toDataURL() : null;
+    cv.width = r.width * d; cv.height = r.height * d; ctx.setTransform(d,0,0,d,0,0); ctx.lineWidth = 2.2; ctx.lineCap = "round"; ctx.lineJoin = "round"; ctx.strokeStyle = "#0b1f4a";
+    if(img){ const i = new Image(); i.onload = () => ctx.drawImage(i,0,0,r.width,r.height); i.src = img; } };
+  size(); window.addEventListener("resize", size);
+  const pos = e => { const r = cv.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+  cv.addEventListener("pointerdown", e => { drawing = true; cv.setPointerCapture(e.pointerId); const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); });
+  cv.addEventListener("pointermove", e => { if(!drawing) return; const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); signed = true; dirty = true; });
+  ["pointerup","pointercancel"].forEach(t => cv.addEventListener(t, () => drawing = false));
+  clr.onclick = () => { ctx.clearRect(0,0,cv.width,cv.height); signed = false; };
+  return { cv, signed: () => signed, url: () => cv.toDataURL("image/png") };
+}
+
+// ---------- גרסת ההדפסה ----------
+function valHTML(f, v){
+  if(f.type === "date") return esc(fmt(v));
+  if(f.type === "checks") return esc((v || []).join(", "));
+  return esc(v);
+}
+function renderFields(list){
+  let h = "", rows = "";
+  const flush = () => { if(rows){ h += `<div class="rows">${rows}</div>`; rows = ""; } };
+  list.forEach(({ f, v }) => {
+    if(f.type === "para"){ flush(); h += `<p class="${f.indent ? "indent" : ""}">${esc(f.text)}</p>`; return; }
+    if(f.type === "checks"){ flush();
+      h += (f.label ? `<div>${esc(f.label)}:</div>` : "") + `<ul class="chk">${f.options.map(o => `<li>${v.includes(o) ? "☑" : "☐"} ${esc(o)}</li>`).join("")}</ul>`; return; }
+    if(f.type === "table"){ flush();
+      if(!v.length){ h += `<p>—</p>`; return; }
+      h += `<table><thead><tr>${f.cols.map(c => `<th>${esc(c.label)}</th>`).join("")}</tr></thead><tbody>${
+        v.map(r => `<tr>${f.cols.map(c => `<td>${c.type === "check" ? (r[c.id] ? "✓" : "") : c.type === "date" ? esc(fmt(r[c.id])) : esc(r[c.id])}</td>`).join("")}</tr>`).join("")}</tbody></table>`; return; }
+    if(f.type === "repeat"){ flush();
+      v.forEach((item, i) => { h += `<div class="item"><h4>${esc(f.itemLabel || "")} ${i+1}</h4>${renderFields(item)}</div>`; }); return; }
+    if(f.type === "image"){ flush(); if(v) h += `<div class="row full"><span class="k">${esc(f.label)}:</span></div><img class="ph" alt="" src="${v}">`; return; }
+    const full = f.full || f.type === "textarea" || (f.type === "radio" && String(v).length > 25);
+    rows += `<div class="row${full ? " full" : ""}"><span class="k">${esc(f.label)}:</span><span class="v">${valHTML(f, v)}</span></div>`;
+  });
+  flush(); return h;
+}
+function renderDoc(){
+  let h = "";
+  if(S.header) h += `<div class="hd">מדינת ישראל<br>משרד הביטחון</div>`;
+  h += `<h2>${esc(S.title)}</h2>`;
+  if(S.subtitle) h += `<p class="dsub">${esc(S.subtitle)}</p>`; else h += `<div style="height:10px"></div>`;
+  parts.forEach(({ sec, fl }) => {
+    if(sec.title) h += `<h3>${esc(sec.title)}</h3>`;
+    if(!sec.fields){ h += `<p>${esc(sec.note || "")}</p>`; return; }
+    h += renderFields(fl.map(o => ({ f: o.f || { type: "para", text: o.el.textContent, indent: o.el.classList.contains("indent") }, v: o.get ? o.get() : "" })));
+  });
+  if(S.sign) h += `<div class="sign"><div><div>חתימה:</div><img alt="חתימה" src="${sig.url()}"></div><div class="row"><span class="k">תאריך:</span><span class="v">${esc(fmt(dateInp.value))}</span></div></div>`;
+  (S.officer || []).forEach(o => {
+    h += `<div class="off"><strong>${esc(o.title)}</strong>${o.text ? `<p>${esc(o.text)}</p>` : ""}<div class="lines">${o.lines.map(l => `<span>${esc(l)}</span>`).join("")}</div></div>`;
+  });
+  document.getElementById("doc").innerHTML = h;
+  const nm = parts.flatMap(p => p.fl).find(o => o.f && ["name","last","first"].includes(o.f.id));
+  document.title = S.title + (nm && nm.get() ? " – " + nm.get() : "");
+}
+</script>
+</body>
+</html>
