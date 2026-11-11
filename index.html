@@ -57,16 +57,41 @@
     <section class="forms" id="forms-section" aria-labelledby="forms-title" hidden>
       <h2 id="forms-title">📝 מסמכים וטפסים</h2>
       <p class="forms-hint">ממלאים באתר („מילוי מקוון”) או מורידים וממלאים – ושולחים בכפתור „שליחת מסמך” שבסוף הטופס, או ב„העלאת קובץ”.</p>
+      <div class="my-folder" id="my-folder" hidden></div>
       <ul class="forms-list" id="forms-list"></ul>
     </section>
 
     <!-- רשימת הסבבים -->
+    <!-- מידע לשליח -->
+    <section class="info mission-only" id="info-section" aria-labelledby="info-title">
+      <h2 id="info-title">📚 מידע לשליח</h2>
+      <div class="info-grid" id="info-list"></div>
+      <p class="takam-note">⚖️ במקרה של סתירה בין החוברת לבין הוראות התכ״ם – <strong>הוראות התכ״ם גוברות</strong>. ההוראות מתעדכנות מעת לעת, ולכן כדאי לבדוק תמיד את הנוסח העדכני באתר התכ״ם.</p>
+    </section>
+
+    <!-- זכויות השליח -->
+    <section class="rights mission-only" id="rights-section" aria-labelledby="rights-title">
+      <h2 id="rights-title">🧭 הזכויות שלך כשליח/ה</h2>
+      <p class="forms-hint">סיכום מתוך הצ׳ק ליסט לפני שליחות. הנוסח המחייב – הוראות התכ״ם.</p>
+      <div class="rights-grid" id="rights-list"></div>
+    </section>
+
     <div id="rounds"></div>
+
+    <!-- צ'ק ליסט -->
+    <section class="checklist mission-only" id="checklist-section" aria-labelledby="cl-title">
+      <h2 id="cl-title">✅ צ׳ק ליסט לשליחות</h2>
+      <p class="forms-hint">מסמנים ✓ על כל משימה שסיימת. הסימונים נשמרים במכשיר שלך. בסוף – חותמים על אישור שסיימת הכול.</p>
+      <div class="cl-progress"><span id="cl-count"></span><div class="bar" aria-hidden="true"><span id="cl-bar"></span></div></div>
+      <div id="cl-list"></div>
+      <div class="cl-done"><a class="fbtn primary" id="cl-sign" href="form.html?f=checklist">✍️ סיימתי – חתימה על אישור סיום</a></div>
+    </section>
   </main>
 
   <footer class="foot"><span id="updated-wrap">עודכן לאחרונה: <span id="updated"></span></span> <span id="sync-state"></span></footer>
 
   <script src="data.js"></script>
+  <script src="mission-info.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

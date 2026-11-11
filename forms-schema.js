@@ -320,5 +320,26 @@ const FORM_SCHEMAS = {
       ]}
     ],
     sign: false
+  },
+
+  // ----------------------------------------------- אישור סיום צ'ק ליסט
+  "checklist": {
+    title: "אישור סיום צ׳ק ליסט לפני שליחות",
+    intro: "הסימונים מהצ׳ק ליסט באתר מופיעים כאן. יש לסמן את כל המשימות, למלא פרטים ולחתום.",
+    sections: [
+      { title: "פרטי השליח/ה", fields: [
+        { id: "name", label: "שם מלא", type: "text", required: true },
+        { id: "id", label: "מספר זהות / מס׳ אישי", type: "text", required: true },
+        { id: "post", label: "מקום השליחות", type: "text", full: true }
+      ]},
+      { title: "משימות שהושלמו", fields: [
+        { id: "tasks", label: "המשימות", type: "checks", full: true, requireAll: true, storeKey: (typeof CHECKLIST_KEY !== "undefined" ? CHECKLIST_KEY : "mission-checklist"),
+          options: (typeof CHECKLIST !== "undefined" ? CHECKLIST.flatMap(g => g.items.map(i => i.title)) : []) }
+      ]},
+      { title: "הצהרה", fields: [
+        { type: "para", text: "אני מצהיר/ה כי השלמתי את כל המשימות המפורטות בצ׳ק ליסט לפני היציאה לשליחות, וכי ידוע לי שבמקרה של סתירה בין המידע באתר ובחוברת לבין הוראות התכ״ם – הוראות התכ״ם גוברות." }
+      ]}
+    ],
+    sign: true
   }
 };

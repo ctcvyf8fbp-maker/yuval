@@ -39,7 +39,7 @@ function renderTabs(){
   nav.setAttribute("role","tablist");
   nav.hidden = TRIPS.length < 2;            // טאבים רק כשיש יותר מנסיעה אחת
   TRIPS.forEach((t,i) => {
-    const b = el("button", "", t.traveler || t.title);   // הטאב מציג את שם השליח
+    const b = el("button", "", /^שליח \d+$/.test(t.title || "") ? (t.traveler || t.title) : t.title);
     b.setAttribute("role","tab");
     b.setAttribute("aria-selected", i === tripIndex);
     b.onclick = () => { tripIndex = i; location.hash = "trip" + (i+1); render(); };
@@ -52,7 +52,7 @@ function renderPass(trip, steps, current){
   document.getElementById("traveler").textContent = trip.traveler || "טרם הוזן שם";
   document.getElementById("destination").textContent = trip.destination || "טרם הוזן";
   document.getElementById("departure").textContent = fmtDate(trip.departure) || "—";
-  document.getElementById("count").textContent = `${approved} מתוך ${steps.length}`;
+  document.getElementById("count").textContent = `${approved} / ${steps.length}`;
   document.getElementById("bar-fill").style.width = (steps.length ? approved / steps.length * 100 : 0) + "%";
   const next = document.getElementById("next");
   next.innerHTML = "";
@@ -184,23 +184,39 @@ function renderRounds(trip, current){
 
 
 // ===== טפסים למילוי =====
-let formsDone = false;
-function renderForms(){
-  if(formsDone) return; formsDone = true;
+const fileOk = {};   // תוצאות בדיקה אם קובץ ההורדה קיים
+function renderForms(trip){
   const sec = document.getElementById("forms-section"), ul = document.getElementById("forms-list");
   const list = (typeof FORMS !== "undefined" && Array.isArray(FORMS)) ? FORMS.filter(f => f && f.title) : [];
-  const up = (typeof UPLOAD_LINK === "string" ? UPLOAD_LINK : "").trim();
+  // לאן שולחים: התיקייה האישית של השליח ב-OneDrive, ואם אין – הקישור הכללי
+  const folder = (trip && trip.folder ? String(trip.folder) : "").trim();
+  const up = folder || (typeof UPLOAD_LINK === "string" ? UPLOAD_LINK : "").trim();
   const online = location.protocol.startsWith("http");
+  ul.innerHTML = "";
+  const box = document.getElementById("my-folder");
+  box.innerHTML = ""; box.hidden = !folder;
+  if(folder){
+    const a = el("a","fbtn primary","📁 התיקייה האישית שלי"); a.href = folder; a.target = "_blank"; a.rel = "noopener";
+    box.append(a, el("span","folder-hint", "כאן מעלים את כל המסמכים. רק את/ה ומנהלת המעקב רואים אותה."));
+  }
   list.forEach((f, i) => {
     const li = el("li","form-card");
     const head = el("div","form-head");
     head.append(el("span","form-num", i + 1), el("span","form-title", f.title));
     li.append(head);
     const acts = el("div","form-acts");
-    if(f.online){ const o = el("a","fbtn primary","✍️ מילוי מקוון"); o.href = f.online; acts.append(o); }
+    if(f.online){
+      const o = el("a","fbtn primary","✍️ מילוי מקוון");
+      o.href = f.online + (up ? (f.online.includes("?") ? "&" : "?") + "up=" + encodeURIComponent(up) : "");
+      acts.append(o);
+    }
     if(f.file){
       const d = el("a","fbtn","⬇ הורדה"); d.href = encodeURI(f.file); d.setAttribute("download", f.file);
-      if(online){ d.hidden = true; fetch(encodeURI(f.file), { method: "HEAD", cache: "no-store" }).then(r => { if(r.ok) d.hidden = false; }).catch(() => {}); }
+      if(online){
+        if(fileOk[f.file] === undefined){ d.hidden = true;
+          fetch(encodeURI(f.file), { method: "HEAD", cache: "no-store" }).then(r => { fileOk[f.file] = r.ok; d.hidden = !r.ok; }).catch(() => {}); }
+        else d.hidden = !fileOk[f.file];
+      }
       acts.append(d);
     }
     if(f.upload && up){ const u = el("a","fbtn primary","📤 העלאת קובץ"); u.href = up; u.target = "_blank"; u.rel = "noopener"; acts.append(u); }
@@ -209,6 +225,68 @@ function renderForms(){
     ul.append(li);
   });
   sec.hidden = !list.length;
+}
+
+// ===== מידע, זכויות וצ׳ק ליסט (רק בלשוניות שליחות) =====
+const isMission = trip => {
+  const words = (typeof NO_DOCS_TITLES !== "undefined" && Array.isArray(NO_DOCS_TITLES)) ? NO_DOCS_TITLES : [];
+  const txt = (trip.title || "") + " " + (trip.traveler || "");
+  return !words.some(w => w && txt.includes(w));
+};
+let infoDone = false;
+function renderInfo(){
+  if(infoDone) return; infoDone = true;
+  const box = document.getElementById("info-list");
+  (typeof INFO !== "undefined" ? INFO : []).forEach(it => {
+    const a = el("a","info-card"); a.href = it.file ? encodeURI(it.file) : it.link;
+    if(it.file) a.setAttribute("download", it.file); else { a.target = "_blank"; a.rel = "noopener"; }
+    a.append(el("span","info-icon", it.icon || "📄"), el("span","info-title", it.title), el("span","info-sub", (it.sub ? it.sub + " · " : "") + (it.file ? "הורדה ⬇" : "מעבר לאתר ↗")));
+    box.append(a);
+  });
+  const rl = document.getElementById("rights-list");
+  (typeof RIGHTS !== "undefined" ? RIGHTS : []).forEach(r => {
+    const c = el("div","right-card"); c.append(el("h3","", (r.icon ? r.icon + " " : "") + r.title));
+    const ul = el("ul"); r.items.forEach(t => ul.append(el("li","",t))); c.append(ul); rl.append(c);
+  });
+}
+function clLoad(){ try{ return JSON.parse(localStorage.getItem(CHECKLIST_KEY) || "[]"); }catch(e){ return []; } }
+function clSave(v){ try{ localStorage.setItem(CHECKLIST_KEY, JSON.stringify(v)); }catch(e){} }
+let clDone = false;
+function renderChecklist(){
+  if(typeof CHECKLIST === "undefined") return;
+  const all = CHECKLIST.flatMap(g => g.items.map(i => i.title));
+  const upd = () => {
+    const done = clLoad().filter(t => all.includes(t)).length;
+    document.getElementById("cl-count").textContent = `${done} / ${all.length} הושלמו`;
+    document.getElementById("cl-bar").style.width = (all.length ? done / all.length * 100 : 0) + "%";
+  };
+  if(!clDone){
+    clDone = true;
+    const box = document.getElementById("cl-list");
+    CHECKLIST.forEach(g => {
+      const sec = el("div","cl-group"); sec.append(el("h3","",g.group));
+      g.items.forEach(it => {
+        const lab = el("label","cl-item"); const cb = el("input"); cb.type = "checkbox";
+        cb.checked = clLoad().includes(it.title);
+        cb.onchange = () => { const v = new Set(clLoad()); cb.checked ? v.add(it.title) : v.delete(it.title); clSave([...v]); lab.classList.toggle("on", cb.checked); upd(); };
+        lab.classList.toggle("on", cb.checked);
+        const txt = el("span","cl-text"); txt.append(el("strong","",it.title), el("span","cl-detail",it.detail || ""));
+        if(it.contact) txt.append(el("span","cl-contact","📞 " + it.contact));
+        lab.append(cb, txt); sec.append(lab);
+      });
+      box.append(sec);
+    });
+  }
+  upd();
+}
+function renderMission(trip, up){
+  const show = isMission(trip);
+  document.querySelectorAll(".mission-only").forEach(s => s.hidden = !show);
+  document.getElementById("forms-section").hidden = !show || document.getElementById("forms-section").hidden;
+  if(!show) return;
+  renderInfo(); renderChecklist();
+  const sign = document.getElementById("cl-sign");
+  sign.href = "form.html?f=checklist" + (up ? "&up=" + encodeURIComponent(up) : "");
 }
 
 function render(){
@@ -220,7 +298,8 @@ function render(){
   renderPass(trip, steps, current);
   renderMap(trip, steps, current);
   renderLegend(trip);
-  renderForms();
+  renderForms(trip);
+  renderMission(trip, ((trip.folder || "") + "").trim() || (typeof UPLOAD_LINK === "string" ? UPLOAD_LINK : "").trim());
   renderRounds(trip, current);
   document.getElementById("updated").textContent = fmtDate(LAST_UPDATED);
   const st = (typeof SITE_TITLE === "string" && SITE_TITLE.trim()) ? SITE_TITLE.trim() : "מעקב אישורים";
@@ -262,12 +341,12 @@ function tripsFromSheet(rows){
   const head = rows[hi];
   const n = Math.floor((head.length - 3) / 2);
   const info = label => { const r = rows.slice(0, hi).find(r => r[0] === label); return k => r ? (r[3 + 2*k] || "") : ""; };
-  const name = info("שם השליח"), dest = info("יעד"), dep = info("תאריך יציאה");
+  const name = info("שם השליח"), dest = info("יעד"), dep = info("תאריך יציאה"), folder = info("תיקיית מסמכים");
   const trips = [];
   for(let k = 0; k < n; k++){
     const old = TRIPS[k] || {};
     const t = { title: (head[3 + 2*k] || `שליח ${k+1}`).replace(/\s*[–-]\s*סטטוס$/,""),
-      traveler: name(k), destination: dest(k), departure: toISO(dep(k)),
+      traveler: name(k), destination: dest(k), departure: toISO(dep(k)), folder: folder(k),
       rounds: [] };
     let cur = null, last = "";
     rows.slice(hi + 1).forEach(r => {

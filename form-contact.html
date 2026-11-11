@@ -101,8 +101,7 @@ input.bad,select.bad{border-color:var(--no)}
         <label>טלפון נייד <span class="req">*</span><input name="c1_mobile" required type="tel" inputmode="tel"></label>
         <label class="full">קירבה <span class="req">*</span>
           <select name="c1_rel" required>
-            <option value="">בחירה…</option><option>אב</option><option>אם</option><option>בן זוג</option><option>בת זוג</option>
-            <option>בן</option><option>בת</option><option>אח</option><option>אחות</option>
+            <option value="">בחירה…</option><option>אב</option><option>אם</option><option>אח</option><option>אחות</option>
           </select></label>
       </div>
       <p class="contact-title">איש קשר 2 (רשות)</p>
@@ -112,8 +111,7 @@ input.bad,select.bad{border-color:var(--no)}
         <label>טלפון נייד<input name="c2_mobile" type="tel" inputmode="tel"></label>
         <label class="full">קירבה
           <select name="c2_rel">
-            <option value="">בחירה…</option><option>אב</option><option>אם</option><option>בן זוג</option><option>בת זוג</option>
-            <option>בן</option><option>בת</option><option>אח</option><option>אחות</option>
+            <option value="">בחירה…</option><option>אב</option><option>אם</option><option>אח</option><option>אחות</option>
           </select></label>
       </div>
     </fieldset>
@@ -171,7 +169,7 @@ cv.addEventListener("pointermove", e => { if(!drawing) return; const p = pos(e);
 document.getElementById("sig-clear").onclick = () => { ctx.clearRect(0,0,cv.width,cv.height); signed = false; };
 
 // ---- כפתור שליחה
-const up = (typeof UPLOAD_LINK === "string" ? UPLOAD_LINK : "").trim();
+const up = (new URLSearchParams(location.search).get("up") || (typeof UPLOAD_LINK === "string" ? UPLOAD_LINK : "")).trim();
 const send = document.getElementById("btn-send");
 if(up) send.href = up; else send.hidden = true;
 

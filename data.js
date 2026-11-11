@@ -40,6 +40,17 @@ const FORMS = [
     note: "עבור השליח/ה ועבור כל בן/בת משפחה שמצטרף/ת. אפשר לצלם ישירות מהטלפון." }
 ];
 
+// ===== מידע לשליח =====
+// קישור להוראות התכ״ם – פרק 14 (אפשר להחליף בקישור ישיר לפרק)
+const TAKAM_LINK = "https://takam.mof.gov.il";
+const INFO = [
+  { icon: "📘", title: "חוברת הכנה לשליחות", sub: "מהדורת 2022", file: "booklet-2022.pdf" },
+  { icon: "⚖️", title: "הוראות התכ״ם – פרק 14", sub: "האתר הרשמי של משרד האוצר", link: TAKAM_LINK },
+  { icon: "📋", title: "צ׳ק ליסט פגישות לפני שליחות", sub: "המסמך המקורי", file: "checklist.pdf" }
+];
+// לשוניות שבהן לא מציגים מסמכים, זכויות וצ׳ק ליסט (מספיק שהמילה מופיעה בכותרת העמודה בגיליון)
+const NO_DOCS_TITLES = ["אוריינטציה"];
+
 // קישור Dropbox לשליחת מסמכים – משמש את כפתורי „העלאת קובץ” ואת סוף הטפסים המקוונים.
 const UPLOAD_LINK = "https://www.dropbox.com/request/devul2bl0ould3ztszo4";
 
@@ -56,6 +67,7 @@ const TRIPS = [
     traveler: "",        // שם השליח/ה
     destination: "",     // יעד
     departure: "",       // תאריך יציאה, למשל "2026-12-15"
+    folder: "",          // קישור לתיקייה האישית ב-OneDrive
     rounds: [
       {
         name: "סבב אישורים פנימי",
@@ -97,6 +109,7 @@ const TRIPS = [
     traveler: "",        // שם השליח/ה
     destination: "",     // יעד
     departure: "",       // תאריך יציאה, למשל "2026-12-15"
+    folder: "",          // קישור לתיקייה האישית ב-OneDrive
     rounds: [
       {
         name: "סבב אישורים פנימי",
@@ -138,6 +151,7 @@ const TRIPS = [
     traveler: "",        // שם השליח/ה
     destination: "",     // יעד
     departure: "",       // תאריך יציאה, למשל "2026-12-15"
+    folder: "",          // קישור לתיקייה האישית ב-OneDrive
     rounds: [
       {
         name: "סבב אישורים פנימי",

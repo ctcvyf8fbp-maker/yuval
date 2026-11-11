@@ -58,6 +58,7 @@ input:focus,select:focus,textarea:focus{outline:3px solid color-mix(in srgb,var(
 .sig-row{display:flex;justify-content:space-between;align-items:center;margin:6px 0 12px;font-size:.85rem;color:var(--muted)}
 .actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .err{color:var(--no);font-weight:500;margin:10px 0 0;min-height:1.5em}
+.err:not(:empty){background:color-mix(in srgb,var(--no) 10%,transparent);padding:10px 12px;border-radius:10px}
 .done{display:none;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px;margin-top:18px}
 .done.show{display:block}
 .done ol{margin:8px 0 14px;padding-inline-start:20px}
@@ -103,6 +104,7 @@ input:focus,select:focus,textarea:focus{outline:3px solid color-mix(in srgb,var(
 <div id="doc" aria-hidden="true"></div>
 
 <script src="data.js"></script>
+<script src="mission-info.js"></script>
 <script src="forms-schema.js"></script>
 <script>
 // ===== מנוע הטפסים – בדרך כלל אין צורך לשנות כאן =====
@@ -134,14 +136,21 @@ function field(f, idp){
   if(f.type === "radio" || f.type === "checks"){
     const g = el("div","group" + (f.full ? " full" : ""));
     if(f.label){ const l = el("div","gl", f.label); if(f.required) l.append(" ", el("span","req","*")); g.append(l); }
+    let saved = [];
+    if(f.storeKey){ try{ saved = JSON.parse(localStorage.getItem(f.storeKey) || "[]"); }catch(e){} }
     const inputs = f.options.map((o, i) => {
       const lab = el("label","opt"); const inp = el("input");
       inp.type = f.type === "radio" ? "radio" : "checkbox"; inp.name = name; inp.value = o;
+      if(saved.includes(o)) inp.checked = true;
+      if(f.storeKey) inp.onchange = () => { try{ const s = new Set(JSON.parse(localStorage.getItem(f.storeKey) || "[]"));
+        inp.checked ? s.add(o) : s.delete(o); localStorage.setItem(f.storeKey, JSON.stringify([...s])); }catch(e){} };
       lab.append(inp, el("span","",o)); g.append(lab); return inp;
     });
     return { el: g, f,
       get: () => f.type === "radio" ? (inputs.find(i => i.checked)?.value || "") : inputs.filter(i => i.checked).map(i => i.value),
-      check(){ g.classList.remove("bad"); if(f.required && !this.get().length){ g.classList.add("bad"); return g; } } };
+      check(){ g.classList.remove("bad");
+        if(f.required && !this.get().length){ g.classList.add("bad"); return g; }
+        if(f.requireAll && inputs.some(i => !i.checked)){ g.classList.add("bad"); g.dataset.missing = inputs.filter(i => !i.checked).length; return g; } } };
   }
   if(f.type === "table"){
     const box = el("div","tbl full"); const t = el("table"); const thead = el("thead"); const hr = el("tr");
@@ -203,7 +212,8 @@ function field(f, idp){
   return { el: lab, f, get: () => inp.value.trim(),
     check(){ inp.classList.remove("bad"); const v = inp.value.trim();
       if(f.required && !v){ inp.classList.add("bad"); return inp; }
-      if(f.type === "id" && v && !validId(v)){ inp.classList.add("bad"); inp.title = "מספר זהות לא תקין"; return inp; } } };
+      delete inp.dataset.idbad;
+      if(f.type === "id" && v && !validId(v)){ inp.classList.add("bad"); inp.dataset.idbad = "1"; return inp; } } };
 }
 
 // ---------- בניית העמוד ----------
@@ -240,7 +250,7 @@ function build(){
   done.innerHTML = `<strong>✔ הטופס מוכן.</strong><ol><li>לוחצים „שמירה כ-PDF” ובחלון שנפתח בוחרים <b>שמירה כ-PDF</b> (בטלפון: שיתוף ← שמירה בקבצים).</li><li>שולחים את הקובץ בכפתור „שליחת מסמך”.</li></ol>`;
   const da = el("div","actions"); const pb = el("button","btn primary","שמירה כ-PDF / הדפסה"); pb.type = "button"; pb.onclick = () => window.print();
   da.append(pb);
-  const up = (typeof UPLOAD_LINK === "string" ? UPLOAD_LINK : "").trim();
+  const up = (new URLSearchParams(location.search).get("up") || (typeof UPLOAD_LINK === "string" ? UPLOAD_LINK : "")).trim();
   if(up){ const sl = el("a","btn","📤 שליחת מסמך"); sl.href = up; sl.target = "_blank"; sl.rel = "noopener"; da.append(sl); }
   done.append(da); wrap.append(done);
 
@@ -250,7 +260,16 @@ function build(){
     e.preventDefault(); err.textContent = "";
     let first;
     parts.forEach(p => p.fl.forEach(o => { const b = o.check && o.check(); if(b && !first) first = b; }));
-    if(first){ err.textContent = "יש להשלים או לתקן את השדות המסומנים באדום."; first.scrollIntoView({ block: "center" }); if(first.focus) first.focus(); return; }
+    if(first){
+      const names = [...wrap.querySelectorAll(".bad")].map(b => {
+        const lab = b.closest("label.f"), grp = b.classList.contains("group") ? b : null;
+        let n = lab ? lab.firstChild.textContent.trim() : grp && grp.querySelector(".gl") ? grp.querySelector(".gl").firstChild.textContent.trim() : "";
+        if(b.dataset.idbad) n += " – המספר לא תקין (צריך מספר זהות אמיתי, 9 ספרות)";
+        if(b.dataset.missing) n += ` – עוד ${b.dataset.missing} משימות לא סומנו`;
+        return n;
+      }).filter(Boolean);
+      err.textContent = "לא ניתן להפיק עדיין. יש להשלים או לתקן: " + [...new Set(names)].join(" · ");
+      first.scrollIntoView({ block: "center" }); if(first.focus) first.focus(); return; }
     if(S.sign && !sig.signed()){ err.textContent = "יש לחתום בתיבת החתימה."; sig.cv.scrollIntoView({ block: "center" }); return; }
     renderDoc(); done.classList.add("show"); done.scrollIntoView({ behavior: "smooth", block: "center" });
   });

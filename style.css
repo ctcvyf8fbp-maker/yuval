@@ -136,3 +136,36 @@ h1{font-size:1.6rem;font-weight:700;margin:0;letter-spacing:-.01em}
   color:var(--ink);background:color-mix(in srgb,var(--amber) 16%,transparent);border-inline-start:3px solid var(--amber)}
 #sync-state{margin-inline-start:6px}
 .count{direction:ltr;text-align:right}
+.my-folder{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin:0 0 14px;padding:12px 14px;border-radius:14px;background:var(--paper);border:1px solid var(--line)}
+.folder-hint{color:var(--muted);font-size:.88rem}
+
+/* מידע לשליח */
+.info,.rights,.checklist{margin-top:26px}
+.info h2,.rights h2,.checklist h2{font-size:1.2rem;margin:0 0 8px}
+.info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+.info-card{display:grid;grid-template-columns:auto 1fr;grid-template-areas:"i t" "i s";column-gap:12px;align-items:center;
+  padding:14px 16px;background:var(--paper);border:1px solid var(--line);border-radius:14px;color:var(--ink);text-decoration:none}
+.info-card:hover{border-color:var(--ink)}
+.info-card:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.info-icon{grid-area:i;font-size:1.7rem}
+.info-title{grid-area:t;font-weight:500}
+.info-sub{grid-area:s;color:var(--muted);font-size:.82rem}
+.takam-note{margin:12px 0 0;padding:10px 14px;border-radius:10px;font-size:.92rem;background:color-mix(in srgb,var(--amber) 16%,transparent);border-inline-start:3px solid var(--amber)}
+.rights-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;align-items:start}
+.right-card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:12px 16px}
+.right-card h3{margin:0 0 6px;font-size:1rem}
+.right-card ul{margin:0;padding-inline-start:18px;font-size:.92rem}
+.right-card li{margin:3px 0}
+/* צ'ק ליסט */
+.cl-progress{display:flex;align-items:center;gap:12px;margin:4px 0 12px;font-weight:500}
+.cl-progress .bar{flex:1;max-width:320px;margin:0}
+.cl-group{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:6px 16px 10px;margin-bottom:12px}
+.cl-group h3{font-size:1rem;margin:10px 0 4px}
+.cl-item{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.cl-item:last-child{border-bottom:0}
+.cl-item input{width:22px;height:22px;margin-top:2px;flex:none;accent-color:var(--ok)}
+.cl-text{display:flex;flex-direction:column;gap:2px}
+.cl-detail{color:var(--muted);font-size:.9rem}
+.cl-contact{font-size:.85rem}
+.cl-item.on strong{text-decoration:line-through;color:var(--muted)}
+.cl-done{margin-top:8px}
