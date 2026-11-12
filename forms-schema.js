@@ -486,9 +486,9 @@ const FORM_SCHEMAS = {
   },
   // ------------------------------------------------ בקשה לדרכון רשמי
   "passreq": {
-    title: "טופס בקשה לדרכון רשמי (נספח א׳)",
+    title: "טופס בקשה לדרכון דיפלומטי",
     preview: ["preview-passreq-1.jpg"], previewPdf: "form-passport-request.pdf", overlay: OPASSREQ,
-    intro: "ממלאים רק את חלק „פרטי מבקש הדרכון”. החלק העליון ממולא על ידי הגוף המשגר.",
+    intro: "טופס זה הינו לשליחים דיפלומטיים בלבד. ממלאים רק את החלק „פרטי מבקש הדרכון”. החלק העליון ממולא על ידי הגוף המשגר.",
     sections: [
       { title: "פרטי מבקש הדרכון", fields: [
         { id: "lastHe", label: "שם משפחה (עברית)", type: "text", required: true },

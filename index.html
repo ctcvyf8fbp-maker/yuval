@@ -23,6 +23,12 @@
 
   <main>
     <!-- כרטיס עלייה למטוס -->
+    <!-- דגשים בראש לשונית האוריינטציה -->
+    <section class="orient-top" id="orient-top" hidden aria-label="דגשים לאוריינטציה">
+      <p class="orient-note" id="orient-note"></p>
+      <div class="notes-list" id="orient-notes"></div>
+    </section>
+
     <section class="pass trip-only" aria-label="פרטי הנסיעה">
       <div class="pass-main">
         <div class="field">
@@ -35,8 +41,16 @@
             <span class="val dest" id="destination"></span>
           </div>
           <div class="field">
-            <span class="lbl">יציאה</span>
+            <span class="lbl" id="departure-lbl">יציאה לשליחות</span>
             <span class="val" id="departure"></span>
+          </div>
+          <div class="field">
+            <span class="lbl">מצב משפחתי</span>
+            <span class="val" id="marital"></span>
+          </div>
+          <div class="field" id="f-spouse" hidden>
+            <span class="lbl">בן/בת זוג</span>
+            <span class="val" id="spouse"></span>
           </div>
         </div>
         <p class="countdown" id="countdown" hidden></p>

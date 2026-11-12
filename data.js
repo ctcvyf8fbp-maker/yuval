@@ -21,24 +21,24 @@ const SITE_TITLE = "מעקב אישורים ליציאה לשליחות";
 // note   = הערה שמופיעה מתחת (אפשר למחוק את השורה אם אין)
 const FORMS = [
   { title: "טופס 101 – כרטיס עובד", file: "form-101.pdf", online: "form.html?f=101" },
-  { title: "כתב התחייבות והוראה בלתי חוזרת", file: "form-commitment.pdf", online: "form.html?f=commitment",
-    note: "החתימה נעשית בנוכחות קצין הנסיעות הזרועי." },
+  { title: "כתב התחייבות והוראה בלתי חוזרת", file: "form-commitment.pdf", online: "form.html?f=commitment" },
   { title: "הצהרה – קיום הוראות משהב״ט", file: "form-instructions.pdf", online: "form.html?f=instructions" },
-  { title: "צילום תלוש שכר", upload: true,
-    note: "מצלמים או סורקים את תלוש השכר האחרון. בשם הקובץ מציינים את השם שלכם." },
+  { title: "תלוש שכר אחרון", upload: true },
   { title: "שאלון רפואי – כל המשפחה", online: "form.html?f=medical",
     note: "ממלאים עבור כל אחד מבני המשפחה המצטרפים לשליחות." },
+  { title: "סיכום מידע רפואי", upload: true,
+    note: "עבור כל אחד מבני המשפחה (שליח – בצה״ל, בני המשפחה – בקופ״ח)." },
   { title: "טופס איש קשר למקרי חירום", file: "form-1.pdf", online: "form-contact.html",
     note: "איש הקשר חייב להיות קרוב משפחה מדרגה ראשונה." },
   { title: "קורות חיים מצומצם", file: "form-cv-short.pdf", online: "form.html?f=cvshort" },
-  { title: "קורות חיים מלאים", upload: true,
-    note: "מעלים את קובץ קורות החיים (Word או PDF)." },
+  { title: "קורות חיים מורחבים", upload: true,
+    note: "מעלים בפורמט האישי שלכם." },
   { title: "הצהרה על תאריכי שליחות", file: "form-mission-dates.pdf", online: "form.html?f=missiondates" },
   { title: "הצהרת שליח בדבר אישור מועדי היציאה לשליחות", file: "form-departure.pdf", online: "form.html?f=departure" },
   { title: "פרטי דרכון ותעודת זהות", online: "form.html?f=passport",
     note: "עבור השליח/ה ועבור כל בן/בת משפחה שמצטרף/ת. אפשר לצלם ישירות מהטלפון." },
-  { title: "טופס בקשה לדרכון רשמי (נספח א׳)", file: "form-passport-request.pdf", online: "form.html?f=passreq",
-    note: "ממלאים רק את חלק „פרטי מבקש הדרכון”." }
+  { title: "טופס בקשה לדרכון דיפלומטי", file: "form-passport-request.pdf", online: "form.html?f=passreq",
+    note: "טופס זה הינו לשליחים דיפלומטיים בלבד. יש למלא רק את החלק של „פרטי מבקש הדרכון” למטה." }
 ];
 
 // ===== מידע לשליח =====

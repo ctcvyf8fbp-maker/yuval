@@ -59,6 +59,11 @@ function renderPass(trip, steps, current){
   document.getElementById("traveler").textContent = trip.traveler || "טרם הוזן שם";
   document.getElementById("destination").textContent = trip.destination || "טרם הוזן";
   document.getElementById("departure").textContent = fmtDate(trip.departure) || "—";
+  document.getElementById("departure-lbl").textContent = isMission(trip) ? "יציאה לשליחות" : "יציאה לאוריינטציה";
+  document.getElementById("marital").textContent = trip.marital || "—";
+  const sp = (trip.spouse || "").trim();
+  document.getElementById("f-spouse").hidden = !sp;
+  document.getElementById("spouse").textContent = /^(כן|v|✓)$/i.test(sp) ? "יוצא/ת עם בן/בת הזוג" : /^לא$/.test(sp) ? "יוצא/ת לבד" : sp;
   const cd = document.getElementById("countdown");
   if(trip.departure && /^\d{4}-\d{2}-\d{2}$/.test(trip.departure)){
     const d = daysBetween(todayISO(), trip.departure);
@@ -281,6 +286,16 @@ const isMission = trip => {
   const txt = (trip.title || "") + " " + (trip.traveler || "");
   return !words.some(w => w && txt.includes(w));
 };
+function noteCards(box, list){
+  box.innerHTML = "";
+  list.forEach(n => {
+    const c = el("div","note-card"); c.append(el("h3","", (n.icon ? n.icon + " " : "") + n.title));
+    (n.before || []).forEach(t => c.append(el("p","",t)));
+    if(n.ol){ const ol = el("ol"); n.ol.forEach(t => ol.append(el("li","",t))); c.append(ol); }
+    (n.after || []).forEach(t => c.append(el("p","",t)));
+    box.append(c);
+  });
+}
 let infoDone = false;
 function renderInfo(){
   if(infoDone) return; infoDone = true;
@@ -291,14 +306,7 @@ function renderInfo(){
     a.append(el("span","info-icon", it.icon || "📄"), el("span","info-title", it.title), el("span","info-sub", (it.sub ? it.sub + " · " : "") + (it.file ? "הורדה ⬇" : "מעבר לאתר ↗")));
     box.append(a);
   });
-  const nl = document.getElementById("notes-list");
-  (typeof INFO_NOTES !== "undefined" ? INFO_NOTES : []).forEach(n => {
-    const c = el("div","note-card"); c.append(el("h3","", (n.icon ? n.icon + " " : "") + n.title));
-    (n.before || []).forEach(t => c.append(el("p","",t)));
-    if(n.ol){ const ol = el("ol"); n.ol.forEach(t => ol.append(el("li","",t))); c.append(ol); }
-    (n.after || []).forEach(t => c.append(el("p","",t)));
-    nl.append(c);
-  });
+  noteCards(document.getElementById("notes-list"), typeof INFO_NOTES !== "undefined" ? INFO_NOTES : []);
   const rl = document.getElementById("rights-list");
   (typeof RIGHTS !== "undefined" ? RIGHTS : []).forEach(r => {
     const c = el("div","right-card"); c.append(el("h3","", (r.icon ? r.icon + " " : "") + r.title));
@@ -375,6 +383,8 @@ function render(){
   const fsec = document.getElementById("forms-section");
   const after = document.getElementById("after-trip");
   after.hidden = true;
+  const otop = document.getElementById("orient-top");
+  otop.hidden = true;
   if(special){
     renderTabs();
     if(isInfo) renderInfo();
@@ -401,6 +411,9 @@ function render(){
   renderLegend(trip);
   if(!isMission(trip)){
     after.hidden = false;
+    otop.hidden = false;
+    document.getElementById("orient-note").textContent = typeof ORIENT_NOTE === "string" ? ORIENT_NOTE : "";
+    noteCards(document.getElementById("orient-notes"), typeof ORIENT_NOTES !== "undefined" ? ORIENT_NOTES : []);
     const up = ((trip.folder || "") + "").trim() || (typeof UPLOAD_LINK === "string" ? UPLOAD_LINK : "").trim();
     document.getElementById("settle-online").href = "form.html?f=settlement" + (up ? "&up=" + encodeURIComponent(up) : "");
   }
@@ -446,12 +459,12 @@ function tripsFromSheet(rows){
   const head = rows[hi];
   const n = Math.floor((head.length - 3) / 2);
   const info = label => { const r = rows.slice(0, hi).find(r => r[0] === label); return k => r ? (r[3 + 2*k] || "") : ""; };
-  const name = info("שם השליח"), dest = info("יעד"), dep = info("תאריך יציאה"), folder = info("תיקיית מסמכים");
+  const name = info("שם השליח"), dest = info("יעד"), dep = info("תאריך יציאה"), folder = info("תיקיית מסמכים"), marital = info("מצב משפחתי"), spouse = info("בן/בת זוג");
   const trips = [];
   for(let k = 0; k < n; k++){
     const old = TRIPS[k] || {};
     const t = { title: (head[3 + 2*k] || `שליח ${k+1}`).replace(/\s*[–-]\s*סטטוס$/,""),
-      traveler: name(k), destination: dest(k), departure: toISO(dep(k)), folder: folder(k),
+      traveler: name(k), destination: dest(k), departure: toISO(dep(k)), folder: folder(k), marital: marital(k), spouse: spouse(k),
       rounds: [], docs: {} };
     let cur = null, last = "";
     rows.slice(hi + 1).forEach(r => {
