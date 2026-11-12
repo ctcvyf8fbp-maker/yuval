@@ -36,7 +36,9 @@ const FORMS = [
   { title: "הצהרה על תאריכי שליחות", file: "form-mission-dates.pdf", online: "form.html?f=missiondates" },
   { title: "הצהרת שליח בדבר אישור מועדי היציאה לשליחות", file: "form-departure.pdf", online: "form.html?f=departure" },
   { title: "פרטי דרכון ותעודת זהות", online: "form.html?f=passport",
-    note: "עבור השליח/ה ועבור כל בן/בת משפחה שמצטרף/ת. אפשר לצלם ישירות מהטלפון." }
+    note: "עבור השליח/ה ועבור כל בן/בת משפחה שמצטרף/ת. אפשר לצלם ישירות מהטלפון." },
+  { title: "טופס בקשה לדרכון רשמי (נספח א׳)", file: "form-passport-request.pdf", online: "form.html?f=passreq",
+    note: "ממלאים רק את חלק „פרטי מבקש הדרכון”." }
 ];
 
 // ===== מידע לשליח =====

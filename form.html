@@ -31,6 +31,7 @@ legend{font-weight:700;padding:0 6px}
 .full{grid-column:1/-1}
 label.f{display:flex;flex-direction:column;gap:4px;font-size:.9rem;font-weight:500;margin-bottom:10px}
 .req{color:var(--no)}
+.hint{font-weight:400;font-size:.82rem;color:var(--muted)}
 input,select,textarea{font:inherit;color:var(--ink);background:var(--paper);border:1.5px solid var(--line);border-radius:8px;padding:9px 10px;font-weight:400;width:100%}
 textarea{min-height:70px;resize:vertical}
 input:focus,select:focus,textarea:focus{outline:3px solid color-mix(in srgb,var(--amber) 60%,transparent);border-color:var(--amber)}
@@ -111,6 +112,7 @@ input:focus,select:focus,textarea:focus{outline:3px solid color-mix(in srgb,var(
   #doc .ovp img.bg{position:absolute;inset:0;width:100%;height:100%}
   #doc .ovt{position:absolute;white-space:nowrap;color:#0b2a6b;line-height:1;font-weight:700}
   #doc .ovs{position:absolute}
+  #doc .ovc{position:absolute;border:1.6px solid #0b2a6b;border-radius:50%}
   #doc .ovx{padding:15mm;font-size:11pt}
 }
 </style>
@@ -223,6 +225,7 @@ function field(f, idp){
     if(f.type === "id"){ inp.inputMode = "numeric"; inp.maxLength = 9; }
     if(f.type === "number") inp.inputMode = "numeric"; }
   if(f.placeholder) inp.placeholder = f.placeholder;
+  if(f.hint){ const hn = el("small","hint", f.hint); setTimeout(() => lab.append(hn)); }
   if(f.value) inp.value = f.value;
   inp.name = name; lab.append(inp);
   return { el: lab, f, get: () => inp.value.trim(),
@@ -350,7 +353,7 @@ function renderFields(list){
 }
 // ---------- מילוי על גבי הטופס המקורי ----------
 function renderOverlay(){
-  const O = S.overlay, W = 595.28, H = 841.89;
+  const O = S.overlay, W = 595.28, H = O.h || 841.89;
   const vals = {};
   parts.forEach(p => p.fl.forEach(o => { if(o.f && o.f.id) vals[o.f.id] = o.get(); }));
   const pages = O.pages.map(() => []);
@@ -384,6 +387,16 @@ function renderOverlay(){
     if(it.signDate){ if(dateInp && dateInp.value) put(it.p, it.x, it.y, fmt(dateInp.value), it); return; }
     if(it.combo){ const t = it.combo.map(k => fmtV(vals[k] || "", it)).filter(Boolean).join(" – "); if(t) put(it.p, it.x, it.y, t, { ...it, ltr: true }); return; }
     const v = vals[it.id];
+    if(it.circle){
+      if(v === it.opt){ const r = it.r || 5.5;
+        pages[it.p].push(`<span class="ovc" style="left:${((it.x - r) / W * 100).toFixed(3)}%;top:${((it.y - r) / H * 100).toFixed(3)}%;width:${(2 * r / W * 100).toFixed(3)}%;height:${(2 * r / H * 100).toFixed(3)}%"></span>`); }
+      return;
+    }
+    if(it.parts && v && /^\d{4}-\d{2}-\d{2}$/.test(v)){
+      const [yy, mm, dd] = v.split("-");
+      [dd, mm, yy].forEach((t, j) => put(it.p, it.parts[j], it.y, t, { align: "center", size: it.size }));
+      return;
+    }
     if(it.check){
       const list = Array.isArray(v) ? v : [v];
       const hit = it.prefix ? list.some(o => String(o).startsWith(it.prefix)) : list.includes(it.opt);
@@ -393,8 +406,11 @@ function renderOverlay(){
     if(v) put(it.p, it.x, it.y, fmtV(v, it), it);
   });
   let h = O.pages.map((src, i) => `<div class="ovp"><img class="bg" alt="" src="${src}">${pages[i].join("")}</div>`).join("");
-  const extra = O.extra && vals[O.extra];
-  if(extra) h += `<div class="ovp"><div class="ovx"><strong>נספח לטופס 101 – פרטים להשלמה (חלק ח׳):</strong><p>${esc(extra).replace(/\n/g,"<br>")}</p></div></div>`;
+  const extras = (Array.isArray(O.extra) ? O.extra : O.extra ? [O.extra] : [])
+    .map(id => { const o = parts.flatMap(p => p.fl).find(x => x.f && x.f.id === id); const sec = parts.find(p => p.fl.includes(o));
+      return o && vals[id] ? `<p><strong>${esc((sec && sec.sec.title ? sec.sec.title + " – " : "") + o.f.label)}:</strong> ${esc(vals[id]).replace(/\n/g,"<br>")}</p>` : ""; })
+    .filter(Boolean);
+  if(extras.length) h += `<div class="ovp"><div class="ovx"><strong>נספח – ${esc(S.title)}: פרטים נוספים</strong>${extras.join("")}</div></div>`;
   const doc = document.getElementById("doc"); doc.className = "ov"; doc.innerHTML = h;
   let ps = document.getElementById("pagestyle");
   if(!ps){ ps = document.createElement("style"); ps.id = "pagestyle"; document.head.append(ps); }

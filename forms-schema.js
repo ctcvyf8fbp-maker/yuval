@@ -86,6 +86,68 @@ const OMDATES = { pages: ["preview-missiondates-1.jpg"], items: [
   { p: 0, sig: true, x: 138, y: 398, w: 66, h: 22 }
 ]};
 
+
+// ---------- בקשה לדרכון רשמי – חלק „פרטי מבקש הדרכון” ----------
+const OPASSREQ = { h: 871.5, pages: ["preview-passreq-1.jpg"], items: [
+  { p: 0, id: "lastHe", x: 367, y: 440, align: "center" },
+  { p: 0, id: "lastEn", x: 274, y: 440, align: "center" },
+  { p: 0, id: "firstHe", x: 371, y: 453, align: "center" },
+  { p: 0, id: "firstEn", x: 282, y: 453, align: "center" },
+  { p: 0, id: "id", x: 310, y: 466, align: "center" },
+  { p: 0, id: "israeli", opt: "כן", x: 378.5, y: 483, check: true },
+  { p: 0, id: "israeli", opt: "לא", x: 347, y: 483, check: true },
+  { p: 0, id: "otherCit", x: 322, y: 492, size: 8 },
+  { p: 0, id: "dob", x: 393, y: 512, parts: [405, 393, 381], size: 6.5 },
+  { p: 0, id: "sex", opt: "זכר", x: 326.5, y: 509, circle: true, r: 3.2 },
+  { p: 0, id: "sex", opt: "נקבה", x: 322.3, y: 509, circle: true, r: 3.2 },
+  { p: 0, id: "marital", opt: "רווק/ה", x: 402.5, y: 526, circle: true, r: 3.2 },
+  { p: 0, id: "marital", opt: "נשוי/אה", x: 397.5, y: 526, circle: true, r: 3.2 },
+  { p: 0, id: "marital", opt: "אלמן/ה", x: 392.5, y: 526, circle: true, r: 3.2 },
+  { p: 0, id: "marital", opt: "גרוש/ה", x: 387.5, y: 526, circle: true, r: 3.2 },
+  { p: 0, id: "street", x: 420, y: 552, align: "center", size: 8 },
+  { p: 0, id: "houseNo", x: 316, y: 552, align: "center", size: 8 },
+  { p: 0, id: "apt", x: 268, y: 552, align: "center", size: 8 },
+  { p: 0, id: "city", x: 416, y: 569, align: "center", size: 8 },
+  { p: 0, id: "zip", x: 328, y: 569, align: "center", size: 8 },
+  { p: 0, id: "phoneHome", x: 401, y: 585, align: "center", size: 8 },
+  { p: 0, id: "mobile", x: 329, y: 585, align: "center", size: 8 },
+  { p: 0, id: "phoneWork", x: 225, y: 585, align: "center", size: 8 },
+  { p: 0, id: "father", x: 414, y: 599, align: "center", size: 8 },
+  { p: 0, id: "mother", x: 323, y: 599, align: "center", size: 8 },
+  { p: 0, id: "birthCountry", x: 242, y: 599, align: "center", size: 8 },
+  { p: 0, id: "prevPassport", x: 460, y: 634, size: 8 },
+  { p: 0, sig: true, x: 165, y: 640, w: 92, h: 20 }
+]};
+
+// ---------- התחשבנות לאחר נסיעת חו״ל ----------
+const SROWS = { food: 300, lodging: 365, car: 428, ilTrans: 476, abTrans: 527, other: 576 };
+const OSETTLE = { h: 875.2, pages: ["preview-settle-1.jpg"], items: [
+  { p: 0, signDate: true, x: 488, y: 51, align: "center", size: 8 },
+  { p: 0, id: "name", x: 431, y: 114, align: "center" },
+  { p: 0, id: "id", x: 203, y: 114, align: "center" },
+  { p: 0, id: "dest", x: 66, y: 114, align: "center", size: 8 },
+  { p: 0, id: "depDate", x: 440, y: 138, align: "center", date: true, size: 8 },
+  { p: 0, id: "depTime", x: 322, y: 138, align: "center", size: 8 },
+  { p: 0, id: "retDate", x: 154, y: 138, align: "center", date: true, size: 8 },
+  { p: 0, id: "landTime", x: 481, y: 155, align: "center", size: 8 },
+  { p: 0, id: "rankRole", x: 368, y: 155, align: "center", size: 7.5 },
+  { p: 0, id: "mobile", x: 262, y: 155, align: "center", size: 8 },
+  { p: 0, id: "email", x: 77, y: 155, align: "center", size: 7 },
+  { p: 0, id: "advance", x: 375, y: 177, align: "center" },
+  ...Object.entries(SROWS).flatMap(([k, y]) => [
+    { p: 0, id: k + "Date", x: 455, y, align: "center", size: 7 },
+    { p: 0, id: k + "Sum", x: 294, y, align: "center", size: 8 }
+  ]),
+  { p: 0, id: "foodB", x: 419, y: 300, align: "center", size: 8 },
+  { p: 0, id: "foodL", x: 377, y: 300, align: "center", size: 8 },
+  { p: 0, id: "foodD", x: 331, y: 300, align: "center", size: 8 },
+  { p: 0, id: "name", x: 469, y: 687, align: "center", size: 8 },
+  { p: 0, id: "id", x: 328, y: 687, align: "center", size: 8 },
+  { p: 0, id: "unitRole", x: 146, y: 687, align: "center", size: 7 },
+  { p: 0, id: "rank", x: 68, y: 687, align: "center", size: 7.5 },
+  { p: 0, sig: true, x: 430, y: 697, w: 70, h: 18 }
+], extra: ["foodNotes", "lodgingNotes", "carNotes", "ilTransNotes", "abTransNotes", "otherNotes"] };
+
 const FORM_SCHEMAS = {
 
   // ---------------------------------------------------------------- 101
@@ -114,7 +176,7 @@ const FORM_SCHEMAS = {
         { id: "zip", label: "מיקוד", type: "text" },
         { id: "phone", label: "מספר טלפון", type: "tel" },
         { id: "mobile", label: "מספר טלפון נייד", type: "tel", required: true },
-        { id: "email", label: "כתובת דואר אלקטרוני", type: "email", full: true },
+        { id: "email", label: "כתובת דואר אלקטרוני", type: "email", full: true, required: true },
         { id: "sex", label: "מין", type: "radio", options: ["זכר", "נקבה"], required: true },
         { id: "marital", label: "מצב משפחתי", type: "radio", options: ["רווק/ה", "נשוי/אה", "גרוש/ה", "אלמן/ה", "פרוד/ה (חובה לצרף אישור פ״ש)"], required: true, full: true },
         { id: "resident", label: "תושב/ת ישראל", type: "radio", options: ["כן", "לא"], required: true },
@@ -135,7 +197,7 @@ const FORM_SCHEMAS = {
       ]},
       { title: "חלק ד׳ – הכנסותיי ממעסיק זה", fields: [
         { id: "incomeType", label: "אני מקבל/ת", type: "radio", options: INCOME, required: true, full: true },
-        { id: "startDate", label: "תאריך תחילת העבודה בשנת המס", type: "date" }
+        { id: "startDate", label: "תאריך תחילת העבודה בשנת המס", type: "date", hint: "תאריך התחילה הוא תאריך היציאה לשליחות." }
       ]},
       { title: "חלק ה׳ – הכנסות אחרות", fields: [
         { id: "otherIncome", label: "הכנסות אחרות", type: "radio", required: true, full: true, options: [
@@ -418,6 +480,100 @@ const FORM_SCHEMAS = {
       ]},
       { title: "הצהרה", fields: [
         { type: "para", text: "אני מצהיר/ה כי השלמתי את כל המשימות המפורטות בצ׳ק ליסט לפני היציאה לשליחות, וכי ידוע לי שבמקרה של סתירה בין המידע באתר ובחוברת לבין הוראות התכ״ם – הוראות התכ״ם גוברות." }
+      ]}
+    ],
+    sign: true
+  },
+  // ------------------------------------------------ בקשה לדרכון רשמי
+  "passreq": {
+    title: "טופס בקשה לדרכון רשמי (נספח א׳)",
+    preview: ["preview-passreq-1.jpg"], previewPdf: "form-passport-request.pdf", overlay: OPASSREQ,
+    intro: "ממלאים רק את חלק „פרטי מבקש הדרכון”. החלק העליון ממולא על ידי הגוף המשגר.",
+    sections: [
+      { title: "פרטי מבקש הדרכון", fields: [
+        { id: "lastHe", label: "שם משפחה (עברית)", type: "text", required: true },
+        { id: "lastEn", label: "Surname (באנגלית, כמו בדרכון)", type: "text", required: true },
+        { id: "firstHe", label: "שם פרטי (עברית)", type: "text", required: true },
+        { id: "firstEn", label: "Given name (באנגלית, כמו בדרכון)", type: "text", required: true },
+        { id: "id", label: "מספר תעודת זהות מלא", type: "id", required: true },
+        { id: "israeli", label: "אזרחות ישראלית", type: "radio", options: ["כן", "לא"], required: true },
+        { id: "otherCit", label: "אזרחות נוספת (אם אין – כותבים „לא”; אם יש – פרטו)", type: "text", required: true, full: true },
+        { id: "dob", label: "תאריך לידה", type: "date", required: true },
+        { id: "sex", label: "מין", type: "radio", options: ["זכר", "נקבה"], required: true },
+        { id: "marital", label: "מצב משפחתי", type: "radio", options: ["רווק/ה", "נשוי/אה", "אלמן/ה", "גרוש/ה"], required: true, full: true },
+        { id: "street", label: "רחוב", type: "text", required: true },
+        { id: "houseNo", label: "מס׳ בית", type: "text", required: true },
+        { id: "apt", label: "דירה", type: "text" },
+        { id: "city", label: "עיר", type: "text", required: true },
+        { id: "zip", label: "מיקוד", type: "text" },
+        { id: "phoneHome", label: "טלפון בבית", type: "tel" },
+        { id: "mobile", label: "נייד", type: "tel", required: true },
+        { id: "phoneWork", label: "טלפון בעבודה", type: "tel" },
+        { id: "father", label: "שם האב", type: "text", required: true },
+        { id: "mother", label: "שם האם", type: "text", required: true },
+        { id: "birthCountry", label: "ארץ לידה", type: "text", required: true },
+        { id: "prevPassport", label: "החזקה קודמת בדרכון רשמי – אם כן, פרטו מדוע הונפק (אם לא – כותבים „לא”)", type: "text", full: true, required: true }
+      ]}
+    ],
+    sign: true
+  },
+
+  // ------------------------------------------- התחשבנות לאחר נסיעה
+  "settlement": {
+    title: "התחשבנות לאחר נסיעת חו״ל בתפקיד",
+    preview: ["preview-settle-1.jpg"], previewPdf: "form-settlement.pdf", overlay: OSETTLE,
+    intro: "ההוצאות המפורטות הן הוצאות בפועל לזמן השהות בתפקיד בלבד. מביאים את הטופס עם הקבלות לתור ב-MY VISIT.",
+    sections: [
+      { title: "פרטי הנסיעה", fields: [
+        { id: "name", label: "שם הנוסע/ת", type: "text", required: true },
+        { id: "id", label: "מספר תעודת זהות", type: "id", required: true },
+        { id: "dest", label: "יעד", type: "text", required: true },
+        { id: "rankRole", label: "דרגה / תפקיד", type: "text", required: true },
+        { id: "depDate", label: "תאריך יציאה מהארץ", type: "date", required: true },
+        { id: "depTime", label: "שעת המראה", type: "time" },
+        { id: "retDate", label: "תאריך חזרה לארץ", type: "date", required: true },
+        { id: "landTime", label: "שעת נחיתה", type: "time" },
+        { id: "mobile", label: "מס׳ נייד", type: "tel", required: true },
+        { id: "email", label: "כתובת מייל", type: "email", required: true },
+        { id: "advance", label: "נמשכה מקדמה בסכום של", type: "text" }
+      ]},
+      { title: "כלכלה", note: "ללא קבלות בהתחשבנות. הצהרה על ניכוי ארוחות רשמיות שהוזמנתי על חשבון השותף בחו״ל / מארחים / כנס / קורס. ממלאים בכל עמודה (בוקר/צהריים/ערב) את מספר הארוחות שיש לקזז.", fields: [
+        { id: "foodDate", label: "תאריך/ים", type: "text" },
+        { id: "foodB", label: "בוקר (מס׳ ארוחות לקיזוז)", type: "number" },
+        { id: "foodL", label: "צהריים", type: "number" },
+        { id: "foodD", label: "ערב", type: "number" },
+        { id: "foodSum", label: "סכום", type: "text" },
+        { id: "foodNotes", label: "הערות", type: "text", full: true }
+      ]},
+      { title: "לינה", note: "יש להגיש קבלה בפירוט מספר ימים ומחיר ללילה. חריגה מקצובת הלינה מצריכה אישור טרם הנסיעה.", fields: [
+        { id: "lodgingDate", label: "תאריך/ים", type: "text" },
+        { id: "lodgingSum", label: "סכום", type: "text" },
+        { id: "lodgingNotes", label: "הערות", type: "text", full: true }
+      ]},
+      { title: "הוצאות רכב בחו״ל", note: "קבלה על דלק עם פירוט כמות ומחיר; חל איסור על תדלוק בחברת השכרת הרכב; קבלה על חניה וכבישי אגרה.", fields: [
+        { id: "carDate", label: "תאריך/ים", type: "text" },
+        { id: "carSum", label: "סכום", type: "text" },
+        { id: "carNotes", label: "הערות", type: "text", full: true }
+      ]},
+      { title: "תחבורה ל/מ שדה התעופה בארץ", note: "מוניות בארץ כנגד קבלה / חניה בשדה עד 50 ליום.", fields: [
+        { id: "ilTransDate", label: "תאריך/ים", type: "text" },
+        { id: "ilTransSum", label: "סכום", type: "text" },
+        { id: "ilTransNotes", label: "הערות", type: "text", full: true }
+      ]},
+      { title: "תחבורה ל/מ שדה התעופה בחו״ל", note: "מוניות כנגד קבלה, תחבורה ציבורית לצרכי עבודה בלבד – יש לציין את היעד והמטרה.", fields: [
+        { id: "abTransDate", label: "תאריך/ים", type: "text" },
+        { id: "abTransSum", label: "סכום", type: "text" },
+        { id: "abTransNotes", label: "הערות", type: "text", full: true }
+      ]},
+      { title: "אחר", note: "באישור מראש: כנס, קורס, מזוודה.", fields: [
+        { id: "otherDate", label: "תאריך/ים", type: "text" },
+        { id: "otherSum", label: "סכום", type: "text" },
+        { id: "otherNotes", label: "הערות", type: "text", full: true }
+      ]},
+      { title: "הצהרה", fields: [
+        { type: "para", text: "אני הח״מ מצהיר בזאת כי הקבלות וההוצאות שהצגתי בפני אגף הכספים/חטיבת פרט והסדרי נסיעות חו״ל הינן הוצאות שהוצאו בפועל במסגרת נסיעתי בתפקיד בלבד. הנני מודע לכך כי במקרה הפרטים הנ״ל אינם נכונים אדרש להשיב את הכספים ששולמו לי ביתר ועלול להיפתח נגדי הליך משמעתי." },
+        { id: "unitRole", label: "אגף/חייל ותפקיד", type: "text", required: true },
+        { id: "rank", label: "דרגה", type: "text" }
       ]}
     ],
     sign: true

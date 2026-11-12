@@ -291,6 +291,14 @@ function renderInfo(){
     a.append(el("span","info-icon", it.icon || "📄"), el("span","info-title", it.title), el("span","info-sub", (it.sub ? it.sub + " · " : "") + (it.file ? "הורדה ⬇" : "מעבר לאתר ↗")));
     box.append(a);
   });
+  const nl = document.getElementById("notes-list");
+  (typeof INFO_NOTES !== "undefined" ? INFO_NOTES : []).forEach(n => {
+    const c = el("div","note-card"); c.append(el("h3","", (n.icon ? n.icon + " " : "") + n.title));
+    (n.before || []).forEach(t => c.append(el("p","",t)));
+    if(n.ol){ const ol = el("ol"); n.ol.forEach(t => ol.append(el("li","",t))); c.append(ol); }
+    (n.after || []).forEach(t => c.append(el("p","",t)));
+    nl.append(c);
+  });
   const rl = document.getElementById("rights-list");
   (typeof RIGHTS !== "undefined" ? RIGHTS : []).forEach(r => {
     const c = el("div","right-card"); c.append(el("h3","", (r.icon ? r.icon + " " : "") + r.title));
@@ -365,6 +373,8 @@ function render(){
   document.getElementById("rights-section").hidden = !isInfo;
   document.getElementById("checklist-section").hidden = !isCL;
   const fsec = document.getElementById("forms-section");
+  const after = document.getElementById("after-trip");
+  after.hidden = true;
   if(special){
     renderTabs();
     if(isInfo) renderInfo();
@@ -389,6 +399,11 @@ function render(){
   renderPass(trip, steps, current);
   renderMap(trip, steps, current);
   renderLegend(trip);
+  if(!isMission(trip)){
+    after.hidden = false;
+    const up = ((trip.folder || "") + "").trim() || (typeof UPLOAD_LINK === "string" ? UPLOAD_LINK : "").trim();
+    document.getElementById("settle-online").href = "form.html?f=settlement" + (up ? "&up=" + encodeURIComponent(up) : "");
+  }
   renderMission(trip, ((trip.folder || "") + "").trim() || (typeof UPLOAD_LINK === "string" ? UPLOAD_LINK : "").trim());
   renderRounds(trip, current);
   document.getElementById("updated").textContent = fmtDate(LAST_UPDATED);
