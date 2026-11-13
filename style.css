@@ -214,3 +214,37 @@ h1{font-size:1.6rem;font-weight:700;margin:0;letter-spacing:-.01em}
 .orient-top{margin-top:18px}
 .orient-note{margin:0 0 12px;padding:12px 16px;border-radius:12px;font-weight:700;font-size:1.05rem;
   background:color-mix(in srgb,var(--amber) 20%,transparent);border-inline-start:4px solid var(--amber)}
+
+/* חיפוש */
+.search-box{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:0 0 16px}
+.search-lbl{display:block;font-weight:700;font-size:1.05rem;margin-bottom:8px}
+.search-row{display:flex;gap:8px}
+.search-row input{flex:1;font:inherit;color:var(--ink);background:var(--sky);border:1.5px solid var(--line);border-radius:999px;padding:10px 16px;min-width:0}
+.search-row input:focus{outline:3px solid color-mix(in srgb,var(--amber) 60%,transparent);border-color:var(--amber)}
+.search-hint{color:var(--muted);font-size:.82rem;margin:8px 0 0}
+#q-results{margin-top:10px;display:grid;gap:10px}
+.res{border:1px solid var(--line);border-radius:12px;padding:10px 14px}
+.res-src{font-size:.8rem;color:var(--muted);font-weight:500;margin-bottom:4px}
+.res p{margin:0;font-size:.94rem;line-height:1.6}
+.res mark{background:color-mix(in srgb,var(--amber) 45%,transparent);color:inherit;border-radius:3px;padding:0 2px}
+.res-link{display:inline-block;margin-top:6px;font-size:.85rem;color:var(--ink);font-weight:500}
+.no-res{color:var(--muted);margin:0}
+
+/* מחשבון אש"ל ולינה */
+.calc{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:0 0 14px}
+.calc h2{font-size:1.15rem;margin:0 0 10px}
+.calc-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px}
+.cf{display:flex;flex-direction:column;gap:4px;font-size:.88rem;font-weight:500}
+.cf input{font:inherit;font-weight:400;color:var(--ink);background:var(--sky);border:1.5px solid var(--line);border-radius:10px;padding:9px 12px;min-width:0}
+.cf input:focus{outline:3px solid color-mix(in srgb,var(--amber) 60%,transparent);border-color:var(--amber)}
+@media (max-width:640px){.calc-grid{grid-template-columns:1fr 1fr}.cf.wide{grid-column:1/-1}}
+.calc-out{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+@media (max-width:640px){.calc-out{grid-template-columns:1fr 1fr}}
+.cbox{border:1px solid var(--line);border-radius:10px;padding:8px 10px;text-align:center}
+.cbox span{display:block;font-size:.78rem;color:var(--muted)}
+.cbox strong{font-size:1.05rem}
+.calc-sum{margin:12px 0 0;padding:10px 14px;border-radius:10px;background:color-mix(in srgb,var(--ok) 12%,transparent);font-size:1rem;line-height:1.7}
+.calc-sum.muted,.calc-sum .muted{color:var(--muted);font-size:.88rem}
+.calc-sum.muted{background:transparent;padding:0}
+.calc-note{margin:10px 0 0;color:var(--muted);font-size:.8rem}
+.calc-note .warn{color:var(--no)}

@@ -26,6 +26,19 @@
     <!-- דגשים בראש לשונית האוריינטציה -->
     <section class="orient-top" id="orient-top" hidden aria-label="דגשים לאוריינטציה">
       <p class="orient-note" id="orient-note"></p>
+      <div class="calc" id="calc">
+        <h2>🧮 מחשבון אש״ל ולינה</h2>
+        <div class="calc-grid">
+          <label class="cf wide"><span>מדינה / עיר יעד</span>
+            <input id="c-dest" list="c-dest-list" placeholder="הקלידו מדינה או עיר, למשל: ארה״ב, פריז, Germany" autocomplete="off">
+            <datalist id="c-dest-list"></datalist></label>
+          <label class="cf"><span>תאריך יציאה</span><input id="c-from" type="date"></label>
+          <label class="cf"><span>תאריך חזרה</span><input id="c-to" type="date"></label>
+        </div>
+        <div class="calc-out" id="c-out" aria-live="polite"></div>
+        <p class="calc-sum" id="c-sum" aria-live="polite"></p>
+        <p class="calc-note" id="c-note"></p>
+      </div>
       <div class="notes-list" id="orient-notes"></div>
     </section>
 
@@ -110,6 +123,15 @@
     <!-- מידע לשליח -->
     <section class="info mission-only" id="info-section" hidden aria-labelledby="info-title">
       <h2 id="info-title">📚 מידע לשליח</h2>
+      <div class="search-box" role="search">
+        <label for="q" class="search-lbl">🔍 יש לך שאלה? כתבו כאן</label>
+        <div class="search-row">
+          <input id="q" type="search" placeholder="למשל: כמה לילות מלון? חניה בשדה? ילדים בגיל גיוס" autocomplete="off" enterkeyhint="search">
+          <button type="button" class="fbtn primary" id="q-go">חיפוש</button>
+        </div>
+        <p class="search-hint">החיפוש מציג קטעים מתוך המידע באתר ומתוך חוברת ההכנה לשליחות, עם המקור. הנוסח המחייב – הוראות התכ״ם.</p>
+        <div id="q-results" aria-live="polite"></div>
+      </div>
       <div class="notes-list" id="notes-list"></div>
       <div class="info-grid" id="info-list"></div>
       <details class="a2hs"><summary>📲 איך שמים את האתר במסך הבית של הטלפון</summary>
@@ -142,6 +164,7 @@
 
   <script src="data.js"></script>
   <script src="mission-info.js"></script>
+  <script src="allowances.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

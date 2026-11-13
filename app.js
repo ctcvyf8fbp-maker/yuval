@@ -286,6 +286,139 @@ const isMission = trip => {
   const txt = (trip.title || "") + " " + (trip.traveler || "");
   return !words.some(w => w && txt.includes(w));
 };
+
+// ===== חיפוש במידע לשליח =====
+const STOP = new Set("של את על עם מה כמה איך אני יש לי לו לה האם זה זו או גם אם כל לא הוא היא מי למה מתי איפה אפשר צריך מותר שלי שלנו אנחנו אתם הם הן כן רק עד אחרי לפני בין כי אז the".split(" "));
+const PREF = /^(ו?(ש|כש|מש|לכש)?(ה|ב|ל|מ|כ)?)/;
+function nrm(s){ return String(s || "").replace(/[\u0591-\u05C7]/g, "").replace(/["'״׳`]/g, "").replace(/[^\u05D0-\u05EAa-zA-Z0-9]+/g, " ").toLowerCase().trim(); }
+function stem(w){
+  let s = w;
+  if(/^[\u05D0-\u05EA]/.test(s) && s.length > 3){ const m = s.match(PREF); if(m && m[0] && s.length - m[0].length >= 2) s = s.slice(m[0].length); }
+  if(s.length > 4) s = s.replace(/(ים|ות|יות|ה|ת)$/, "");
+  return s;
+}
+const toks = s => nrm(s).split(" ").filter(Boolean);
+let SIDX = null, bookletLoading = null;
+function loadBooklet(){
+  if(typeof BOOKLET !== "undefined") return Promise.resolve();
+  if(!bookletLoading) bookletLoading = new Promise(res => { const sc = document.createElement("script"); sc.src = "booklet-index.js"; sc.onload = res; sc.onerror = res; document.head.append(sc); });
+  return bookletLoading;
+}
+function buildIndex(){
+  const docs = [];
+  const add = (src, title, text, link) => docs.push({ src, title, text, link });
+  (typeof RIGHTS !== "undefined" ? RIGHTS : []).forEach(r => add("הזכויות שלך", r.title, r.items.join(" "), "#info"));
+  (typeof INFO_NOTES !== "undefined" ? INFO_NOTES : []).forEach(n => add("מידע לשליח", n.title, [...(n.before||[]), ...(n.ol||[]), ...(n.after||[])].join(" "), "#info"));
+  (typeof ORIENT_NOTES !== "undefined" ? ORIENT_NOTES : []).forEach(n => add("אוריינטציה", n.title, [ORIENT_NOTE || "", ...(n.before||[]), ...(n.ol||[])].join(" "), ""));
+  (typeof CHECKLIST !== "undefined" ? CHECKLIST : []).forEach(g => g.items.forEach(i => add("צ׳ק ליסט", i.title, (i.detail || "") + (i.contact ? " · " + i.contact : ""), "#checklist")));
+  const after = document.getElementById("after-trip");
+  if(after) after.querySelectorAll(".after-list > li").forEach(li => add("אחרי הנסיעה – התחשבנות", li.querySelector("strong") ? li.querySelector("strong").textContent : "", li.textContent.replace(/✍️ מילוי מקוון|⬇ הורדה/g, ""), ""));
+  (typeof FORMS !== "undefined" ? FORMS : []).forEach(f => add("טפסים למילוי", f.title, f.note || "", "#forms"));
+  (typeof BOOKLET !== "undefined" ? BOOKLET : []).forEach(b => add("חוברת ההכנה לשליחות", "עמוד " + b.p + " בקובץ", b.t, "booklet-2022.pdf#page=" + b.p));
+  docs.forEach(d => { d.stems = toks(d.title + " " + d.text).map(stem); d.tstems = new Set(toks(d.title).map(stem)); });
+  const df = {}; docs.forEach(d => new Set(d.stems).forEach(s => df[s] = (df[s] || 0) + 1));
+  SIDX = { docs, df, N: docs.length };
+}
+function search(q){
+  const terms = [...new Set(toks(q).filter(w => !STOP.has(w)).map(stem).filter(s => s.length >= 2))];
+  if(!terms.length) return [];
+  const { docs, df, N } = SIDX;
+  const res = [], keys = Object.keys(df);
+  const idf = Object.fromEntries(terms.map(t => [t, Math.log(1 + N / (1 + keys.filter(k => k.startsWith(t)).reduce((a, k) => a + df[k], 0)))]));
+  docs.forEach(d => {
+    let score = 0, hit = 0;
+    terms.forEach(t => {
+      const n = d.stems.filter(s => s.startsWith(t)).length;
+      if(n){ hit++; score += idf[t] * (1 + Math.log(n)) + ([...d.tstems].some(s => s.startsWith(t)) ? 2 : 0); }
+    });
+    if(hit){ score *= hit / terms.length; if(d.src !== "חוברת ההכנה לשליחות") score *= 1.25; res.push({ d, score, hit }); }
+  });
+  res.sort((a, b) => b.hit - a.hit || b.score - a.score);
+  return { terms, res: res.slice(0, 8) };
+}
+function snippet(text, terms){
+  const parts = text.split(/(?<=[.:;!?])\s+/);
+  let best = parts[0] || text, bs = -1;
+  parts.forEach(p => { const st = toks(p).map(stem); const s = terms.filter(t => st.some(x => x.startsWith(t))).length; if(s > bs){ bs = s; best = p; } });
+  if(best.length > 320) best = best.slice(0, 320) + "…";
+  // הדגשה
+  return esc(best).replace(/[\u05D0-\u05EAa-zA-Z0-9"״׳']+/g, w => terms.some(t => stem(nrm(w)).startsWith(t)) ? `<mark>${w}</mark>` : w);
+}
+async function runSearch(){
+  const q = document.getElementById("q").value.trim();
+  const box = document.getElementById("q-results");
+  if(!q){ box.innerHTML = ""; return; }
+  box.innerHTML = `<p class="search-hint">מחפש…</p>`;
+  await loadBooklet();
+  if(!SIDX || (typeof BOOKLET !== "undefined" && !SIDX.docs.some(d => d.src === "חוברת ההכנה לשליחות"))) buildIndex();
+  const r = search(q);
+  if(!r.res || !r.res.length){ box.innerHTML = `<p class="no-res">לא נמצאו תוצאות. נסו מילים אחרות, או בדקו בהוראות התכ״ם.</p>`; return; }
+  box.innerHTML = r.res.map(({ d }) => `<article class="res">
+      <div class="res-src">${esc(d.src)}${d.title ? " · " + esc(d.title) : ""}</div>
+      <p>${snippet(d.text, r.terms)}</p>
+      ${d.link ? `<a class="res-link" href="${esc(d.link)}"${d.link.startsWith("#") ? "" : ' target="_blank" rel="noopener"'}>${d.link.startsWith("booklet") ? "פתיחת החוברת בעמוד הזה ↗" : "מעבר ללשונית ←"}</a>` : ""}
+    </article>`).join("");
+}
+function initSearch(){
+  const q = document.getElementById("q"); if(!q || q.dataset.ready) return; q.dataset.ready = "1";
+  let tm; q.addEventListener("input", () => { clearTimeout(tm); tm = setTimeout(runSearch, 350); });
+  q.addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); runSearch(); } });
+  q.addEventListener("focus", loadBooklet, { once: true });
+  document.getElementById("q-go").onclick = runSearch;
+}
+
+
+// ===== מחשבון אש״ל ולינה (לשונית האוריינטציה) =====
+const CITY_HE = { "Washington DC": "וושינגטון", "New York NY": "ניו יורק", "Boston MA": "בוסטון", "Los Angeles CA": "לוס אנג׳לס", "San Francisco CA": "סן פרנסיסקו",
+  "Houston TX": "יוסטון", "Paris": "פריז", "Central London": "לונדון (מרכז)", "Tokyo": "טוקיו", "Moscow": "מוסקבה", "Geneva": "ז׳נבה", "Zurich": "ציריך",
+  "Amsterdam": "אמסטרדם", "Sydney": "סידני", "Niue": "ניואה", "Montevideo": "מונטווידאו", "Tashkent": "טשקנט", "Caracas": "קראקס", "Hanoi": "האנוי", "Lusaka": "לוסקה", "Harare": "הררה" };
+const OTHER_DEST = "יעד אחר – לא מופיע בטבלה";
+const destLabel = r => `${r.he} – ${CITY_HE[r.city] ? CITY_HE[r.city] + " (" + r.city + ")" : r.city === "כל המדינה" ? "כל המדינה" : r.city === "יתר המדינה" ? "יתר המדינה" : r.city} · ${r.country}`;
+let calcReady = false;
+function initCalc(trip){
+  if(typeof ALLOWANCES === "undefined") { document.getElementById("calc").hidden = true; return; }
+  const dest = document.getElementById("c-dest"), from = document.getElementById("c-from"), to = document.getElementById("c-to");
+  if(!calcReady){
+    calcReady = true;
+    const dl = document.getElementById("c-dest-list");
+    [...ALLOWANCES.map(destLabel), OTHER_DEST].forEach(l => { const o = document.createElement("option"); o.value = l; dl.append(o); });
+    [dest, from, to].forEach(i => i.addEventListener("input", calcRun));
+    const I = ALLOWANCES_INFO;
+    document.getElementById("c-note").innerHTML = `חישוב משוער בלבד, לפי ${esc(I.title)} (בתוקף ${esc(I.valid)}) – <a href="takam-allowances.pdf" target="_blank" rel="noopener">לטבלה המלאה ↗</a>. הזכאות הסופית נקבעת לפי הוראת תכ״ם 13.10.2 (כולל הכללים לימי היציאה והחזרה וניכוי ארוחות שסופקו).`
+      + (todayISO() > I.validTo ? ` <strong class="warn">⚠️ תוקף הטבלה הסתיים ב-${esc(I.valid.split("–")[1].trim())} – יש לבדוק אם פורסמה מהדורה חדשה באתר התכ״ם.</strong>` : "");
+  }
+  if(!from.value && trip.departure && /^\d{4}-\d{2}-\d{2}$/.test(trip.departure)) from.value = trip.departure;
+  if(!dest.value && trip.destination){
+    const d = nrm(trip.destination);
+    const hit = ALLOWANCES.find(r => CITY_HE[r.city] && d.includes(nrm(CITY_HE[r.city]).split(" ")[0])) || ALLOWANCES.find(r => d.includes(nrm(r.he)) || nrm(r.he).includes(d) && d.length > 2);
+    if(hit) dest.value = destLabel(hit);
+  }
+  calcRun();
+}
+function calcRun(){
+  const dv = document.getElementById("c-dest").value.trim(), f = document.getElementById("c-from").value, t = document.getElementById("c-to").value;
+  const out = document.getElementById("c-out"), sum = document.getElementById("c-sum");
+  let row = ALLOWANCES.find(r => destLabel(r) === dv);
+  if(!row && dv){ const q = nrm(dv); const c = ALLOWANCES.filter(r => nrm(destLabel(r)).includes(q)); if(c.length === 1) row = c[0]; }
+  const other = dv === OTHER_DEST;
+  if(!f || !t || (!row && !other)){ out.innerHTML = ""; sum.textContent = !dv ? "בחרו יעד ותאריכים כדי לראות את החישוב." : (!row && !other ? "בחרו יעד מהרשימה שנפתחת בזמן ההקלדה." : "בחרו תאריך יציאה ותאריך חזרה."); sum.className = "calc-sum muted"; return; }
+  const nights = daysBetween(f, t);
+  if(nights < 0){ out.innerHTML = ""; sum.textContent = "תאריך החזרה מוקדם מתאריך היציאה."; sum.className = "calc-sum muted"; return; }
+  const days = nights + 1;
+  const stay = row ? row.stay : (ALLOWANCES_INFO.defaultStay || 180);
+  const fmtN = n => Number(n).toLocaleString("he-IL");
+  const cells = [
+    ["ימים בחו״ל", fmtN(days)], ["לילות", fmtN(nights)],
+    ["אש״ל ליום", fmtN(stay) + " ₪"],
+    ["לינה ללילה", row ? fmtN(row.lodging) + " " + row.cur : "לבדוק מול קצין הנסיעות"]
+  ];
+  out.innerHTML = cells.map(([k, v]) => `<div class="cbox"><span>${k}</span><strong>${esc(v)}</strong></div>`).join("");
+  const stayTot = stay * days, lodTot = row ? row.lodging * nights : null;
+  sum.className = "calc-sum";
+  sum.innerHTML = `סה״כ: <strong>דמי אש״ל ${fmtN(stayTot)} ₪</strong> <span class="muted">(${fmtN(days)} ימים × ${fmtN(stay)} ₪)</span> · `
+    + (row ? `<strong>דמי לינה ${fmtN(lodTot)} ${row.cur}</strong> <span class="muted">(${fmtN(nights)} לילות × ${fmtN(row.lodging)} ${row.cur})</span>` : `<strong>דמי לינה – לבדוק מול קצין הנסיעות</strong>`);
+}
+
 function noteCards(box, list){
   box.innerHTML = "";
   list.forEach(n => {
@@ -387,7 +520,7 @@ function render(){
   otop.hidden = true;
   if(special){
     renderTabs();
-    if(isInfo) renderInfo();
+    if(isInfo){ renderInfo(); initSearch(); }
     else if(isCL) renderInfoView();
     else renderForms(TRIPS.find(isMission) || TRIPS[0] || {});
     fsec.hidden = !isForms;
@@ -412,6 +545,7 @@ function render(){
   if(!isMission(trip)){
     after.hidden = false;
     otop.hidden = false;
+    initCalc(trip);
     document.getElementById("orient-note").textContent = typeof ORIENT_NOTE === "string" ? ORIENT_NOTE : "";
     noteCards(document.getElementById("orient-notes"), typeof ORIENT_NOTES !== "undefined" ? ORIENT_NOTES : []);
     const up = ((trip.folder || "") + "").trim() || (typeof UPLOAD_LINK === "string" ? UPLOAD_LINK : "").trim();
