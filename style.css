@@ -248,3 +248,4 @@ h1{font-size:1.6rem;font-weight:700;margin:0;letter-spacing:-.01em}
 .calc-sum.muted{background:transparent;padding:0}
 .calc-note{margin:10px 0 0;color:var(--muted);font-size:.8rem}
 .calc-note .warn{color:var(--no)}
+.fbtn.wa{background:#1fa855;border-color:#1fa855;color:#fff}

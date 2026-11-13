@@ -19,7 +19,7 @@
 ## פעולות מהירות
 | מה רוצים לעשות | לוחצים כאן |
 |---|---|
-| ✏️ הגדרות (קישורים, טפסים, כותרות) | [עריכת data.js](https://github.com/ctcvyf8fbp-maker/yuval/edit/main/data.js) |
+| ✏️ הגדרות (קישורים, טפסים, כותרות, מספר וואטסאפ – WHATSAPP_NUMBER) | [עריכת data.js](https://github.com/ctcvyf8fbp-maker/yuval/edit/main/data.js) |
 | 📎 להעלות קבצים | [העלאה](https://github.com/ctcvyf8fbp-maker/yuval/upload/main) |
 | 👀 לפתוח את האתר | [מעבר לאתר](https://ctcvyf8fbp-maker.github.io/yuval/) |
 
@@ -32,6 +32,7 @@
 | `mission-info.js` | הזכויות, הדגשים והצ׳ק ליסט | רק לעדכון תוכן |
 | `allowances.js` | טבלת קצובות אש״ל ולינה למחשבון (הודעת תכ״ם 13.10.2.2) | כשמתפרסמת מהדורה חדשה – שולחים לClaude |
 | `booklet-index.js` | אינדקס החיפוש של חוברת ההכנה (נוצר מהחוברת) | לא |
+| `pdfshare.js` | יצירת PDF ושליחה בוואטסאפ | לא |
 | `forms-schema.js` | השדות של הטפסים המקוונים | לא |
 | `index.html`, `app.js`, `style.css`, `form.html`, `form-contact.html` | האתר עצמו | לא |
 | `form-*.pdf`, `booklet-2022.pdf`, `preview-*.jpg` | הטפסים, החוברת ותמונות התצוגה המקדימה | לא |

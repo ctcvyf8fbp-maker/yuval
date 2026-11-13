@@ -269,6 +269,11 @@ function renderForms(trip){
       acts.append(d);
     }
     if(f.upload && up){ const u = el("a","fbtn primary","📤 העלאת קובץ"); u.href = up; u.target = "_blank"; u.rel = "noopener"; acts.append(u); }
+    if(f.upload){
+      const num = (typeof WHATSAPP_NUMBER === "string" ? WHATSAPP_NUMBER : "").replace(/\D/g, "").replace(/^0/, "972");
+      const w = el("a","fbtn wa","📲 שליחה בוואטסאפ"); w.target = "_blank"; w.rel = "noopener";
+      w.href = `https://wa.me/${num}?text=${encodeURIComponent(`מצרף/ת: ${f.title} 📎`)}`; acts.append(w);
+    }
     li.append(acts);
     if(f.note && String(f.note).trim()) li.append(el("p","form-note", "⚠️ " + String(f.note).trim()));
     ul.append(li);
@@ -385,7 +390,7 @@ function initCalc(trip){
     [dest, from, to].forEach(i => i.addEventListener("input", calcRun));
     const I = ALLOWANCES_INFO;
     document.getElementById("c-note").innerHTML = `חישוב משוער בלבד, לפי ${esc(I.title)} (בתוקף ${esc(I.valid)}) – <a href="takam-allowances.pdf" target="_blank" rel="noopener">לטבלה המלאה ↗</a>. הזכאות הסופית נקבעת לפי הוראת תכ״ם 13.10.2 (כולל הכללים לימי היציאה והחזרה וניכוי ארוחות שסופקו).`
-      + (todayISO() > I.validTo ? ` <strong class="warn">⚠️ תוקף הטבלה הסתיים ב-${esc(I.valid.split("–")[1].trim())} – יש לבדוק אם פורסמה מהדורה חדשה באתר התכ״ם.</strong>` : "");
+;
   }
   if(!from.value && trip.departure && /^\d{4}-\d{2}-\d{2}$/.test(trip.departure)) from.value = trip.departure;
   if(!dest.value && trip.destination){

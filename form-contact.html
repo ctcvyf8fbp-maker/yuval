@@ -64,6 +64,7 @@ input.bad,select.bad{border-color:var(--no)}
   #doc .foot{margin-top:30px;border-top:1px solid #000;padding-top:6px;font-size:9.5pt;text-align:center}
 }
 @media (max-width:560px){ .grid{grid-template-columns:1fr} }
+.btn.wa{background:#1fa855;border-color:#1fa855;color:#fff}
 </style>
 </head>
 <body>
@@ -132,11 +133,13 @@ input.bad,select.bad{border-color:var(--no)}
   <section class="done" id="done" aria-live="polite">
     <strong>✔ הטופס מוכן.</strong>
     <ol>
-      <li>לוחצים „שמירה כ-PDF” ובחלון שנפתח בוחרים <b>שמירה כ-PDF</b> (בטלפון: שיתוף ← שמירה בקבצים).</li>
-      <li>שולחים את הקובץ בכפתור „שליחת מסמך”.</li>
+      <li>לוחצים <b>📲 שליחה בוואטסאפ</b> – נוצר קובץ PDF ונפתח חלון שיתוף. בוחרים WhatsApp ואת איש הקשר.</li>
+      <li>במחשב: הקובץ יורד, ונפתח וואטסאפ – מצרפים את הקובץ שירד 📎.</li>
     </ol>
     <div class="actions">
-      <button type="button" class="btn primary" id="btn-print">שמירה כ-PDF / הדפסה</button>
+      <button type="button" class="btn primary wa" id="btn-wa">📲 שליחה בוואטסאפ</button>
+      <button type="button" class="btn" id="btn-pdf">⬇ הורדת PDF</button>
+      <button type="button" class="btn" id="btn-print">🖨 הדפסה</button>
       <a class="btn" id="btn-send" target="_blank" rel="noopener">📤 שליחת מסמך</a>
     </div>
   </section>
@@ -146,6 +149,7 @@ input.bad,select.bad{border-color:var(--no)}
 <div id="doc" aria-hidden="true"></div>
 
 <script src="data.js"></script>
+<script src="pdfshare.js"></script>
 <script>
 const f = document.getElementById("f");
 const $ = n => f.elements[n];
@@ -214,6 +218,26 @@ f.addEventListener("submit", e => {
   document.title = `טופס איש קשר – ${$("first").value} ${$("last").value}`;
 });
 document.getElementById("btn-print").onclick = () => window.print();
+async function contactPdf(){
+  const pg = pager();
+  pg.sub("מדינת ישראל · משרד הביטחון");
+  pg.title("טופס פרטים אישיים – לשימוש המשרד בשעת מצוקה");
+  pg.h("חלק א׳ – פרטי העובד");
+  [["שם משפחה","last"],["שם פרטי","first"],["מס׳ עובד מלא","empno"],["ת.ז.","id"],["אגף","dept"],["יחידה","unit"]].forEach(([k,n]) => pg.kv(k, $(n).value));
+  pg.kv("תאריך לידה", fmt($("dob").value)); pg.kv("כתובת", $("addr").value);
+  [["טלפון במשרד","tel_office"],["טלפון בבית","tel_home"],["טלפון נייד","tel_mobile"]].forEach(([k,n]) => pg.kv(k, $(n).value));
+  pg.h("חלק ב׳ – פרטי אנשי קשר");
+  [1,2].forEach(i => { if(i === 2 && !$("c2_name").value.trim()) return;
+    pg.h4("איש קשר " + i); pg.kv("שם מלא", $("c"+i+"_name").value); pg.kv("טלפון נייח", $("c"+i+"_tel").value); pg.kv("טלפון נייד", $("c"+i+"_mobile").value); pg.kv("קירבה", $("c"+i+"_rel").value); });
+  pg.p("• איש הקשר חייב להיות קרוב משפחה מדרגה ראשונה.");
+  pg.h("חתימה"); pg.kv("תאריך", fmt($("date").value)); await pg.img(cv.toDataURL("image/png"), 160);
+  return canvasesToFile(pg.done(), `טופס איש קשר – ${$("first").value} ${$("last").value}`);
+}
+async function busy(btn, fn){ const t = btn.textContent; btn.disabled = true; btn.textContent = "מכין את הקובץ…";
+  try{ await fn(); } catch(e){ if(e && e.name !== "AbortError"){ alert("לא הצלחתי ליצור את הקובץ. אפשר להשתמש בכפתור „הדפסה”."); console.error(e); } }
+  btn.disabled = false; btn.textContent = t; }
+document.getElementById("btn-wa").onclick = e => busy(e.currentTarget, async () => shareFileWA(await contactPdf(), "טופס איש קשר למקרי חירום"));
+document.getElementById("btn-pdf").onclick = e => busy(e.currentTarget, async () => download(await contactPdf()));
 </script>
 </body>
 </html>

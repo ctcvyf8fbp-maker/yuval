@@ -70,6 +70,7 @@ input:focus,select:focus,textarea:focus{outline:3px solid color-mix(in srgb,var(
 .pv-pages img{width:100%;height:auto;display:block;background:#fff;border-radius:4px;box-shadow:0 1px 4px rgba(0,0,0,.15)}
 .pv-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}
 .step-tag{display:inline-block;font-size:.8rem;font-weight:700;color:var(--paper);background:var(--ink);border-radius:999px;padding:2px 10px;margin-inline-end:6px}
+.btn.wa{background:#1fa855;border-color:#1fa855;color:#fff}
 .missing{background:var(--paper);border-radius:14px;padding:24px;text-align:center}
 @media (max-width:560px){ .grid{grid-template-columns:1fr} }
 
@@ -283,9 +284,12 @@ function build(){
   const err = el("p","err"); err.setAttribute("role","alert");
   form.append(act, err);
   const done = el("section","done"); done.setAttribute("aria-live","polite");
-  done.innerHTML = `<strong>✔ הטופס מוכן.</strong><ol><li>לוחצים „שמירה כ-PDF” ובחלון שנפתח בוחרים <b>שמירה כ-PDF</b> (בטלפון: שיתוף ← שמירה בקבצים).</li><li>שולחים את הקובץ בכפתור „שליחת מסמך”.</li></ol>`;
-  const da = el("div","actions"); const pb = el("button","btn primary","שמירה כ-PDF / הדפסה"); pb.type = "button"; pb.onclick = () => window.print();
-  da.append(pb);
+  done.innerHTML = `<strong>✔ הטופס מוכן.</strong><ol><li>לוחצים <b>📲 שליחה בוואטסאפ</b> – נוצר קובץ PDF ונפתח חלון שיתוף. בוחרים WhatsApp ואת איש הקשר.</li><li>במחשב: הקובץ יורד, ונפתח וואטסאפ – מצרפים את הקובץ שירד 📎.</li></ol>`;
+  const da = el("div","actions");
+  const wa = el("button","btn primary wa","📲 שליחה בוואטסאפ"); wa.type = "button"; wa.onclick = () => shareWhatsApp(wa);
+  const dp = el("button","btn","⬇ הורדת PDF"); dp.type = "button"; dp.onclick = () => downloadPdf(dp);
+  const pb = el("button","btn","🖨 הדפסה"); pb.type = "button"; pb.onclick = () => window.print();
+  da.append(wa, dp, pb);
   const up = (new URLSearchParams(location.search).get("up") || (typeof UPLOAD_LINK === "string" ? UPLOAD_LINK : "")).trim();
   if(up){ const sl = el("a","btn","📤 שליחת מסמך"); sl.href = up; sl.target = "_blank"; sl.rel = "noopener"; da.append(sl); }
   done.append(da); wrap.append(done);
@@ -352,20 +356,12 @@ function renderFields(list){
   flush(); return h;
 }
 // ---------- מילוי על גבי הטופס המקורי ----------
-function renderOverlay(){
+function overlayOps(){
   const O = S.overlay, W = 595.28, H = O.h || 841.89;
   const vals = {};
   parts.forEach(p => p.fl.forEach(o => { if(o.f && o.f.id) vals[o.f.id] = o.get(); }));
-  const pages = O.pages.map(() => []);
-  const put = (p, x, y, text, o = {}) => {
-    const size = o.size || 9;
-    let pos = `top:${((y - size * 0.85) / H * 100).toFixed(3)}%;font-size:${size}pt;`;
-    if(o.align === "center") pos += `left:${(x / W * 100).toFixed(3)}%;transform:translateX(-50%);`;
-    else if(o.align === "left") pos += `left:${(x / W * 100).toFixed(3)}%;direction:ltr;`;
-    else pos += `right:${((W - x) / W * 100).toFixed(3)}%;`;
-    if(o.ltr) pos += "direction:ltr;unicode-bidi:isolate;";
-    pages[p].push(`<span class="ovt" style="${pos}">${esc(text)}</span>`);
-  };
+  const pages = O.pages.map(src => ({ bg: src, ops: [] }));
+  const put = (p, x, y, text, o = {}) => pages[p].ops.push({ t: "text", x, y, text: String(text), size: o.size || 9, align: o.align || "right", ltr: !!(o.ltr || o.align === "left") });
   const tick = (p, x, y) => put(p, x, y + 1, "✓", { align: "center", size: 11 });
   const fmtV = (v, o) => o.date ? fmt(v) : v;
   O.items.forEach(it => {
@@ -383,15 +379,11 @@ function renderOverlay(){
       });
       return;
     }
-    if(it.sig){ if(sig && sig.signed()) pages[it.p].push(`<img class="ovs" alt="" src="${sig.url()}" style="left:${(it.x/W*100).toFixed(3)}%;top:${(it.y/H*100).toFixed(3)}%;width:${(it.w/W*100).toFixed(3)}%;height:${(it.h/H*100).toFixed(3)}%;object-fit:contain">`); return; }
+    if(it.sig){ if(sig && sig.signed()) pages[it.p].ops.push({ t: "sig", x: it.x, y: it.y, w: it.w, h: it.h }); return; }
     if(it.signDate){ if(dateInp && dateInp.value) put(it.p, it.x, it.y, fmt(dateInp.value), it); return; }
     if(it.combo){ const t = it.combo.map(k => fmtV(vals[k] || "", it)).filter(Boolean).join(" – "); if(t) put(it.p, it.x, it.y, t, { ...it, ltr: true }); return; }
     const v = vals[it.id];
-    if(it.circle){
-      if(v === it.opt){ const r = it.r || 5.5;
-        pages[it.p].push(`<span class="ovc" style="left:${((it.x - r) / W * 100).toFixed(3)}%;top:${((it.y - r) / H * 100).toFixed(3)}%;width:${(2 * r / W * 100).toFixed(3)}%;height:${(2 * r / H * 100).toFixed(3)}%"></span>`); }
-      return;
-    }
+    if(it.circle){ if(v === it.opt) pages[it.p].ops.push({ t: "circle", x: it.x, y: it.y, r: it.r || 5.5 }); return; }
     if(it.parts && v && /^\d{4}-\d{2}-\d{2}$/.test(v)){
       const [yy, mm, dd] = v.split("-");
       [dd, mm, yy].forEach((t, j) => put(it.p, it.parts[j], it.y, t, { align: "center", size: it.size }));
@@ -405,16 +397,150 @@ function renderOverlay(){
     }
     if(v) put(it.p, it.x, it.y, fmtV(v, it), it);
   });
-  let h = O.pages.map((src, i) => `<div class="ovp"><img class="bg" alt="" src="${src}">${pages[i].join("")}</div>`).join("");
   const extras = (Array.isArray(O.extra) ? O.extra : O.extra ? [O.extra] : [])
     .map(id => { const o = parts.flatMap(p => p.fl).find(x => x.f && x.f.id === id); const sec = parts.find(p => p.fl.includes(o));
-      return o && vals[id] ? `<p><strong>${esc((sec && sec.sec.title ? sec.sec.title + " – " : "") + o.f.label)}:</strong> ${esc(vals[id]).replace(/\n/g,"<br>")}</p>` : ""; })
+      return o && vals[id] ? { k: (sec && sec.sec.title ? sec.sec.title + " – " : "") + o.f.label, v: String(vals[id]) } : null; })
     .filter(Boolean);
-  if(extras.length) h += `<div class="ovp"><div class="ovx"><strong>נספח – ${esc(S.title)}: פרטים נוספים</strong>${extras.join("")}</div></div>`;
+  return { W, H, pages, extras };
+}
+function renderOverlay(){
+  const { W, H, pages, extras } = overlayOps();
+  const pct = (a, b) => (a / b * 100).toFixed(3) + "%";
+  let h = pages.map(pg => `<div class="ovp"><img class="bg" alt="" src="${pg.bg}">${pg.ops.map(op => {
+    if(op.t === "sig") return `<img class="ovs" alt="" src="${sig.url()}" style="left:${pct(op.x, W)};top:${pct(op.y, H)};width:${pct(op.w, W)};height:${pct(op.h, H)};object-fit:contain">`;
+    if(op.t === "circle") return `<span class="ovc" style="left:${pct(op.x - op.r, W)};top:${pct(op.y - op.r, H)};width:${pct(2 * op.r, W)};height:${pct(2 * op.r, H)}"></span>`;
+    let pos = `top:${pct(op.y - op.size * 0.85, H)};font-size:${op.size}pt;`;
+    if(op.align === "center") pos += `left:${pct(op.x, W)};transform:translateX(-50%);`;
+    else if(op.align === "left") pos += `left:${pct(op.x, W)};`;
+    else pos += `right:${pct(W - op.x, W)};`;
+    if(op.ltr) pos += "direction:ltr;unicode-bidi:isolate;";
+    return `<span class="ovt" style="${pos}">${esc(op.text)}</span>`;
+  }).join("")}</div>`).join("");
+  if(extras.length) h += `<div class="ovp"><div class="ovx"><strong>נספח – ${esc(S.title)}: פרטים נוספים</strong>${extras.map(x => `<p><strong>${esc(x.k)}:</strong> ${esc(x.v).replace(/\n/g,"<br>")}</p>`).join("")}</div></div>`;
   const doc = document.getElementById("doc"); doc.className = "ov"; doc.innerHTML = h;
   let ps = document.getElementById("pagestyle");
   if(!ps){ ps = document.createElement("style"); ps.id = "pagestyle"; document.head.append(ps); }
   ps.textContent = "@media print{@page{size:A4;margin:0}}";
+}
+
+// ---------- יצירת קובץ PDF ושליחה בוואטסאפ ----------
+const PW = 1240, PH = 1754, FONT = 'Arial, "Arial Hebrew", "Noto Sans Hebrew", sans-serif';
+const loadImg = src => new Promise(res => { const i = new Image(); i.onload = () => res(i); i.onerror = () => res(null); i.src = src; });
+function newCanvas(){ const c = document.createElement("canvas"); c.width = PW; c.height = PH; c.setAttribute("dir","rtl");
+  const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, PW, PH); try{ x.direction = "rtl"; }catch(e){} return [c, x]; }
+async function overlayCanvases(){
+  const { W, H, pages, extras } = overlayOps();
+  const sx = PW / W, sy = PH / H, out = [];
+  const sigImg = sig && sig.signed() ? await loadImg(sig.url()) : null;
+  for(const pg of pages){
+    const [c, x] = newCanvas();
+    const bg = await loadImg(pg.bg); if(bg) x.drawImage(bg, 0, 0, PW, PH);
+    x.fillStyle = "#0b2a6b"; x.strokeStyle = "#0b2a6b";
+    pg.ops.forEach(op => {
+      if(op.t === "sig"){ if(sigImg){ const r = Math.min(op.w * sx / sigImg.width, op.h * sy / sigImg.height); const w = sigImg.width * r, h = sigImg.height * r;
+        x.drawImage(sigImg, op.x * sx + (op.w * sx - w) / 2, op.y * sy + (op.h * sy - h) / 2, w, h); } return; }
+      if(op.t === "circle"){ x.lineWidth = 2.6; x.beginPath(); x.ellipse(op.x * sx, op.y * sy, op.r * sx, op.r * sy, 0, 0, Math.PI * 2); x.stroke(); return; }
+      x.font = `bold ${op.size * sx}px ${FONT}`;
+      x.direction = op.ltr ? "ltr" : "rtl";
+      x.textAlign = op.align === "center" ? "center" : op.align === "left" ? "left" : "right";
+      x.fillText(op.text, op.x * sx, op.y * sy);
+    });
+    out.push(c);
+  }
+  if(extras.length){
+    const pg = pager(); pg.title("נספח – " + S.title + ": פרטים נוספים");
+    extras.forEach(e => pg.kv(e.k, e.v)); out.push(...pg.done());
+  }
+  return out;
+}
+// דפים פשוטים (לטפסים בלי טופס מקורי)
+function pager(){
+  const M = 90, out = []; let c, x, y;
+  const page = () => { [c, x] = newCanvas(); out.push(c); y = M; x.fillStyle = "#111"; x.textAlign = "right"; x.direction = "rtl"; };
+  page();
+  const lines = (text, font, maxW) => { x.font = font; const words = String(text).split(/\s+/); const res = []; let cur = "";
+    words.forEach(w => { const t = cur ? cur + " " + w : w; if(x.measureText(t).width > maxW && cur){ res.push(cur); cur = w; } else cur = t; });
+    if(cur) res.push(cur); return res.length ? res : [""]; };
+  const write = (text, size, opt = {}) => {
+    const font = `${opt.bold ? "bold " : ""}${size}px ${FONT}`, lh = size * 1.45;
+    String(text).split("\n").forEach(par => lines(par, font, PW - 2 * M - (opt.indent || 0)).forEach(l => {
+      if(y + lh > PH - M) page();
+      x.font = font; x.fillStyle = opt.color || "#111"; x.textAlign = opt.center ? "center" : "right";
+      x.fillText(l, opt.center ? PW / 2 : PW - M - (opt.indent || 0), y + size); y += lh;
+    }));
+  };
+  return {
+    title(t){ write(t, 40, { bold: true, center: true }); y += 14; },
+    sub(t){ write(t, 22, { center: true, color: "#555" }); y += 10; },
+    h(t){ y += 18; if(y + 60 > PH - M) page(); write(t, 28, { bold: true }); x.fillStyle = "#999"; x.fillRect(M, y + 2, PW - 2 * M, 2); y += 14; },
+    h4(t){ y += 8; write(t, 25, { bold: true }); },
+    kv(k, v){ write(k + ": " + (v === "" || v == null ? "—" : v), 24); y += 4; },
+    p(t, indent){ write(t, 23, { indent: indent ? 30 : 0 }); y += 6; },
+    async img(src, maxH = 520){ const i = await loadImg(src); if(!i) return; const r = Math.min((PW - 2 * M) / i.width, maxH / i.height, 1.5); const w = i.width * r, h = i.height * r;
+      if(y + h > PH - M) page(); x.drawImage(i, PW - M - w, y, w, h); y += h + 12; },
+    done(){ return out; }
+  };
+}
+const txtVal = (f, v) => f.type === "date" ? fmt(v) : Array.isArray(v) ? v.join(", ") : (v ?? "");
+async function plainFields(pg, list){
+  for(const { f, v } of list){
+    if(f.type === "para"){ pg.p(f.text, f.indent); continue; }
+    if(f.type === "checks"){ if(f.label) pg.p(f.label + ":"); f.options.forEach(o => pg.p(((v || []).includes(o) ? "☑ " : "☐ ") + o, true)); continue; }
+    if(f.type === "table"){ if(f.label) pg.h4(f.label); if(!v.length){ pg.p("—"); continue; }
+      v.forEach((r, i) => pg.p(`${i + 1}. ` + f.cols.map(c => `${c.label}: ${c.type === "check" ? (r[c.id] ? "✓" : "—") : c.type === "date" ? fmt(r[c.id]) : (r[c.id] || "—")}`).join(" · "))); continue; }
+    if(f.type === "repeat"){ for(let i = 0; i < v.length; i++){ pg.h4(`${f.itemLabel || ""} ${i + 1}`); await plainFields(pg, v[i]); } continue; }
+    if(f.type === "image"){ if(v){ pg.p(f.label + ":"); await pg.img(v); } continue; }
+    pg.kv(f.label, txtVal(f, v));
+  }
+}
+async function plainCanvases(){
+  const pg = pager();
+  if(S.header) pg.sub("מדינת ישראל · משרד הביטחון");
+  pg.title(S.title); if(S.subtitle) pg.sub(S.subtitle);
+  for(const { sec, fl } of parts){
+    if(sec.title) pg.h(sec.title);
+    if(!sec.fields){ if(sec.note) pg.p(sec.note); continue; }
+    await plainFields(pg, fl.map(o => ({ f: o.f || { type: "para", text: o.el.textContent }, v: o.get ? o.get() : "" })));
+  }
+  if(S.sign){
+    pg.h("חתימה");
+    if(dateInp && dateInp.value) pg.kv("תאריך", fmt(dateInp.value));
+    if(sig && sig.signed()) await pg.img(sig.url(), 160);
+  }
+  return pg.done();
+}
+let jsPDFp = null;
+const loadJsPDF = () => jsPDFp || (jsPDFp = new Promise((res, rej) => { if(window.jspdf) return res();
+  const s = document.createElement("script"); s.src = "https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"; s.onload = res; s.onerror = rej; document.head.append(s); }));
+async function makePdf(){
+  await loadJsPDF();
+  const canv = S.overlay ? await overlayCanvases() : await plainCanvases();
+  const pdf = new window.jspdf.jsPDF({ unit: "pt", format: "a4", compress: true });
+  canv.forEach((c, i) => { if(i) pdf.addPage(); pdf.addImage(c.toDataURL("image/jpeg", 0.82), "JPEG", 0, 0, 595.28, 841.89); });
+  const nm = parts.flatMap(p => p.fl).find(o => o.f && ["name","last","first","lastHe"].includes(o.f.id));
+  const fname = (S.title + (nm && nm.get() ? " – " + nm.get() : "")).replace(/[\\/:*?"<>|]/g, "") + ".pdf";
+  return new File([pdf.output("blob")], fname, { type: "application/pdf" });
+}
+function download(file){ const u = URL.createObjectURL(file); const a = document.createElement("a"); a.href = u; a.download = file.name; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000); }
+async function shareWhatsApp(btn){
+  const old = btn.textContent; btn.disabled = true; btn.textContent = "מכין את הקובץ…";
+  try{
+    const file = await makePdf();
+    if(navigator.canShare && navigator.canShare({ files: [file] })){
+      await navigator.share({ files: [file], title: file.name, text: S.title });
+    } else {
+      download(file);
+      const num = (typeof WHATSAPP_NUMBER === "string" ? WHATSAPP_NUMBER : "").replace(/\D/g, "").replace(/^0/, "972");
+      const msg = encodeURIComponent(`מצרף/ת את „${S.title}” (הקובץ ירד עכשיו למחשב – יש לצרף אותו כאן 📎)`);
+      window.open(`https://wa.me/${num}?text=${msg}`, "_blank", "noopener");
+    }
+  } catch(e){ if(e && e.name !== "AbortError"){ alert("לא הצלחתי ליצור את הקובץ. אפשר להשתמש בכפתור „שמירה כ-PDF / הדפסה”."); console.error(e); } }
+  btn.disabled = false; btn.textContent = old;
+}
+async function downloadPdf(btn){
+  const old = btn.textContent; btn.disabled = true; btn.textContent = "מכין את הקובץ…";
+  try{ download(await makePdf()); } catch(e){ alert("לא הצלחתי ליצור את הקובץ. אפשר להשתמש בכפתור „שמירה כ-PDF / הדפסה”."); console.error(e); }
+  btn.disabled = false; btn.textContent = old;
 }
 
 function renderDoc(){

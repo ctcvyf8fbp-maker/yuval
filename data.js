@@ -62,6 +62,9 @@ const FORMS_TAB_WORDS = ["טפסים"];
 // עמודה בגיליון שהכותרת שלה כוללת אחת מהמילים האלה = לשונית הצ׳ק ליסט
 const CHECKLIST_TAB_WORDS = ["ליסט", "לסיט", "צ׳ק", "צ'ק", "צק", "checklist"];
 
+// מספר וואטסאפ לקבלת מסמכים (למשל "0501234567"). אם ריק – וואטסאפ ייפתח עם בחירת איש קשר.
+const WHATSAPP_NUMBER = "";
+
 // קישור Dropbox לשליחת מסמכים – משמש את כפתורי „העלאת קובץ” ואת סוף הטפסים המקוונים.
 const UPLOAD_LINK = "https://www.dropbox.com/request/devul2bl0ould3ztszo4";
 
