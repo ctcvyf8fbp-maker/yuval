@@ -275,7 +275,8 @@ h1{font-size:1.6rem;font-weight:700;margin:0;letter-spacing:-.01em}
 .admin-btn:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
 
 /* התקדמות בטפסים */
-.fp{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:8px;border-top:1px dashed var(--line);font-size:.88rem;color:var(--muted);cursor:pointer}
+.fp{margin:10px 0 0;padding-top:8px;border-top:1px dashed var(--line);font-size:.9rem;color:var(--muted)}
+.fp.fp-on{color:var(--ok);font-weight:700}
 .fp input{width:20px;height:20px;accent-color:var(--ok);flex:none}
 .fp-pending{color:var(--amber);font-weight:700}
 .form-card.fp-sent{border-color:color-mix(in srgb,var(--ok) 55%,var(--line))}

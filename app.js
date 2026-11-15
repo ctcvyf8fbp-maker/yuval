@@ -228,6 +228,52 @@ const todayISO = () => { const d = new Date(); return new Date(d.getTime() - d.g
 const daysBetween = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000);
 const OVERDUE = () => (typeof OVERDUE_DAYS === "number" ? OVERDUE_DAYS : 7);
 
+
+// ===== שמירה קבועה של סטטוס טפסים וצ׳ק ליסט (גיליון מעקב בענן) =====
+const API = () => (typeof STATUS_API === "string" ? STATUS_API.trim() : "");
+function travelerKey(){
+  const q = new URLSearchParams(location.search);
+  const s = (q.get("s") || "").trim(), g = (q.get("g") || "").replace(/\D/g, "");
+  return /^2PACX-[\w-]{20,}$/.test(s) ? s + "." + (g || "0") : "main";
+}
+function travelerName(){ const t = (typeof TRIPS !== "undefined" && TRIPS.find(isMission)) || (typeof TRIPS !== "undefined" && TRIPS[0]) || {}; return (t.traveler || "").trim(); }
+const PROG_KEY = () => "forms-progress:" + travelerKey();
+const CL_KEY = () => (typeof CHECKLIST_KEY !== "undefined" ? CHECKLIST_KEY : "mission-checklist") + ":" + travelerKey();
+function progLoad(){ try{ return JSON.parse(localStorage.getItem(PROG_KEY()) || "{}"); }catch(e){ return {}; } }
+function progSave(v){ try{ localStorage.setItem(PROG_KEY(), JSON.stringify(v)); }catch(e){} }
+function apiPost(rec){
+  const u = API(); if(!u) return;
+  const body = JSON.stringify({ key: travelerKey(), name: travelerName(), ...rec });
+  try{ fetch(u, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body, keepalive: true }).catch(() => {}); }catch(e){}
+}
+const withTraveler = href => { const k = travelerKey(), n = travelerName();
+  return href + (href.includes("?") ? "&" : "?") + "k=" + encodeURIComponent(k) + (n ? "&n=" + encodeURIComponent(n) : ""); };
+function rememberTraveler(){ try{ sessionStorage.setItem("traveler-key", travelerKey()); sessionStorage.setItem("traveler-name", travelerName()); }catch(e){} }
+let remoteLoaded = false;
+async function loadRemote(){
+  const u = API(); if(!u) return;
+  try{
+    const r = await fetch(u + "?key=" + encodeURIComponent(travelerKey()) + "&_=" + Date.now());
+    const j = await r.json(); if(!j || !j.ok) return;
+    const prog = progLoad(); let cl = new Set(clLoad());
+    const remoteChecks = new Map();
+    (j.rows || []).forEach(x => {
+      if(x.kind === "form"){
+        const st = x.status === "נשלח" ? "sent" : "filled", cur = prog[x.item];
+        if(!cur || (cur.ts || "") < (x.ts || "")) prog[x.item] = { state: cur && cur.state === "sent" && st !== "sent" ? "sent" : st, ts: x.ts, date: String(x.ts).slice(0,10) };
+      } else remoteChecks.set(x.item, x.status === "סומן");
+    });
+    remoteChecks.forEach((on, item) => on ? cl.add(item) : cl.delete(item));
+    // סימונים שקיימים רק במכשיר הזה – עולים לענן
+    clLoad().forEach(item => { if(!remoteChecks.has(item)) apiPost({ kind: "check", item, title: item, status: "סומן" }); });
+    progSave(prog); clSave([...cl]); remoteLoaded = true;
+    if(view === "forms") renderForms(TRIPS.find(isMission) || TRIPS[0] || {});
+    if(view === "checklist"){ clDone = false; document.getElementById("cl-list").innerHTML = ""; renderInfoView(); }
+  }catch(e){}
+}
+const fmtTs = ts => { if(!ts) return ""; const d = new Date(ts); if(isNaN(d)) return fmtDate(String(ts).slice(0,10));
+  return d.toLocaleDateString("he-IL", { day: "2-digit", month: "2-digit", year: "2-digit" }) + " " + d.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" }); };
+
 // ===== טפסים למילוי =====
 const fileOk = {};   // תוצאות בדיקה אם קובץ ההורדה קיים
 function renderForms(trip){
@@ -245,8 +291,13 @@ function renderForms(trip){
     const a = el("a","fbtn primary","📁 התיקייה האישית שלי"); a.href = folder; a.target = "_blank"; a.rel = "noopener";
     box.append(a, el("span","folder-hint", "כאן מעלים את כל המסמכים. רק את/ה ומנהלת המעקב רואים אותה."));
   }
+  const prog = progLoad();
+  let sentN = 0;
   list.forEach((f, i) => {
     const li = el("li","form-card");
+    const fm = f.online && f.online.match(/[?&]f=([\w-]+)/);
+    const pk = fm ? "f:" + fm[1] : f.online === "form-contact.html" ? "f:contact" : "t:" + f.title;
+    const pg = prog[pk];
     const head = el("div","form-head");
     head.append(el("span","form-num", i + 1), el("span","form-title", f.title));
     const ds = docStatus(trip, f.title);
@@ -256,7 +307,7 @@ function renderForms(trip){
     const acts = el("div","form-acts");
     if(f.online){
       const o = el("a","fbtn primary","✍️ מילוי מקוון");
-      o.href = f.online + (up ? (f.online.includes("?") ? "&" : "?") + "up=" + encodeURIComponent(up) : "");
+      o.href = withTraveler(f.online + (up ? (f.online.includes("?") ? "&" : "?") + "up=" + encodeURIComponent(up) : ""));
       acts.append(o);
     }
     if(f.file){
@@ -276,12 +327,24 @@ function renderForms(trip){
     }
     li.append(acts);
     if(f.note && String(f.note).trim()) li.append(el("p","form-note", "⚠️ " + String(f.note).trim()));
+    // הסטטוס מתעדכן לבד: כשהטופס הופק בהצלחה, וכשנשלח
+    if(pg){ sentN++; li.classList.add("fp-sent"); }
+    const pr = el("p","fp" + (pg ? " fp-on" : ""));
+    pr.textContent = !pg ? "עוד לא מולא" : pg.state === "sent" ? `✓ מלא ונשלח · ${fmtTs(pg.ts || pg.date)}` : `✓ מלא · הופק ${fmtTs(pg.ts || pg.date)} – לא לשכוח לשלוח בוואטסאפ`;
+    li.append(pr);
+    // טפסים שמעלים כקובץ: לחיצה על „העלאת קובץ” / „וואטסאפ” מסמנת שנשלח
+    if(!f.online) acts.querySelectorAll("a").forEach(a => a.addEventListener("click", () => {
+      const ts = new Date().toISOString(); prog[pk] = { state: "sent", ts, date: ts.slice(0,10) }; progSave(prog);
+      apiPost({ kind: "form", item: pk, title: f.title, status: "נשלח" }); setTimeout(() => renderForms(trip), 300);
+    }));
     ul.append(li);
   });
   sec.hidden = !list.length;
   const sum = document.getElementById("docs-summary");
-  sum.hidden = !tracked;
-  if(tracked) sum.innerHTML = `<strong>התקבלו ${got} מתוך ${tracked} מסמכים</strong>` + (trip.traveler ? ` · ${esc(trip.traveler)}` : "") + (got === tracked ? " · ✓ הכול הגיע!" : "");
+  sum.hidden = !list.length;
+  sum.innerHTML = `<strong>מילאת ${sentN} מתוך ${list.length} טפסים</strong>` + (sentN === list.length ? " · ✓ סיימת הכול!" : "")
+    + `<div class="bar fp-bar" aria-hidden="true"><span style="width:${list.length ? Math.round(sentN / list.length * 100) : 0}%"></span></div>`
+    + (tracked ? `<span class="fp-off">אצל מנהלת המעקב: התקבלו ${got} מתוך ${tracked}${got === tracked ? " ✓" : ""}</span>` : "");
 }
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
 
@@ -508,8 +571,8 @@ function renderInfo(){
     const ul = el("ul"); r.items.forEach(t => ul.append(el("li","",t))); c.append(ul); rl.append(c);
   });
 }
-function clLoad(){ try{ return JSON.parse(localStorage.getItem(CHECKLIST_KEY) || "[]"); }catch(e){ return []; } }
-function clSave(v){ try{ localStorage.setItem(CHECKLIST_KEY, JSON.stringify(v)); }catch(e){} }
+function clLoad(){ try{ return JSON.parse(localStorage.getItem(CL_KEY()) || "[]"); }catch(e){ return []; } }
+function clSave(v){ try{ localStorage.setItem(CL_KEY(), JSON.stringify(v)); }catch(e){} }
 let clDone = false;
 function renderChecklist(){
   if(typeof CHECKLIST === "undefined") return;
@@ -527,7 +590,8 @@ function renderChecklist(){
       g.items.forEach(it => {
         const lab = el("label","cl-item"); const cb = el("input"); cb.type = "checkbox";
         cb.checked = clLoad().includes(it.title);
-        cb.onchange = () => { const v = new Set(clLoad()); cb.checked ? v.add(it.title) : v.delete(it.title); clSave([...v]); lab.classList.toggle("on", cb.checked); upd(); };
+        cb.onchange = () => { const v = new Set(clLoad()); cb.checked ? v.add(it.title) : v.delete(it.title); clSave([...v]); lab.classList.toggle("on", cb.checked); upd();
+          apiPost({ kind: "check", item: it.title, title: it.title, status: cb.checked ? "סומן" : "לא סומן" }); };
         lab.classList.toggle("on", cb.checked);
         const txt = el("span","cl-text"); txt.append(el("strong","",it.title), el("span","cl-detail",it.detail || ""));
         if(it.contact) txt.append(el("span","cl-contact","📞 " + it.contact));
@@ -552,7 +616,7 @@ function renderInfoView(){
   // השליחה מהצ׳ק ליסט: לתיקייה של לשונית השליחות הראשונה, ואם אין – לקישור הכללי
   const t = TRIPS.find(isMission) || TRIPS[0] || {};
   const up = ((t.folder || "") + "").trim() || (typeof UPLOAD_LINK === "string" ? UPLOAD_LINK : "").trim();
-  document.getElementById("cl-sign").href = "form.html?f=checklist" + (up ? "&up=" + encodeURIComponent(up) : "");
+  document.getElementById("cl-sign").href = withTraveler("form.html?f=checklist" + (up ? "&up=" + encodeURIComponent(up) : ""));
 }
 
 // לשוניות מיוחדות: "forms" = מסמכים וטפסים, "info" = מידע וצ׳ק ליסט (בלי סבב אישורים)
@@ -615,9 +679,9 @@ function render(){
     document.getElementById("orient-note").textContent = typeof ORIENT_NOTE === "string" ? ORIENT_NOTE : "";
     noteCards(document.getElementById("orient-notes"), typeof ORIENT_NOTES !== "undefined" ? ORIENT_NOTES : []);
     const up = ((trip.folder || "") + "").trim() || (typeof UPLOAD_LINK === "string" ? UPLOAD_LINK : "").trim();
-    document.getElementById("settle-online").href = "form.html?f=settlement" + (up ? "&up=" + encodeURIComponent(up) : "");
+    document.getElementById("settle-online").href = withTraveler("form.html?f=settlement" + (up ? "&up=" + encodeURIComponent(up) : ""));
     before.hidden = false;
-    document.getElementById("adv-online").href = "form.html?f=advance" + (up ? "&up=" + encodeURIComponent(up) : "");
+    document.getElementById("adv-online").href = withTraveler("form.html?f=advance" + (up ? "&up=" + encodeURIComponent(up) : ""));
   }
   renderMission(trip, ((trip.folder || "") + "").trim() || (typeof UPLOAD_LINK === "string" ? UPLOAD_LINK : "").trim());
   renderRounds(trip, current);
@@ -715,7 +779,7 @@ function syncFromSheet(){
       document.getElementById("updated-wrap").hidden = true;
       const now = new Date();
       state.textContent = "✔ מסונכרן עם הגיליון · נטען ב-" + now.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
-      render();
+      render(); rememberTraveler(); if(!remoteLoaded) loadRemote();
     })
     .catch(() => { state.textContent = "· לא הצלחתי לטעון את הגיליון – מוצגים הנתונים השמורים"; });
 }
@@ -737,7 +801,9 @@ window.addEventListener("hashchange", () => {
   else if(h && TRIPS[+h[1]-1] && (+h[1]-1 !== tripIndex || view !== "trip")){ view = "trip"; tripIndex = +h[1]-1; render(); }
 });
 render();
+rememberTraveler();
 syncFromSheet();
+if(!sheetFromLink() && !(typeof SHEET_CSV_URL === "string" && SHEET_CSV_URL.trim())) loadRemote();
 
   // כפתור „כל השליחים” – מופיע רק במכשירים שבהם נפתח דף הניהול
   let isAdmin = false; try{ isAdmin = localStorage.getItem("admin-on") === "1"; }catch(e){}

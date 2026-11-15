@@ -43,6 +43,16 @@
   .add input{flex:1;min-width:220px;font:inherit;color:var(--ink);background:var(--sky);border:1.5px solid var(--line);border-radius:10px;padding:9px 12px}
   .add input.u{direction:ltr;text-align:left}
   .note{font-size:.85rem;color:var(--muted);margin:8px 0 0}
+  .msgline{margin:8px 0;padding:10px 12px;border-radius:10px;background:color-mix(in srgb,var(--amber) 18%,transparent);font-size:.9rem}
+  .det-btn{font:inherit;font-size:.82rem;background:none;border:1px solid var(--line);border-radius:999px;padding:2px 10px;cursor:pointer;color:var(--ink);margin-top:4px}
+  tr.det td{background:var(--sky);padding:12px 14px}
+  .det-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media (max-width:760px){.det-grid{grid-template-columns:1fr}}
+  .det-grid h4{margin:0 0 6px;font-size:.92rem}
+  .det-grid ul{margin:0;padding:0;list-style:none;font-size:.86rem}
+  .det-grid li{padding:3px 0;border-bottom:1px solid var(--line)}
+  .det-grid li.ok{color:var(--ok)} .det-grid li.miss{color:var(--muted)}
+  .det-grid .t{color:var(--muted);font-size:.78rem;margin-inline-start:6px}
 </style>
 </head>
 <body>
@@ -58,15 +68,17 @@
     <div class="kpi"><span>כל האישורים התקבלו</span><strong id="k-done">–</strong></div>
   </div>
 
+  <p class="msgline" id="api-msg" hidden></p>
   <div class="top-row">
     <button class="fbtn primary" id="refresh" type="button">🔄 רענון</button>
+    <button class="fbtn" id="code-btn" type="button">🔑 קוד ניהול</button>
     <a class="fbtn" href="link.html">🔗 יצירת קישור לשליח חדש</a>
     <button class="fbtn" id="share" type="button">📋 קישור לדף הזה במכשיר אחר</button>
   </div>
 
   <div class="tblw">
     <table>
-      <thead><tr><th>שליח/ה</th><th>יציאה</th><th>אישורים</th><th>השלב הנוכחי</th><th>אוריינטציה</th><th>מסמכים</th><th></th></tr></thead>
+      <thead><tr><th>שליח/ה</th><th>יציאה</th><th>אישורים</th><th>השלב הנוכחי</th><th>אוריינטציה</th><th>טפסים</th><th>צ׳ק ליסט</th><th></th></tr></thead>
       <tbody id="rows"></tbody>
     </table>
   </div>
@@ -132,9 +144,38 @@ function summarize(trips){
   return { mis, ori, p: prog(mis), po: prog(ori), docs: docs.length, got };
 }
 
+const API = (typeof STATUS_API === "string" ? STATUS_API.trim() : "");
+const codeGet = () => { try{ return localStorage.getItem("admin-code") || ""; }catch(e){ return ""; } };
+let statusRows = null;
+async function loadStatus(){
+  const m = document.getElementById("api-msg"); m.hidden = true; statusRows = null;
+  if(!API){ m.hidden = false; m.textContent = "שמירת הסטטוסים בענן עוד לא הוגדרה (STATUS_API ב-data.js) – עמודות „טפסים” ו„צ׳ק ליסט” יתמלאו אחרי ההגדרה."; return; }
+  const code = codeGet();
+  if(!code){ m.hidden = false; m.textContent = "כדי לראות אילו טפסים כל שליח מילא – לוחצים „🔑 קוד ניהול” ומקלידים את הקוד."; return; }
+  try{
+    const r = await fetch(API + "?all=1&admin=" + encodeURIComponent(code) + "&_=" + Date.now());
+    const j = await r.json();
+    if(!j.ok){ m.hidden = false; m.textContent = j.error === "admin code" ? "קוד הניהול לא נכון. לוחצים „🔑 קוד ניהול” ומקלידים שוב." : "לא הצלחתי לקרוא את גיליון המעקב."; return; }
+    statusRows = j.rows || [];
+  }catch(e){ m.hidden = false; m.textContent = "לא הצלחתי להתחבר לשירות שמירת הסטטוסים."; }
+}
+const keyOf = s => { if(s.main) return "main"; const p = parseCode(s.link); return p ? p.s + "." + (p.g || "0") : ""; };
+const FORM_LIST = () => (typeof FORMS !== "undefined" ? FORMS : []).filter(f => f && f.title).map(f => {
+  const m = f.online && f.online.match(/[?&]f=([\w-]+)/); return { pk: m ? "f:" + m[1] : f.online === "form-contact.html" ? "f:contact" : "t:" + f.title, title: f.title }; });
+const CL_LIST = () => (typeof CHECKLIST !== "undefined" ? CHECKLIST : []).flatMap(g => g.items.map(i => i.title));
+function statusFor(key){
+  if(!statusRows) return null;
+  const mine = statusRows.filter(r => String(r.key) === key);
+  const forms = new Map(), checks = new Map();
+  mine.forEach(r => (r.kind === "check" ? checks : forms).set(String(r.item), r));
+  return { forms, checks };
+}
+const fmtTs = ts => { const d = new Date(ts); return isNaN(d) ? "" : d.toLocaleDateString("he-IL", { day: "2-digit", month: "2-digit" }) + " " + d.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" }); };
+
 let results = [];
 async function refresh(){
   document.getElementById("stamp").textContent = "טוען…";
+  await loadStatus();
   const src = sources();
   results = await Promise.all(src.map(async s => {
     try{
@@ -160,7 +201,7 @@ function draw(){
     const td = (l, h) => { const c = document.createElement("td"); if(l) c.dataset.l = l; c.innerHTML = h; tr.append(c); return c; };
     if(r.err){
       td("", `<span class="nm"><a href="${esc(r.s.link)}" target="_blank" rel="noopener">${esc(r.s.name || "שליח")}</a></span>`);
-      const c = td("", `<span class="err">לא הצלחתי לטעון את הגיליון – ודאו שהוא מפורסם באינטרנט.</span>`); c.colSpan = 5;
+      const c = td("", `<span class="err">לא הצלחתי לטעון את הגיליון – ודאו שהוא מפורסם באינטרנט.</span>`); c.colSpan = 6;
     } else {
       const d = r.d, t = d.mis || {};
       if(x.late) late++; if(x.done) done++; if(x.days !== null && x.days >= 0 && x.days <= 30) soon++;
@@ -174,14 +215,32 @@ function draw(){
         `${esc(p.cur.role)}<span class="sub">${esc(p.cur.status)}${x.wait !== null && x.wait >= 0 ? ` · <span class="${x.late ? "late-t" : ""}">${x.late ? "⚠ " : ""}${x.wait} ימים</span>` : ""}</span>`);
       const po = d.po;
       td("אוריינטציה", po && po.n ? `${po.ok} מתוך ${po.n}${po.cur ? `<span class="sub">${esc(po.cur.role)}</span>` : `<span class="sub done">✓ הושלם</span>`}` : "—");
-      td("מסמכים", d.docs ? `${d.got} מתוך ${d.docs}` : "—");
+      const st = statusFor(keyOf(r.s)), FL = FORM_LIST(), CL = CL_LIST();
+      if(st){
+        const fd = FL.filter(f => st.forms.has(f.pk)).length, cd = CL.filter(t => st.checks.get(t) && st.checks.get(t).status === "סומן").length;
+        const c1 = td("טפסים", `<b>${fd} מתוך ${FL.length}</b><div class="bar" aria-hidden="true"><i style="width:${FL.length ? Math.round(fd / FL.length * 100) : 0}%"></i></div>`);
+        td("צ׳ק ליסט", `<b>${cd} מתוך ${CL.length}</b><div class="bar" aria-hidden="true"><i style="width:${CL.length ? Math.round(cd / CL.length * 100) : 0}%"></i></div>`);
+        const b = document.createElement("button"); b.className = "det-btn"; b.type = "button"; b.textContent = "פירוט ▾"; b.setAttribute("aria-expanded", "false");
+        c1.append(b);
+        x.detail = () => {
+          const fl = FL.map(f => { const v = st.forms.get(f.pk); return v ? `<li class="ok">✓ ${esc(f.title)}<span class="t">${esc(v.status)} · ${fmtTs(v.ts)}</span></li>` : `<li class="miss">✗ ${esc(f.title)}<span class="t">חסר</span></li>`; }).join("");
+          const cl = CL.map(t => { const v = st.checks.get(t), on = v && v.status === "סומן"; return `<li class="${on ? "ok" : "miss"}">${on ? "✓" : "○"} ${esc(t)}${on ? `<span class="t">${fmtTs(v.ts)}</span>` : ""}</li>`; }).join("");
+          return `<div class="det-grid"><div><h4>📝 טפסים</h4><ul>${fl}</ul></div><div><h4>✅ צ׳ק ליסט</h4><ul>${cl}</ul></div></div>`;
+        };
+        b.onclick = () => {
+          const nx = tr.nextElementSibling;
+          if(nx && nx.classList.contains("det")){ nx.remove(); b.textContent = "פירוט ▾"; b.setAttribute("aria-expanded","false"); return; }
+          const dr = document.createElement("tr"); dr.className = "det"; const dc = document.createElement("td"); dc.colSpan = 8; dc.innerHTML = x.detail(); dr.append(dc); tr.after(dr);
+          b.textContent = "סגירה ▴"; b.setAttribute("aria-expanded","true");
+        };
+      } else { td("טפסים", d.docs ? `${d.got} מתוך ${d.docs}` : "—"); td("צ׳ק ליסט", "—"); }
     }
     const c = td("", "");
     if(!r.s.main){ const b = document.createElement("button"); b.className = "x"; b.type = "button"; b.textContent = "✕"; b.title = "הסרה מהרשימה"; b.setAttribute("aria-label","הסרה מהרשימה");
       b.onclick = () => { if(!confirm("להסיר את השליח מהרשימה בדף הזה? (הגיליון והקישור שלו לא נמחקים)")) return; const v = load(); v.splice(r.s.idx, 1); save(v); refresh(); }; c.append(b); }
     tb.append(tr);
   });
-  if(!rows.length) tb.innerHTML = `<tr><td colspan="7" class="muted">אין עדיין שליחים ברשימה. מוסיפים למטה, או יוצרים קישור ב„יצירת קישור לשליח”.</td></tr>`;
+  if(!rows.length) tb.innerHTML = `<tr><td colspan="8" class="muted">אין עדיין שליחים ברשימה. מוסיפים למטה, או יוצרים קישור ב„יצירת קישור לשליח”.</td></tr>`;
   document.getElementById("k-n").textContent = rows.length;
   document.getElementById("k-late").textContent = late;
   document.getElementById("k-soon").textContent = soon;
@@ -190,6 +249,10 @@ function draw(){
 }
 
 document.getElementById("refresh").onclick = refresh;
+document.getElementById("code-btn").onclick = () => {
+  const v = prompt("קוד הניהול (מופיע בתחילת קובץ הסקריפט):", codeGet());
+  if(v === null) return; try{ localStorage.setItem("admin-code", v.trim()); }catch(e){} refresh();
+};
 document.getElementById("add-go").onclick = () => {
   const p = parseCode(document.getElementById("add-link").value);
   if(!p){ alert("לא זיהיתי קישור. מדביקים את הקישור האישי של השליח (עם ?s=) או את קישור הפרסום של הגיליון."); return; }

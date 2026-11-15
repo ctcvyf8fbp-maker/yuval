@@ -559,7 +559,7 @@ const FORM_SCHEMAS = {
         { id: "post", label: "מקום השליחות", type: "text", full: true }
       ]},
       { title: "משימות שהושלמו", fields: [
-        { id: "tasks", label: "המשימות", type: "checks", full: true, requireAll: true, storeKey: (typeof CHECKLIST_KEY !== "undefined" ? CHECKLIST_KEY : "mission-checklist"),
+        { id: "tasks", label: "המשימות", type: "checks", full: true, requireAll: true, storeKey: (typeof CHECKLIST_KEY !== "undefined" ? CHECKLIST_KEY : "mission-checklist") + ":" + ((() => { const k = new URLSearchParams(location.search).get("k"); if(k) return k; try{ return sessionStorage.getItem("traveler-key") || "main"; }catch(e){ return "main"; } })()),
           options: (typeof CHECKLIST !== "undefined" ? CHECKLIST.flatMap(g => g.items.map(i => i.title)) : []) }
       ]},
       { title: "הצהרה", fields: [
