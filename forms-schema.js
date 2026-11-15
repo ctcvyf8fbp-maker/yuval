@@ -405,14 +405,14 @@ const FORM_SCHEMAS = {
           { id: "name", label: "שם מלא", type: "text", required: true },
           { id: "rel", label: "קרבה", type: "select", options: RELATION, required: true },
           { id: "dob", label: "תאריך לידה", type: "date", required: true },
-          { id: "conditions", label: "מחלות כרוניות / מצבים רפואיים", type: "textarea", full: true, placeholder: "אם אין – כותבים „אין”", required: true },
-          { id: "meds", label: "תרופות קבועות (שם ומינון)", type: "textarea", full: true, placeholder: "אם אין – כותבים „אין”", required: true },
-          { id: "allergies", label: "אלרגיות (כולל לתרופות ולמזון)", type: "textarea", full: true, placeholder: "אם אין – כותבים „אין”", required: true },
-          { id: "hosp", label: "ניתוחים / אשפוזים בשנתיים האחרונות", type: "textarea", full: true },
-          { id: "special", label: "צרכים מיוחדים / מגבלות / טיפולים שוטפים", type: "textarea", full: true },
-          { id: "pregnancy", label: "הריון", type: "select", options: ["לא רלוונטי", "לא", "כן"] },
-          { id: "vaccines", label: "חיסונים מעודכנים", type: "select", options: ["כן", "לא", "לא ידוע"] },
-          { id: "notes", label: "הערות", type: "textarea", full: true }
+          { id: "conditions", label: "האם יש מחלות כרוניות או מצבים רפואיים?", type: "yesno", detailLabel: "פרטו אילו" },
+          { id: "meds", label: "האם נוטל/ת תרופות באופן קבוע?", type: "yesno", detailLabel: "שם התרופה ומינון" },
+          { id: "allergies", label: "האם יש אלרגיות (כולל לתרופות ולמזון)?", type: "yesno", detailLabel: "פרטו למה" },
+          { id: "hosp", label: "האם היו ניתוחים או אשפוזים בשנתיים האחרונות?", type: "yesno", detailLabel: "פרטו מה ומתי" },
+          { id: "special", label: "האם יש צרכים מיוחדים, מגבלות או טיפולים שוטפים?", type: "yesno", detailLabel: "פרטו" },
+          { id: "pregnancy", label: "הריון", type: "radio", options: ["לא רלוונטי", "לא", "כן"] },
+          { id: "vaccines", label: "האם החיסונים מעודכנים?", type: "radio", options: ["כן", "לא", "לא ידוע"], required: true },
+          { id: "notes", label: "הערות נוספות", type: "textarea", full: true }
         ]}
       ]},
       { title: "הצהרה", fields: [

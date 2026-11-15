@@ -71,6 +71,8 @@ input:focus,select:focus,textarea:focus{outline:3px solid color-mix(in srgb,var(
 .pv-actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}
 .step-tag{display:inline-block;font-size:.8rem;font-weight:700;color:var(--paper);background:var(--ink);border-radius:999px;padding:2px 10px;margin-inline-end:6px}
 .btn.wa{background:#1fa855;border-color:#1fa855;color:#fff}
+.yn-opts{display:flex;gap:18px;flex-wrap:wrap}
+.yn-det{margin-top:8px}
 .missing{background:var(--paper);border-radius:14px;padding:24px;text-align:center}
 @media (max-width:560px){ .grid{grid-template-columns:1fr} }
 
@@ -170,6 +172,26 @@ function field(f, idp){
       check(){ g.classList.remove("bad");
         if(f.required && !this.get().length){ g.classList.add("bad"); return g; }
         if(f.requireAll && inputs.some(i => !i.checked)){ g.classList.add("bad"); g.dataset.missing = inputs.filter(i => !i.checked).length; return g; } } };
+  }
+  if(f.type === "yesno"){
+    // כן / לא, ואם „כן” – נפתח שדה לפירוט
+    const g = el("div","group yn full");
+    const l = el("div","gl", f.label); if(f.required !== false) l.append(" ", el("span","req","*")); g.append(l);
+    const row = el("div","yn-opts");
+    const opts = f.options || ["לא", "כן"];
+    const inputs = opts.map(o => { const lb = el("label","opt"); const i = el("input"); i.type = "radio"; i.name = name; i.value = o; lb.append(i, el("span","",o)); row.append(lb); return i; });
+    g.append(row);
+    const det = el("label","f full yn-det"); det.hidden = true;
+    det.append(f.detailLabel || "פירוט", " ", el("span","req","*"));
+    const ta = el("textarea"); ta.name = name + "_d"; if(f.placeholder) ta.placeholder = f.placeholder; det.append(ta); g.append(det);
+    const yes = opts[opts.length - 1];
+    inputs.forEach(i => i.onchange = () => { det.hidden = !(inputs.find(x => x.checked)?.value === yes); if(!det.hidden) ta.focus(); });
+    const val = () => inputs.find(i => i.checked)?.value || "";
+    return { el: g, f,
+      get: () => { const v = val(); return v === yes && ta.value.trim() ? `${v} – ${ta.value.trim()}` : v; },
+      check(){ g.classList.remove("bad"); ta.classList.remove("bad");
+        if(f.required !== false && !val()){ g.classList.add("bad"); return g; }
+        if(val() === yes && !ta.value.trim()){ ta.classList.add("bad"); return ta; } } };
   }
   if(f.type === "table"){
     const box = el("div","tbl full"); const t = el("table"); const thead = el("thead"); const hr = el("tr");
