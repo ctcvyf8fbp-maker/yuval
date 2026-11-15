@@ -220,7 +220,8 @@ function docStatus(trip, title){
   const k = keys.find(k => { const m = norm(k); return m && (n.includes(m) || m.includes(n)); });
   if(k === undefined) return null;
   const v = docs[k];
-  if(/^(התקבל|התקבלו|אושר|הושלם|✓|v|כן)$/i.test(v)) return "ok";
+  if(/^(התקבל|התקבלו|אושר|הושלם|הוגש|✓|v|כן|true)$/i.test(v)) return "ok";
+  if(/^(false)$/i.test(v)) return "missing";
   if(/^(בטיפול|בתהליך)$/.test(v)) return "wait";
   return "missing";
 }
@@ -305,7 +306,7 @@ function renderForms(trip){
     head.append(el("span","form-num", i + 1), el("span","form-title", f.title));
     const ds = docStatus(trip, f.title);
     if(ds){ tracked++; if(ds === "ok") got++;
-      head.append(el("span","doc-badge " + ds, ds === "ok" ? "✓ התקבל" : ds === "wait" ? "⏳ בטיפול" : "חסר")); li.classList.add("ds-" + ds); }
+      head.append(el("span","doc-badge " + ds, ds === "ok" ? "✓ הוגש" : ds === "wait" ? "⏳ בטיפול" : "טרם הוגש")); li.classList.add("ds-" + ds); }
     li.append(head);
     const acts = el("div","form-acts");
     if(f.online){
@@ -347,7 +348,7 @@ function renderForms(trip){
   sum.hidden = !list.length;
   sum.innerHTML = `<strong>מילאת ${sentN} מתוך ${list.length} טפסים</strong>` + (sentN === list.length ? " · ✓ סיימת הכול!" : "")
     + `<div class="bar fp-bar" aria-hidden="true"><span style="width:${list.length ? Math.round(sentN / list.length * 100) : 0}%"></span></div>`
-    + (tracked ? `<span class="fp-off">אצל מנהלת המעקב: התקבלו ${got} מתוך ${tracked}${got === tracked ? " ✓" : ""}</span>` : "");
+    + (tracked ? `<span class="fp-off">אושר שהוגשו: ${got} מתוך ${tracked}${got === tracked ? " ✓" : ""}</span>` : "");
 }
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
 
