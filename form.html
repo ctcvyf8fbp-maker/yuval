@@ -352,7 +352,7 @@ function build(){
   const pb = el("button","btn","🖨 הדפסה"); pb.type = "button"; pb.onclick = () => { markForm("saved"); window.print(); };
   da.append(wa, dp, pb);
   const up = (new URLSearchParams(location.search).get("up") || (typeof UPLOAD_LINK === "string" ? UPLOAD_LINK : "")).trim();
-  if(up){ const sl = el("a","btn","📤 שליחת מסמך"); sl.href = up; sl.target = "_blank"; sl.rel = "noopener"; da.append(sl); }
+
   done.append(da); wrap.append(done);
 
   form.addEventListener("input", () => dirty = true);
@@ -633,6 +633,7 @@ function markForm(state){
     // מפיקים שוב → מתעדכן מועד ההפקה האחרון (בלי כפילויות); „נשלח” לא חוזר ל„הופק”
     all[k] = { state: cur && RANK[cur.state] > RANK[state] ? cur.state : state, ts: now, date: now.slice(0,10) };
     localStorage.setItem(pk, JSON.stringify(all));
+    if(TKEY === "main") localStorage.setItem("forms-progress", JSON.stringify(all));
     state = all[k].state;
   }catch(e){}
   const u = (typeof STATUS_API === "string" ? STATUS_API.trim() : "");

@@ -239,7 +239,10 @@ function travelerKey(){
 function travelerName(){ const t = (typeof TRIPS !== "undefined" && TRIPS.find(isMission)) || (typeof TRIPS !== "undefined" && TRIPS[0]) || {}; return (t.traveler || "").trim(); }
 const PROG_KEY = () => "forms-progress:" + travelerKey();
 const CL_KEY = () => (typeof CHECKLIST_KEY !== "undefined" ? CHECKLIST_KEY : "mission-checklist") + ":" + travelerKey();
-function progLoad(){ try{ return JSON.parse(localStorage.getItem(PROG_KEY()) || "{}"); }catch(e){ return {}; } }
+function progLoad(){ try{
+  const v = JSON.parse(localStorage.getItem(PROG_KEY()) || "{}");
+  if(travelerKey() === "main"){ const old = JSON.parse(localStorage.getItem("forms-progress") || "{}"); for(const k in old) if(!v[k] || (old[k].ts || old[k].date || "") > (v[k].ts || v[k].date || "")) v[k] = old[k]; }
+  return v; }catch(e){ return {}; } }
 function progSave(v){ try{ localStorage.setItem(PROG_KEY(), JSON.stringify(v)); }catch(e){} }
 function apiPost(rec){
   const u = API(); if(!u) return;
@@ -800,6 +803,8 @@ window.addEventListener("hashchange", () => {
   else if(/^visa/.test(k) && view !== "visa"){ view = "visa"; render(); }
   else if(h && TRIPS[+h[1]-1] && (+h[1]-1 !== tripIndex || view !== "trip")){ view = "trip"; tripIndex = +h[1]-1; render(); }
 });
+window.addEventListener("pageshow", () => { if(view === "forms") renderForms(TRIPS.find(isMission) || TRIPS[0] || {}); });
+document.addEventListener("visibilitychange", () => { if(!document.hidden && view === "forms") renderForms(TRIPS.find(isMission) || TRIPS[0] || {}); });
 render();
 rememberTraveler();
 syncFromSheet();
