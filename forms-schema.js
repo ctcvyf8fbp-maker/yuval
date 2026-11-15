@@ -148,6 +148,67 @@ const OSETTLE = { h: 875.2, pages: ["preview-settle-1.jpg"], items: [
   { p: 0, sig: true, x: 430, y: 697, w: 70, h: 18 }
 ], extra: ["foodNotes", "lodgingNotes", "carNotes", "ilTransNotes", "abTransNotes", "otherNotes"] };
 
+
+// ---------- קורות חיים מצומצם ----------
+const OCV = { pages: ["preview-cvshort-1.jpg"], items: [
+  { p: 0, image: "photo", x: 119, y: 171, w: 76, h: 88 },
+  { p: 0, id: "role", x: 400, y: 145, size: 9 },
+  { p: 0, id: "name", x: 432, y: 167 },
+  { p: 0, id: "rank", x: 418, y: 192, size: 8.5 },
+  { p: 0, id: "age", x: 332, y: 205, align: "center", size: 8.5 },
+  { p: 0, id: "marital", x: 392, y: 222, size: 8 },
+  { p: 0, id: "kids", x: 285, y: 220, align: "center", size: 8 },
+  { p: 0, id: "start", x: 322, y: 236, align: "center", date: true, size: 8 },
+  { p: 0, id: "roleStart", x: 322, y: 249, align: "center", date: true, size: 8 },
+  { p: 0, id: "deg1", x: 284, y: 263, size: 8 },
+  { p: 0, id: "inst1", x: 288, y: 276, size: 8 },
+  { p: 0, id: "deg2", x: 264, y: 289, size: 8 },
+  { p: 0, id: "inst2", x: 288, y: 302, size: 8 },
+  { p: 0, id: "missionEnd", x: 286, y: 315, align: "center", date: true, size: 8 },
+  { p: 0, table: "history", rows: [431, 448, 465, 482, 497], cols: { period: { x: 455, size: 8 }, role: { x: 340, size: 8 } } }
+]};
+// ---------- הצהרת שליח בדבר אישור מועדי היציאה ----------
+const ODEP = { pages: ["preview-departure-1.jpg", "preview-departure-2.jpg"], items: [
+  { p: 1, id: "name", x: 412, y: 125, size: 8.5 },
+  { p: 1, id: "id", x: 202, y: 128, align: "center", size: 8.5 },
+  { p: 1, id: "post", x: 373, y: 145, size: 8 },
+  { p: 1, id: "name", x: 408, y: 455, size: 8 },
+  { p: 1, sig: true, x: 352, y: 458, w: 62, h: 18 },
+  { p: 1, signDate: true, x: 385, y: 490, align: "center", size: 8 }
+]};
+// ---------- טופס איש קשר למקרי חירום ----------
+const OCONTACT = { h: 847.1, pages: ["preview-contact-1.jpg"], items: [
+  ...[["last",208],["first",225],["empno",242],["id",257],["dept",273],["unit",290]].map(([id, y]) => ({ p: 0, id, x: 415, y, size: 8.5 })),
+  { p: 0, id: "dob", x: 403, y: 300, date: true, size: 8 },
+  { p: 0, id: "addr", x: 418, y: 314, size: 8 },
+  ...[["telOffice",330],["telHome",347],["telMobile",362]].map(([id, y]) => ({ p: 0, id, x: 393, y, size: 8.5 })),
+  ...[["c1Name",412],["c1Tel",429],["c1Mobile",444],["c1Rel",459],["c2Name",484],["c2Tel",501],["c2Mobile",516],["c2Rel",531]].map(([id, y]) => ({ p: 0, id, x: 395, y, size: 8.5 })),
+  { p: 0, sig: true, x: 115, y: 572, w: 104, h: 20 },
+  { p: 0, signDate: true, x: 168, y: 608, align: "center", size: 8.5 }
+]};
+// ---------- מקדמה / הקצאה בכרטיס אשראי ----------
+const OADV = { pages: ["preview-advance-1.jpg", "preview-advance-2.jpg"], items: [
+  { p: 0, signDate: true, x: 469, y: 52, align: "center", size: 8.5 },
+  { p: 0, id: "name", x: 440, y: 126, align: "center", size: 8.5 },
+  { p: 0, id: "id", x: 260, y: 126, align: "center", size: 8.5 },
+  { p: 0, id: "dest", x: 155, y: 126, align: "center", size: 8 },
+  { p: 0, id: "depDate", x: 433, y: 148, align: "center", date: true, size: 8 },
+  { p: 0, id: "depTime", x: 322, y: 148, align: "center", size: 8 },
+  { p: 0, id: "retDate", x: 190, y: 148, align: "center", date: true, size: 8 },
+  { p: 0, id: "landTime", x: 88, y: 148, align: "center", size: 8 },
+  { p: 0, id: "rankRole", x: 445, y: 172, align: "center", size: 7.5 },
+  { p: 0, id: "mobile", x: 319, y: 172, align: "center", size: 8 },
+  { p: 0, id: "email", x: 186, y: 172, align: "center", size: 6.5 },
+  { p: 1, signDate: true, x: 500, y: 337, align: "center", size: 8 },
+  { p: 1, id: "name", x: 335, y: 334, align: "center", size: 8.5 },
+  { p: 1, sig: true, x: 110, y: 307, w: 105, h: 22 },
+  { p: 1, id: "id", x: 446, y: 472, align: "center", size: 8, if: "agentName" },
+  { p: 1, id: "name", x: 253, y: 468, align: "center", size: 8, if: "agentName" },
+  { p: 1, id: "agentName", x: 404, y: 489, align: "center", size: 8 },
+  { p: 1, id: "agentId", x: 282, y: 485, align: "center", size: 8 },
+  { p: 1, sig: true, x: 333, y: 546, w: 88, h: 20, if: "agentName" }
+]};
+
 const FORM_SCHEMAS = {
 
   // ---------------------------------------------------------------- 101
@@ -364,6 +425,7 @@ const FORM_SCHEMAS = {
   // --------------------------------------------------- קורות חיים מצומצם
   "cvshort": {
     title: "קורות חיים מצומצם",
+    preview: ["preview-cvshort-1.jpg"], previewPdf: "form-cv-short.pdf", overlay: OCV,
     sections: [
       { fields: [
         { id: "photo", label: "תמונה", type: "image", full: true },
@@ -425,6 +487,7 @@ const FORM_SCHEMAS = {
   // --------------------------------------- הצהרה על מועדי יציאה לשליחות
   "departure": {
     title: "הצהרת שליח בדבר אישור מועדי היציאה לשליחות",
+    preview: ["preview-departure-1.jpg", "preview-departure-2.jpg"], previewPdf: "form-departure.pdf", overlay: ODEP,
     sections: [
       { fields: [
         { id: "name", label: "אני (שם מלא)", type: "text", required: true },
@@ -574,6 +637,70 @@ const FORM_SCHEMAS = {
         { type: "para", text: "אני הח״מ מצהיר בזאת כי הקבלות וההוצאות שהצגתי בפני אגף הכספים/חטיבת פרט והסדרי נסיעות חו״ל הינן הוצאות שהוצאו בפועל במסגרת נסיעתי בתפקיד בלבד. הנני מודע לכך כי במקרה הפרטים הנ״ל אינם נכונים אדרש להשיב את הכספים ששולמו לי ביתר ועלול להיפתח נגדי הליך משמעתי." },
         { id: "unitRole", label: "אגף/חייל ותפקיד", type: "text", required: true },
         { id: "rank", label: "דרגה", type: "text" }
+      ]}
+    ],
+    sign: true
+  },
+  // ------------------------------------------------ איש קשר למקרי חירום
+  "contact": {
+    title: "טופס איש קשר למקרי חירום",
+    preview: ["preview-contact-1.jpg"], previewPdf: "form-1.pdf", overlay: OCONTACT,
+    intro: "איש הקשר חייב להיות קרוב משפחה מדרגה ראשונה.",
+    sections: [
+      { title: "חלק א׳ – פרטי העובד", fields: [
+        { id: "last", label: "שם משפחה", type: "text", required: true },
+        { id: "first", label: "שם פרטי", type: "text", required: true },
+        { id: "empno", label: "מס׳ עובד מלא", type: "text" },
+        { id: "id", label: "ת.ז.", type: "id", required: true },
+        { id: "dept", label: "אגף", type: "text" },
+        { id: "unit", label: "יחידה", type: "text" },
+        { id: "dob", label: "תאריך לידה", type: "date", required: true },
+        { id: "addr", label: "כתובת", type: "text", required: true, full: true },
+        { id: "telOffice", label: "טלפון במשרד", type: "tel" },
+        { id: "telHome", label: "טלפון בבית", type: "tel" },
+        { id: "telMobile", label: "טלפון נייד", type: "tel", required: true }
+      ]},
+      { title: "חלק ב׳ – איש קשר 1", fields: [
+        { id: "c1Name", label: "שם מלא", type: "text", required: true },
+        { id: "c1Rel", label: "קירבה", type: "select", options: ["אב", "אם", "אח", "אחות"], required: true },
+        { id: "c1Tel", label: "טלפון נייח", type: "tel" },
+        { id: "c1Mobile", label: "טלפון נייד", type: "tel", required: true }
+      ]},
+      { title: "איש קשר 2 (לא חובה)", fields: [
+        { id: "c2Name", label: "שם מלא", type: "text" },
+        { id: "c2Rel", label: "קירבה", type: "select", options: ["אב", "אם", "אח", "אחות"] },
+        { id: "c2Tel", label: "טלפון נייח", type: "tel" },
+        { id: "c2Mobile", label: "טלפון נייד", type: "tel" }
+      ]}
+    ],
+    sign: true
+  },
+
+  // --------------------------------------- מקדמה / הקצאה בכרטיס אשראי
+  "advance": {
+    title: "מקדמה מזומן / הקצאה בכרטיס אשראי עבור נסיעה בתפקיד",
+    preview: ["preview-advance-1.jpg", "preview-advance-2.jpg"], previewPdf: "form-advance.pdf", overlay: OADV,
+    intro: "יש לצרף צילום של כרטיס האשראי האישי משני צדדיו, וטופס ניהול חשבון.",
+    sections: [
+      { title: "פרטי הנסיעה", fields: [
+        { id: "name", label: "שם הנוסע/ת", type: "text", required: true },
+        { id: "id", label: "מספר תעודת זהות", type: "id", required: true },
+        { id: "dest", label: "יעד", type: "text", required: true },
+        { id: "rankRole", label: "דרגה / תפקיד", type: "text", required: true },
+        { id: "depDate", label: "תאריך יציאה מהארץ", type: "date", required: true },
+        { id: "depTime", label: "שעת המראה", type: "time" },
+        { id: "retDate", label: "תאריך חזרה לארץ", type: "date", required: true },
+        { id: "landTime", label: "שעת נחיתה", type: "time" },
+        { id: "mobile", label: "מס׳ נייד", type: "tel", required: true },
+        { id: "email", label: "כתובת מייל", type: "email", required: true }
+      ]},
+      { title: "הצהרות", fields: [
+        { id: "agree", label: "", type: "checks", required: true, full: true,
+          options: ["קראתי את כל ההצהרות וההתחייבויות שבטופס (בתצוגה המקדימה למעלה) ואני מאשר/ת אותן"] }
+      ]},
+      { title: "ייפוי כוח – רק אם הכסף נמשך באמצעות אדם אחר", note: "אם ממלאים – המיופה חותם בעצמו על הטופס המודפס.", fields: [
+        { id: "agentName", label: "שם פרטי + משפחה של המיופה", type: "text" },
+        { id: "agentId", label: "ת.ז. של המיופה", type: "id" }
       ]}
     ],
     sign: true

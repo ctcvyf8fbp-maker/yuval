@@ -519,8 +519,8 @@ function render(){
   document.getElementById("rights-section").hidden = !isInfo;
   document.getElementById("checklist-section").hidden = !isCL;
   const fsec = document.getElementById("forms-section");
-  const after = document.getElementById("after-trip");
-  after.hidden = true;
+  const after = document.getElementById("after-trip"), before = document.getElementById("before-trip");
+  after.hidden = true; before.hidden = true;
   const otop = document.getElementById("orient-top");
   otop.hidden = true;
   if(special){
@@ -555,6 +555,8 @@ function render(){
     noteCards(document.getElementById("orient-notes"), typeof ORIENT_NOTES !== "undefined" ? ORIENT_NOTES : []);
     const up = ((trip.folder || "") + "").trim() || (typeof UPLOAD_LINK === "string" ? UPLOAD_LINK : "").trim();
     document.getElementById("settle-online").href = "form.html?f=settlement" + (up ? "&up=" + encodeURIComponent(up) : "");
+    before.hidden = false;
+    document.getElementById("adv-online").href = "form.html?f=advance" + (up ? "&up=" + encodeURIComponent(up) : "");
   }
   renderMission(trip, ((trip.folder || "") + "").trim() || (typeof UPLOAD_LINK === "string" ? UPLOAD_LINK : "").trim());
   renderRounds(trip, current);

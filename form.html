@@ -365,6 +365,8 @@ function overlayOps(){
   const tick = (p, x, y) => put(p, x, y + 1, "✓", { align: "center", size: 11 });
   const fmtV = (v, o) => o.date ? fmt(v) : v;
   O.items.forEach(it => {
+    if(it.if && !vals[it.if]) return;
+    if(it.image){ if(vals[it.image]) pages[it.p].ops.push({ t: "img", src: vals[it.image], x: it.x, y: it.y, w: it.w, h: it.h }); return; }
     if(it.table){
       (vals[it.table] || []).slice(0, it.rows.length).forEach((row, i) => {
         Object.entries(it.cols).forEach(([cid, c]) => {
@@ -407,7 +409,7 @@ function renderOverlay(){
   const { W, H, pages, extras } = overlayOps();
   const pct = (a, b) => (a / b * 100).toFixed(3) + "%";
   let h = pages.map(pg => `<div class="ovp"><img class="bg" alt="" src="${pg.bg}">${pg.ops.map(op => {
-    if(op.t === "sig") return `<img class="ovs" alt="" src="${sig.url()}" style="left:${pct(op.x, W)};top:${pct(op.y, H)};width:${pct(op.w, W)};height:${pct(op.h, H)};object-fit:contain">`;
+    if(op.t === "sig" || op.t === "img") return `<img class="ovs" alt="" src="${op.t === "sig" ? sig.url() : op.src}" style="left:${pct(op.x, W)};top:${pct(op.y, H)};width:${pct(op.w, W)};height:${pct(op.h, H)};object-fit:contain">`;
     if(op.t === "circle") return `<span class="ovc" style="left:${pct(op.x - op.r, W)};top:${pct(op.y - op.r, H)};width:${pct(2 * op.r, W)};height:${pct(2 * op.r, H)}"></span>`;
     let pos = `top:${pct(op.y - op.size * 0.85, H)};font-size:${op.size}pt;`;
     if(op.align === "center") pos += `left:${pct(op.x, W)};transform:translateX(-50%);`;
@@ -436,7 +438,10 @@ async function overlayCanvases(){
     const [c, x] = newCanvas();
     const bg = await loadImg(pg.bg); if(bg) x.drawImage(bg, 0, 0, PW, PH);
     x.fillStyle = "#0b2a6b"; x.strokeStyle = "#0b2a6b";
+    for(const op of pg.ops) if(op.t === "img") op.im = await loadImg(op.src);
     pg.ops.forEach(op => {
+      if(op.t === "img"){ if(op.im){ const r = Math.min(op.w * sx / op.im.width, op.h * sy / op.im.height); const w = op.im.width * r, h = op.im.height * r;
+        x.drawImage(op.im, op.x * sx + (op.w * sx - w) / 2, op.y * sy + (op.h * sy - h) / 2, w, h); } return; }
       if(op.t === "sig"){ if(sigImg){ const r = Math.min(op.w * sx / sigImg.width, op.h * sy / sigImg.height); const w = sigImg.width * r, h = sigImg.height * r;
         x.drawImage(sigImg, op.x * sx + (op.w * sx - w) / 2, op.y * sy + (op.h * sy - h) / 2, w, h); } return; }
       if(op.t === "circle"){ x.lineWidth = 2.6; x.beginPath(); x.ellipse(op.x * sx, op.y * sy, op.r * sx, op.r * sy, 0, 0, Math.PI * 2); x.stroke(); return; }

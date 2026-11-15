@@ -28,7 +28,7 @@ const FORMS = [
     note: "ממלאים עבור כל אחד מבני המשפחה המצטרפים לשליחות." },
   { title: "סיכום מידע רפואי", upload: true,
     note: "עבור כל אחד מבני המשפחה (שליח – בצה״ל, בני המשפחה – בקופ״ח)." },
-  { title: "טופס איש קשר למקרי חירום", file: "form-1.pdf", online: "form-contact.html",
+  { title: "טופס איש קשר למקרי חירום", file: "form-1.pdf", online: "form.html?f=contact",
     note: "איש הקשר חייב להיות קרוב משפחה מדרגה ראשונה." },
   { title: "קורות חיים מצומצם", file: "form-cv-short.pdf", online: "form.html?f=cvshort" },
   { title: "קורות חיים מורחבים", upload: true,
