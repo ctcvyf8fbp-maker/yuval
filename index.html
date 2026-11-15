@@ -171,6 +171,27 @@
       <div id="cl-list"></div>
       <div class="cl-done"><a class="fbtn primary" id="cl-sign" href="form.html?f=checklist">✍️ סיימתי – חתימה על אישור סיום</a></div>
     </section>
+
+    <!-- ויזה -->
+    <section class="visa" id="visa-section" hidden aria-labelledby="visa-title">
+      <h2 id="visa-title"></h2>
+      <p class="forms-hint" id="visa-sub"></p>
+      <div class="form-acts visa-links">
+        <a class="fbtn primary" id="visa-site" target="_blank" rel="noopener">🌐 לאתר בקשת הוויזה</a>
+        <a class="fbtn" id="visa-pdf" download>⬇ הורדת המדריך (PDF)</a>
+      </div>
+      <label class="visa-ch"><span>קפיצה לפרק</span><select id="visa-chapter"></select></label>
+      <div class="viewer" id="visa-viewer">
+        <figure class="slide"><img id="visa-img" alt=""></figure>
+        <div class="viewer-bar">
+          <button type="button" class="vbtn" id="visa-prev" aria-label="השקופית הקודמת">→</button>
+          <span id="visa-count" aria-live="polite"></span>
+          <button type="button" class="vbtn" id="visa-next" aria-label="השקופית הבאה">←</button>
+          <a class="vzoom" id="visa-zoom" target="_blank" rel="noopener">🔍 הגדלה</a>
+        </div>
+      </div>
+      <div class="thumbs" id="visa-thumbs"></div>
+    </section>
   </main>
 
   <footer class="foot"><span id="updated-wrap">עודכן לאחרונה: <span id="updated"></span></span> <span id="sync-state"></span></footer>

@@ -126,3 +126,21 @@ const ORIENT_NOTES = [
       "נסיעת אוריינטציה מיום א׳ עד ה׳ (חזרה לארץ ביום ה׳). בנסיעות ליעד רחוק (10 שעות) – הגעה לארץ תאושר ליום ו׳."
     ]}
 ];
+
+// ----- מדריך ויזה (לשונית „ויזה”) -----
+const VISA = {
+  title: "מדריך להוצאת ויזה מסוג A2",
+  sub: "בקשת ויזה באתר של שגרירות ארה״ב (טופס DS-160)",
+  link: "https://ceac.state.gov/GenNIV/",
+  pdf: "visa-guide.pdf",
+  count: 44,
+  chapters: [
+    [1, "פתיחה"], [2, "מבוא והערות כלליות"], [3, "פתיחת בקשת DS-160"], [5, "Application information"],
+    [6, "Personal information 1"], [8, "Personal information 2"], [9, "Travel information"],
+    [13, "Travel companions"], [14, "Previous U.S. travel"], [17, "Address and phone"],
+    [19, "Passport information"], [21, "U.S. contact"], [23, "Family information"],
+    [25, "Present work / education"], [27, "Previous work / education"], [28, "Additional work / education"],
+    [30, "Security and background"], [35, "Upload a photo"], [39, "Sign and submit"],
+    [40, "Confirmation"], [41, "חזרה לבקשה קיימת (Retrieve)"], [44, "דברים נוספים"]
+  ]
+};

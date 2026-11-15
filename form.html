@@ -356,12 +356,14 @@ function renderFields(list){
   flush(); return h;
 }
 // ---------- מילוי על גבי הטופס המקורי ----------
+// הגדלת הכתב על גבי הטפסים (1 = גודל מקורי)
+const TEXT_SCALE = 1.25;
 function overlayOps(){
   const O = S.overlay, W = 595.28, H = O.h || 841.89;
   const vals = {};
   parts.forEach(p => p.fl.forEach(o => { if(o.f && o.f.id) vals[o.f.id] = o.get(); }));
   const pages = O.pages.map(src => ({ bg: src, ops: [] }));
-  const put = (p, x, y, text, o = {}) => pages[p].ops.push({ t: "text", x, y, text: String(text), size: o.size || 9, align: o.align || "right", ltr: !!(o.ltr || o.align === "left") });
+  const put = (p, x, y, text, o = {}) => pages[p].ops.push({ t: "text", x, y, text: String(text), size: (o.size || 9) * (S.overlay.scale || TEXT_SCALE), align: o.align || "right", ltr: !!(o.ltr || o.align === "left") });
   const tick = (p, x, y) => put(p, x, y + 1, "✓", { align: "center", size: 11 });
   const fmtV = (v, o) => o.date ? fmt(v) : v;
   O.items.forEach(it => {
@@ -479,8 +481,8 @@ function pager(){
     sub(t){ write(t, 22, { center: true, color: "#555" }); y += 10; },
     h(t){ y += 18; if(y + 60 > PH - M) page(); write(t, 28, { bold: true }); x.fillStyle = "#999"; x.fillRect(M, y + 2, PW - 2 * M, 2); y += 14; },
     h4(t){ y += 8; write(t, 25, { bold: true }); },
-    kv(k, v){ write(k + ": " + (v === "" || v == null ? "—" : v), 24); y += 4; },
-    p(t, indent){ write(t, 23, { indent: indent ? 30 : 0 }); y += 6; },
+    kv(k, v){ write(k + ": " + (v === "" || v == null ? "—" : v), 28); y += 4; },
+    p(t, indent){ write(t, 27, { indent: indent ? 30 : 0 }); y += 6; },
     async img(src, maxH = 520){ const i = await loadImg(src); if(!i) return; const r = Math.min((PW - 2 * M) / i.width, maxH / i.height, 1.5); const w = i.width * r, h = i.height * r;
       if(y + h > PH - M) page(); x.drawImage(i, PW - M - w, y, w, h); y += h + 12; },
     done(){ return out; }

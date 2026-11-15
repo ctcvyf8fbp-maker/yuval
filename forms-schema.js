@@ -131,7 +131,7 @@ const OSETTLE = { h: 875.2, pages: ["preview-settle-1.jpg"], items: [
   { p: 0, id: "retDate", x: 154, y: 138, align: "center", date: true, size: 8 },
   { p: 0, id: "landTime", x: 481, y: 155, align: "center", size: 8 },
   { p: 0, id: "rankRole", x: 368, y: 155, align: "center", size: 7.5 },
-  { p: 0, id: "mobile", x: 262, y: 155, align: "center", size: 8 },
+  { p: 0, id: "mobile", x: 248, y: 155, align: "center", size: 8 },
   { p: 0, id: "email", x: 77, y: 155, align: "center", size: 7 },
   { p: 0, id: "advance", x: 375, y: 177, align: "center" },
   ...Object.entries(SROWS).flatMap(([k, y]) => [

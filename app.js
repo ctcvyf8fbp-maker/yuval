@@ -46,7 +46,7 @@ function renderTabs(){
     nav.appendChild(b);
   });
   specialTabs.forEach(s => {
-    const ib = el("button", "info-tab", ({ info: "📚 ", forms: "📝 ", checklist: "✅ " }[s.kind] || "") + s.label);
+    const ib = el("button", "info-tab", ({ info: "📚 ", forms: "📝 ", checklist: "✅ ", visa: "🛂 " }[s.kind] || "") + s.label);
     ib.setAttribute("role","tab");
     ib.setAttribute("aria-selected", view === s.kind);
     ib.onclick = () => { view = s.kind; location.hash = s.kind; render(); window.scrollTo(0,0); };
@@ -424,6 +424,61 @@ function calcRun(){
     + (row ? `<strong>דמי לינה ${fmtN(lodTot)} ${row.cur}</strong> <span class="muted">(${fmtN(nights)} לילות × ${fmtN(row.lodging)} ${row.cur})</span>` : `<strong>דמי לינה – לבדוק מול קצין הנסיעות</strong>`);
 }
 
+
+// ===== לשונית ויזה – צפייה במצגת =====
+let visaReady = false, visaIdx = 1;
+const vsrc = (i, t) => `visa/${t ? "thumb" : "visa"}-${String(i).padStart(2, "0")}.jpg`;
+function renderVisa(){
+  if(typeof VISA === "undefined") return;
+  const n = VISA.count;
+  const m = location.hash.match(/^#visa(\d+)$/); if(m) visaIdx = Math.min(n, Math.max(1, +m[1]));
+  if(!visaReady){
+    visaReady = true;
+    document.getElementById("visa-title").textContent = "🛂 " + VISA.title;
+    document.getElementById("visa-sub").textContent = VISA.sub;
+    document.getElementById("visa-site").href = VISA.link;
+    document.getElementById("visa-pdf").href = VISA.pdf;
+    const sel = document.getElementById("visa-chapter");
+    VISA.chapters.forEach(([p, t]) => sel.append(new Option(`${t} (שקופית ${p})`, p)));
+    sel.onchange = () => showSlide(+sel.value, true);
+    const th = document.getElementById("visa-thumbs");
+    for(let i = 1; i <= n; i++){
+      const b = el("button","thumb"); b.type = "button"; b.setAttribute("aria-label", "שקופית " + i);
+      const im = el("img"); im.src = vsrc(i, true); im.alt = ""; im.loading = "lazy";
+      b.append(im, el("span","", i)); b.onclick = () => showSlide(i, true); th.append(b);
+    }
+    document.getElementById("visa-prev").onclick = () => showSlide(visaIdx - 1);
+    document.getElementById("visa-next").onclick = () => showSlide(visaIdx + 1);
+    document.addEventListener("keydown", e => {
+      if(view !== "visa" || /INPUT|SELECT|TEXTAREA/.test(e.target.tagName)) return;
+      if(e.key === "ArrowLeft") showSlide(visaIdx + 1);
+      if(e.key === "ArrowRight") showSlide(visaIdx - 1);
+    });
+    let sx = null;
+    const fig = document.querySelector("#visa-viewer .slide");
+    fig.addEventListener("touchstart", e => { sx = e.touches[0].clientX; }, { passive: true });
+    fig.addEventListener("touchend", e => { if(sx === null) return; const dx = e.changedTouches[0].clientX - sx; sx = null;
+      if(Math.abs(dx) > 50) showSlide(visaIdx + (dx > 0 ? 1 : -1)); });
+  }
+  showSlide(visaIdx);
+}
+function showSlide(i, scroll){
+  const n = VISA.count; i = Math.min(n, Math.max(1, i)); visaIdx = i;
+  const img = document.getElementById("visa-img");
+  img.src = vsrc(i); img.alt = `${VISA.title} – שקופית ${i} מתוך ${n}`;
+  if(i < n){ const pre = new Image(); pre.src = vsrc(i + 1); }
+  document.getElementById("visa-zoom").href = vsrc(i);
+  document.getElementById("visa-count").textContent = `${i} מתוך ${n}`;
+  document.getElementById("visa-prev").disabled = i === 1;
+  document.getElementById("visa-next").disabled = i === n;
+  const ch = [...VISA.chapters].reverse().find(([p]) => p <= i);
+  document.getElementById("visa-chapter").value = ch ? ch[0] : 1;
+  document.querySelectorAll("#visa-thumbs .thumb").forEach((b, k) => { const on = k + 1 === i; b.classList.toggle("on", on); if(on) b.setAttribute("aria-current","true"); else b.removeAttribute("aria-current"); });
+  const cur = document.querySelector("#visa-thumbs .thumb.on"); if(cur) cur.scrollIntoView({ block: "nearest", inline: "center" });
+  history.replaceState(null, "", "#visa" + (i > 1 ? i : ""));
+  if(scroll) document.getElementById("visa-viewer").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 function noteCards(box, list){
   box.innerHTML = "";
   list.forEach(n => {
@@ -499,12 +554,14 @@ function renderInfoView(){
 }
 
 // לשוניות מיוחדות: "forms" = מסמכים וטפסים, "info" = מידע וצ׳ק ליסט (בלי סבב אישורים)
-let specialTabs = [{ kind: "forms", label: "טפסים למילוי" }, { kind: "info", label: "מידע לשליח" }, { kind: "checklist", label: "צ׳ק ליסט לשליח" }];
+let specialTabs = [{ kind: "forms", label: "טפסים למילוי" }, { kind: "info", label: "מידע לשליח" }, { kind: "checklist", label: "צ׳ק ליסט לשליח" }, { kind: "visa", label: "ויזה" }];
 function specialKind(title){
   title = title || "";
   const fw = (typeof FORMS_TAB_WORDS !== "undefined" && Array.isArray(FORMS_TAB_WORDS)) ? FORMS_TAB_WORDS : ["טפסים"];
   const iw = (typeof INFO_TAB_WORDS !== "undefined" && Array.isArray(INFO_TAB_WORDS)) ? INFO_TAB_WORDS : ["מידע"];
   const cw = (typeof CHECKLIST_TAB_WORDS !== "undefined" && Array.isArray(CHECKLIST_TAB_WORDS)) ? CHECKLIST_TAB_WORDS : ["ליסט"];
+  const vw = (typeof VISA_TAB_WORDS !== "undefined" && Array.isArray(VISA_TAB_WORDS)) ? VISA_TAB_WORDS : ["ויזה"];
+  if(vw.some(x => x && title.includes(x))) return "visa";
   if(fw.some(x => x && title.includes(x))) return "forms";
   if(cw.some(x => x && title.includes(x))) return "checklist";
   if(iw.some(x => x && title.includes(x))) return "info";
@@ -512,8 +569,9 @@ function specialKind(title){
 }
 let view = "trip";   // "trip" = לשונית שליח/נסיעה, "info" = מידע וצ׳ק ליסט
 function render(){
-  const isInfo = view === "info", isForms = view === "forms", isCL = view === "checklist";
-  const special = isInfo || isForms || isCL;
+  const isInfo = view === "info", isForms = view === "forms", isCL = view === "checklist", isVisa = view === "visa";
+  const special = isInfo || isForms || isCL || isVisa;
+  document.getElementById("visa-section").hidden = !isVisa;
   document.querySelectorAll(".trip-only").forEach(s => s.hidden = special);
   document.getElementById("info-section").hidden = !isInfo;
   document.getElementById("rights-section").hidden = !isInfo;
@@ -527,6 +585,7 @@ function render(){
     renderTabs();
     if(isInfo){ renderInfo(); initSearch(); }
     else if(isCL) renderInfoView();
+    else if(isVisa) renderVisa();
     else renderForms(TRIPS.find(isMission) || TRIPS[0] || {});
     fsec.hidden = !isForms;
     const st = (typeof SITE_TITLE === "string" && SITE_TITLE.trim()) ? SITE_TITLE.trim() : "מעקב אישורים";
@@ -625,7 +684,7 @@ function tripsFromSheet(rows){
   const special = [];
   trips.forEach(t => { const k = specialKind(t.title); if(k) special.push({ kind: k, label: t.title }); });
   // לשוניות מגיליון קובעות שם וסדר; לשונית שאין לה עמודה בגיליון מופיעה בכל זאת בסוף
-  const defaults = [{ kind: "forms", label: "טפסים למילוי" }, { kind: "info", label: "מידע לשליח" }, { kind: "checklist", label: "צ׳ק ליסט לשליח" }];
+  const defaults = [{ kind: "forms", label: "טפסים למילוי" }, { kind: "info", label: "מידע לשליח" }, { kind: "checklist", label: "צ׳ק ליסט לשליח" }, { kind: "visa", label: "ויזה" }];
   specialTabs = special.concat(defaults.filter(d => !special.some(s => s.kind === d.kind)));
   const real = trips.filter(t => !specialKind(t.title));
   if(!real.length || !real.some(t => t.rounds.length)) throw new Error("empty");
@@ -656,10 +715,12 @@ if(m && TRIPS[+m[1]-1]) tripIndex = +m[1]-1;
 if(location.hash === "#info") view = "info";
 if(location.hash === "#forms") view = "forms";
 if(location.hash === "#checklist") view = "checklist";
+if(/^#visa/.test(location.hash)) view = "visa";
 window.addEventListener("hashchange", () => {
   const h = location.hash.match(/^#trip(\d+)$/);
   const k = location.hash.slice(1);
   if((k === "info" || k === "forms" || k === "checklist") && view !== k){ view = k; render(); }
+  else if(/^visa/.test(k) && view !== "visa"){ view = "visa"; render(); }
   else if(h && TRIPS[+h[1]-1] && (+h[1]-1 !== tripIndex || view !== "trip")){ view = "trip"; tripIndex = +h[1]-1; render(); }
 });
 render();
