@@ -273,3 +273,12 @@ h1{font-size:1.6rem;font-weight:700;margin:0;letter-spacing:-.01em}
 
 .admin-btn{display:inline-block;margin:4px 0 10px;padding:6px 14px;border-radius:999px;background:var(--amber);color:#16243D;font-weight:700;text-decoration:none;font-size:.92rem}
 .admin-btn:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+
+/* התקדמות בטפסים */
+.fp{display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:8px;border-top:1px dashed var(--line);font-size:.88rem;color:var(--muted);cursor:pointer}
+.fp input{width:20px;height:20px;accent-color:var(--ok);flex:none}
+.fp-pending{color:var(--amber);font-weight:700}
+.form-card.fp-sent{border-color:color-mix(in srgb,var(--ok) 55%,var(--line))}
+.form-card.fp-sent .fp{color:var(--ok);font-weight:700}
+.fp-bar{max-width:360px;margin:8px 0 4px}
+.fp-off{display:block;font-size:.85rem;color:var(--muted)}
