@@ -209,6 +209,28 @@ const OADV = { pages: ["preview-advance-1.jpg", "preview-advance-2.jpg"], items:
   { p: 1, sig: true, x: 333, y: 546, w: 88, h: 20, if: "agentName" }
 ]};
 
+
+// ---------- שאלון רפואי (כט קליטה שליח 2022, עמ׳ 21–24) ----------
+const MED_ROWS = ["בעיות נשימה או ריאות, כולל שחפת, אסטמה וברונכיטיס", "שיתוק ילדים", "דלקת זיהומית בכבד, צהבת, מחלת כבד אחרת", "סרטן, גידולים שפירים, ציסטות", "סכרת", "אנמיה, לוקמיה, הפרעות אחרות בדם", "מחלת נפש", "הפרעה במערכת העצבים", "פרכוסים, איבודי הכרה", "כאבי ראש חוזקים או מיגרנה", "בעיות לב – כולל מחלות כלי דם ומסתמי הלב", "כאבי גב תכופים או חבלה בגב", "כל בעיה בעצמות, פרקים – כולל דלקת, נקע, שברים, קטיעות", "כל בעיה בירכיים, ברכיים, קרסוליים, רגליים", "כל בעיה בידיים, מרפקים, כתפיים", "חבלה בראש", "פריחות בעור", "אלרגיות", "רגישות לעשן או אבק", "לחץ דם גבוה או נמוך", "דליות ברגליים", "כיב קיבה, כיב תריסריון, בעיה אחרת בעיכול", "בקעים", "בעיות בכיס המרה", "בעיות בכליות ו/או שלפוחית השתן", "קוצר נשימה", "בעיה בדיבור", "שימוש יתר בתרופות, משקאות חריפים, סמים", "הרכבת משקפיים בעבר/בהווה", "הרכבת עדשות מגע בעבר/בהווה", "ניתוח/מחלה/חבלה בעין", "עיוורון בעין אחת", "עיוורון בשתי עיניים / תעודת עיוור", "בעיות שמיעה / הרכבת מכשיר שמיעה", "המצאות בתקופת התאוששות מניתוח/הריון", "אשפוז בבי״ח בחמש השנים האחרונות", "מחלות ניווניות/מחלות ממושכות/אחרות שלא פורטו לעיל"];
+const OMED = { pages: ["preview-medical-1.jpg", "preview-medical-2.jpg", "preview-medical-3.jpg", "preview-medical-4.jpg"], items: [
+  { p: 0, id: "last", x: 400, y: 173, size: 9 },
+  { p: 0, id: "first", x: 266, y: 173, size: 9 },
+  { p: 0, id: "id", x: 177, y: 173, size: 9 },
+  { p: 0, id: "dob", x: 401, y: 220, date: true, size: 9 },
+  { p: 0, id: "rel", x: 140, y: 220, size: 8 },
+  { p: 0, id: "depDate", x: 364, y: 289, date: true, size: 9 },
+  { p: 0, id: "dest", x: 140, y: 289, size: 8.5 },
+  { p: 1, ynrows: "diseases", from: 0, rows: [207.3, 235.8, 255.0, 283.6, 302.5, 321.3, 350.0, 368.8, 387.5, 406.7, 425.1, 453.2, 471.9, 499.8, 528.1, 547.3, 566.0, 584.7, 621.9, 659.1, 696.5], no: 329.5, yes: 310.5, dy: 5, r: 5.5, ty: 10, size: 6.5, desc: { x: 297, max: 19 }, doc: { x: 185, max: 19 } },
+  { p: 2, ynrows: "diseases", from: 21, rows: [151.6, 179.9, 198.9, 217.4, 236.1, 255.0, 274.2, 302.3, 320.8, 339.5, 358.7, 377.2, 395.6, 423.5, 451.8, 479.8], no: 329.5, yes: 310.5, dy: 5, r: 5.5, ty: 10, size: 6.5, desc: { x: 297, max: 19 }, doc: { x: 185, max: 19 } },
+  { p: 2, yn: "surgery", label: "2. ניתוח – פירוט", no: 327.5, yes: 307.5, y: 538.5, lines: { x: 470, ys: [577, 601], max: 80 } },
+  { p: 2, yn: "hosp", label: "3. אשפוז – פירוט", no: 332.5, yes: 317, y: 636.8, lines: { x: 470, ys: [661, 685], max: 80 } },
+  { p: 3, yn: "psych", label: "4. טיפול פסיכולוגי/פסיכיאטרי – פירוט", no: 139, yes: 119, y: 114.6, lines: { x: 470, ys: [152], max: 85 } },
+  { p: 3, yn: "meds", label: "5. טיפול תרופתי – פירוט", no: 310.7, yes: 291, y: 183.4, lines: { x: 455, ys: [209, 233], max: 75 } },
+  { p: 3, yn: "fertility", label: "6. טיפולי פוריות – פירוט", no: 257.8, yes: 239.3, y: 268.8, lines: { x: 455, ys: [295, 319, 344], max: 75 } },
+  { p: 3, text: "special", label: "7. בעיה רפואית חריגה", lines: { x: 455, ys: [397, 422, 446], max: 75 } },
+  { p: 3, text: "other", label: "8. בעיה רפואית נוספת", lines: { x: 455, ys: [497, 521, 546], max: 75 } }
+], extra: [] };
+
 const FORM_SCHEMAS = {
 
   // ---------------------------------------------------------------- 101
@@ -392,34 +414,33 @@ const FORM_SCHEMAS = {
 
   // ------------------------------------------------------- שאלון רפואי
   "medical": {
-    title: "שאלון רפואי – בני המשפחה",
-    intro: "ממלאים פרטים עבור כל אחד מבני המשפחה המצטרפים לשליחות, כולל השליח/ה. המידע רגיש – הוא נשלח רק לגורם המטפל ואינו נשמר באתר.",
+    title: "שאלון רפואי",
+    preview: ["preview-medical-1.jpg", "preview-medical-2.jpg", "preview-medical-3.jpg", "preview-medical-4.jpg"], previewPdf: "form-medical.pdf", overlay: OMED,
+    intro: "ממלאים שאלון נפרד לכל אחד מבני המשפחה המצטרפים לשליחות, כולל השליח/ה. המידע רגיש – הוא נשלח רק לגורם המטפל ואינו נשמר באתר.",
     sections: [
-      { title: "פרטים כלליים", fields: [
-        { id: "family", label: "שם המשפחה", type: "text", required: true },
-        { id: "kupa", label: "קופת חולים", type: "select", options: KUPOT },
-        { id: "doctor", label: "רופא/ת משפחה – שם וטלפון", type: "text" }
+      { title: "פרטים אישיים", fields: [
+        { id: "last", label: "שם משפחה", type: "text", required: true },
+        { id: "first", label: "שם פרטי", type: "text", required: true },
+        { id: "id", label: "ת.ז.", type: "id", required: true },
+        { id: "dob", label: "תאריך לידה", type: "date", required: true },
+        { id: "rel", label: "קרבה לשליח", type: "select", options: ["השליח/ה", "בן/בת זוג", "בן", "בת", "אחר"], required: true },
+        { id: "depDate", label: "תאריך יציאה לשליחות", type: "date" },
+        { id: "dest", label: "יעד השליחות", type: "text" }
       ]},
-      { title: "בני המשפחה", fields: [
-        { id: "members", type: "repeat", min: 1, addLabel: "הוספת בן/בת משפחה", itemLabel: "בן/בת משפחה", fields: [
-          { id: "name", label: "שם מלא", type: "text", required: true },
-          { id: "rel", label: "קרבה", type: "select", options: RELATION, required: true },
-          { id: "dob", label: "תאריך לידה", type: "date", required: true },
-          { id: "conditions", label: "האם יש מחלות כרוניות או מצבים רפואיים?", type: "yesno", detailLabel: "פרטו אילו" },
-          { id: "meds", label: "האם נוטל/ת תרופות באופן קבוע?", type: "yesno", detailLabel: "שם התרופה ומינון" },
-          { id: "allergies", label: "האם יש אלרגיות (כולל לתרופות ולמזון)?", type: "yesno", detailLabel: "פרטו למה" },
-          { id: "hosp", label: "האם היו ניתוחים או אשפוזים בשנתיים האחרונות?", type: "yesno", detailLabel: "פרטו מה ומתי" },
-          { id: "special", label: "האם יש צרכים מיוחדים, מגבלות או טיפולים שוטפים?", type: "yesno", detailLabel: "פרטו" },
-          { id: "pregnancy", label: "הריון", type: "radio", options: ["לא רלוונטי", "לא", "כן"] },
-          { id: "vaccines", label: "האם החיסונים מעודכנים?", type: "radio", options: ["כן", "לא", "לא ידוע"], required: true },
-          { id: "notes", label: "הערות נוספות", type: "textarea", full: true }
-        ]}
+      { title: "1. האם הנך סובל/ת או סבלת מהמחלות הבאות?", fields: [
+        { id: "diseases", type: "ynrows", rows: MED_ROWS }
       ]},
-      { title: "הצהרה", fields: [
-        { type: "para", text: "אני מצהיר/ה כי הפרטים שמסרתי בשאלון זה מלאים ונכונים, ומתחייב/ת לעדכן על כל שינוי במצבו הרפואי של מי מבני המשפחה." }
+      { title: "שאלות נוספות", fields: [
+        { id: "surgery", label: "2. האם עברת ניתוח כלשהו?", type: "yesno", detailLabel: "סוג הניתוח, שם ביה״ח והמחלקה בה טופלת" },
+        { id: "hosp", label: "3. האם אושפזת עקב מחלה?", type: "yesno", detailLabel: "סוג המחלה, שם ביה״ח והמחלקה בה טופלת" },
+        { id: "psych", label: "4. האם קיבלת בעבר או הנך מקבל/ת כיום טיפול פסיכולוגי או פסיכיאטרי?", type: "yesno", detailLabel: "שם המטפל והמוסד הרפואי" },
+        { id: "meds", label: "5. האם הנך מקבל/ת טיפול תרופתי?", type: "yesno", detailLabel: "שם התרופה והמינון" },
+        { id: "fertility", label: "6. האם קיבלת או הנך מטופל/ת בטיפולי פוריות?", type: "yesno", detailLabel: "שם המטפל / המוסד הרפואי" },
+        { id: "special", label: "7. האם קיימת בעיה רפואית חריגה, המחייבת היערכות לפני ובמהלך השליחות? אנא פרט", type: "textarea", full: true, placeholder: "אם אין – משאירים ריק" },
+        { id: "other", label: "8. אם קיימת בעיה רפואית נוספת כלשהי, שלא באה לביטוי בשאלון הנ״ל – אנא פרט", type: "textarea", full: true, placeholder: "אם אין – משאירים ריק" }
       ]}
     ],
-    sign: true
+    sign: false
   },
 
   // --------------------------------------------------- קורות חיים מצומצם

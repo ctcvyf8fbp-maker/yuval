@@ -74,6 +74,13 @@ input:focus,select:focus,textarea:focus{outline:3px solid color-mix(in srgb,var(
 .yn-opts{display:flex;gap:18px;flex-wrap:wrap}
 .yn-det{margin-top:8px}
 .yn-det[hidden]{display:none}
+.ynr .btn{margin:6px 0 10px}
+.ynr-row{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.ynr-row.bad{background:color-mix(in srgb,var(--no) 8%,transparent)}
+.ynr-t{font-size:.95rem}
+.ynr-det{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.ynr-det[hidden]{display:none}
+@media (max-width:520px){.ynr-det{grid-template-columns:1fr}}
 .missing{background:var(--paper);border-radius:14px;padding:24px;text-align:center}
 @media (max-width:560px){ .grid{grid-template-columns:1fr} }
 
@@ -194,6 +201,34 @@ function field(f, idp){
         if(f.required !== false && !val()){ g.classList.add("bad"); return g; }
         if(val() === yes && !ta.value.trim()){ ta.classList.add("bad"); return ta; } } };
   }
+  if(f.type === "ynrows"){
+    // רשימת מחלות: לכל שורה לא/כן, ובכן – תיאור ורופא/מוסד מטפל
+    const box = el("div","full ynr");
+    if(f.label) box.append(el("div","gl", f.label));
+    const fill = el("button","btn small","סימון „לא” בכל השורות שעוד לא סומנו"); fill.type = "button"; box.append(fill);
+    const rows = f.rows.map((label, i) => {
+      const r = el("div","ynr-row"); const t = el("div","ynr-t", label);
+      const opts = el("div","yn-opts");
+      const mk = v => { const lb = el("label","opt"); const inp = el("input"); inp.type = "radio"; inp.name = name + "_" + i; inp.value = v; lb.append(inp, el("span","",v)); opts.append(lb); return inp; };
+      const no = mk("לא"), yes = mk("כן");
+      const det = el("div","ynr-det"); det.hidden = true;
+      const d1 = el("label","f"); d1.append("תיאור המחלה"); const i1 = el("input"); i1.type = "text"; d1.append(i1);
+      const d2 = el("label","f"); d2.append("הרופא / מוסד מטפל"); const i2 = el("input"); i2.type = "text"; d2.append(i2);
+      det.append(d1, d2);
+      [no, yes].forEach(x => x.onchange = () => { det.hidden = !yes.checked; if(yes.checked) i1.focus(); });
+      r.append(t, opts, det); box.append(r);
+      return { r, no, yes, i1, i2, label };
+    });
+    fill.onclick = () => rows.forEach(x => { if(!x.no.checked && !x.yes.checked){ x.no.checked = true; } });
+    return { el: box, f,
+      get: () => rows.map(x => ({ ans: x.yes.checked ? "כן" : x.no.checked ? "לא" : "", desc: x.i1.value.trim(), doc: x.i2.value.trim(), label: x.label })),
+      check(){ let first; const un = [], nd = [];
+        rows.forEach(x => { x.r.classList.remove("bad"); delete x.r.dataset.label;
+          if(!x.no.checked && !x.yes.checked){ x.r.classList.add("bad"); un.push(x); if(!first) first = x.r; }
+          else if(x.yes.checked && !x.i1.value.trim()){ x.r.classList.add("bad"); nd.push(x); if(!first) first = x.r; } });
+        if(first) first.dataset.label = [un.length ? `טבלת המחלות – ${un.length} שורות בלי סימון לא/כן` : "", nd.length ? "חסר תיאור ב: " + nd.map(x => x.label).join(", ") : ""].filter(Boolean).join(" · ");
+        return first; } };
+  }
   if(f.type === "table"){
     const box = el("div","tbl full"); const t = el("table"); const thead = el("thead"); const hr = el("tr");
     f.cols.forEach(c => hr.append(el("th","",c.label))); thead.append(hr); const tb = el("tbody"); t.append(thead, tb); box.append(t);
@@ -311,7 +346,7 @@ function build(){
   const da = el("div","actions");
   const wa = el("button","btn primary wa","📲 שליחה בוואטסאפ"); wa.type = "button"; wa.onclick = () => shareWhatsApp(wa);
   const dp = el("button","btn","⬇ הורדת PDF"); dp.type = "button"; dp.onclick = () => downloadPdf(dp);
-  const pb = el("button","btn","🖨 הדפסה"); pb.type = "button"; pb.onclick = () => window.print();
+  const pb = el("button","btn","🖨 הדפסה"); pb.type = "button"; pb.onclick = () => { markForm("saved"); window.print(); };
   da.append(wa, dp, pb);
   const up = (new URLSearchParams(location.search).get("up") || (typeof UPLOAD_LINK === "string" ? UPLOAD_LINK : "")).trim();
   if(up){ const sl = el("a","btn","📤 שליחת מסמך"); sl.href = up; sl.target = "_blank"; sl.rel = "noopener"; da.append(sl); }
@@ -327,6 +362,7 @@ function build(){
       const names = [...wrap.querySelectorAll(".bad")].map(b => {
         const lab = b.closest("label.f"), grp = b.classList.contains("group") ? b : null;
         let n = lab ? lab.firstChild.textContent.trim() : grp && grp.querySelector(".gl") ? grp.querySelector(".gl").firstChild.textContent.trim() : "";
+        if(!n && b.dataset.label) n = b.dataset.label;
         if(b.dataset.idbad) n += " – המספר לא תקין (צריך מספר זהות אמיתי, 9 ספרות)";
         if(b.dataset.missing) n += ` – עוד ${b.dataset.missing} משימות לא סומנו`;
         return n;
@@ -334,7 +370,7 @@ function build(){
       err.textContent = "לא ניתן להפיק עדיין. יש להשלים או לתקן: " + [...new Set(names)].join(" · ");
       first.scrollIntoView({ block: "center" }); if(first.focus) first.focus(); return; }
     if(S.sign && !sig.signed()){ err.textContent = "יש לחתום בתיבת החתימה."; sig.cv.scrollIntoView({ block: "center" }); return; }
-    renderDoc(); done.classList.add("show"); done.scrollIntoView({ behavior: "smooth", block: "center" });
+    renderDoc(); markForm("filled"); done.classList.add("show"); done.scrollIntoView({ behavior: "smooth", block: "center" });
   });
 }
 
@@ -389,8 +425,36 @@ function overlayOps(){
   const put = (p, x, y, text, o = {}) => pages[p].ops.push({ t: "text", x, y, text: String(text), size: (o.size || 9) * (S.overlay.scale || TEXT_SCALE), align: o.align || "right", ltr: !!(o.ltr || o.align === "left") });
   const tick = (p, x, y) => put(p, x, y + 1, "✓", { align: "center", size: 11 });
   const fmtV = (v, o) => o.date ? fmt(v) : v;
+  const overflow = [];
+  const fit = (text, max, label) => { text = String(text || ""); if(!max || text.length <= max) return text; overflow.push({ k: label, v: text }); return text.slice(0, Math.max(0, max - 2)).trim() + "…*"; };
+  const wrapLines = (text, max) => { const out = []; let cur = ""; String(text || "").split(/\s+/).forEach(w => { if(!w) return; const t = cur ? cur + " " + w : w; if(t.length > max && cur){ out.push(cur); cur = w; } else cur = t; }); if(cur) out.push(cur); return out; };
   O.items.forEach(it => {
     if(it.if && !vals[it.if]) return;
+    if(it.ynrows){
+      (vals[it.ynrows] || []).slice(it.from || 0, (it.from || 0) + it.rows.length).forEach((r, k) => {
+        const top = it.rows[k];
+        if(r.ans) pages[it.p].ops.push({ t: "circle", x: r.ans === "כן" ? it.yes : it.no, y: top + it.dy, r: it.r || 6 });
+        if(r.ans === "כן"){
+          if(r.desc) put(it.p, it.desc.x, top + it.ty, fit(r.desc, it.desc.max, "שאלה 1 – " + r.label + " – תיאור"), { size: it.size || 7 });
+          if(r.doc) put(it.p, it.doc.x, top + it.ty, fit(r.doc, it.doc.max, "שאלה 1 – " + r.label + " – רופא / מוסד"), { size: it.size || 7 });
+        }
+      });
+      return;
+    }
+    if(it.yn){
+      const v = String(vals[it.yn] || ""), yes = v.startsWith("כן"), no = v.startsWith("לא");
+      if(yes || no) pages[it.p].ops.push({ t: "circle", x: yes ? it.yes : it.no, y: it.y, r: it.r || 6 });
+      const det = yes ? v.replace(/^כן\s*–\s*/, "") : "";
+      if(det && it.lines){ const ls = wrapLines(det, it.lines.max); ls.slice(0, it.lines.ys.length).forEach((t, j) => put(it.p, it.lines.x, it.lines.ys[j], t, { size: it.lines.size || 8.5 }));
+        if(ls.length > it.lines.ys.length) overflow.push({ k: it.label || "פירוט", v: det }); }
+      return;
+    }
+    if(it.text && it.lines){
+      const v = String(vals[it.text] || ""); if(!v) return;
+      const ls = wrapLines(v, it.lines.max); ls.slice(0, it.lines.ys.length).forEach((t, j) => put(it.p, it.lines.x, it.lines.ys[j], t, { size: it.lines.size || 8.5 }));
+      if(ls.length > it.lines.ys.length) overflow.push({ k: it.label || "פירוט", v });
+      return;
+    }
     if(it.image){ if(vals[it.image]) pages[it.p].ops.push({ t: "img", src: vals[it.image], x: it.x, y: it.y, w: it.w, h: it.h }); return; }
     if(it.table){
       (vals[it.table] || []).slice(0, it.rows.length).forEach((row, i) => {
@@ -427,7 +491,7 @@ function overlayOps(){
   const extras = (Array.isArray(O.extra) ? O.extra : O.extra ? [O.extra] : [])
     .map(id => { const o = parts.flatMap(p => p.fl).find(x => x.f && x.f.id === id); const sec = parts.find(p => p.fl.includes(o));
       return o && vals[id] ? { k: (sec && sec.sec.title ? sec.sec.title + " – " : "") + o.f.label, v: String(vals[id]) } : null; })
-    .filter(Boolean);
+    .filter(Boolean).concat(overflow);
   return { W, H, pages, extras };
 }
 function renderOverlay(){
@@ -551,6 +615,15 @@ async function makePdf(){
   const fname = (S.title + (nm && nm.get() ? " – " + nm.get() : "")).replace(/[\\/:*?"<>|]/g, "") + ".pdf";
   return new File([pdf.output("blob")], fname, { type: "application/pdf" });
 }
+// ---------- סימון התקדמות (נשמר במכשיר, מוצג ברשימת הטפסים באתר) ----------
+const RANK = { filled: 1, saved: 2, sent: 3 };
+function markForm(state){
+  try{
+    const all = JSON.parse(localStorage.getItem("forms-progress") || "{}"), k = "f:" + key, cur = all[k];
+    if(cur && RANK[cur.state] > RANK[state]) return;
+    all[k] = { state, date: new Date().toISOString().slice(0,10) }; localStorage.setItem("forms-progress", JSON.stringify(all));
+  }catch(e){}
+}
 function download(file){ const u = URL.createObjectURL(file); const a = document.createElement("a"); a.href = u; a.download = file.name; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000); }
 async function shareWhatsApp(btn){
   const old = btn.textContent; btn.disabled = true; btn.textContent = "מכין את הקובץ…";
@@ -558,8 +631,9 @@ async function shareWhatsApp(btn){
     const file = await makePdf();
     if(navigator.canShare && navigator.canShare({ files: [file] })){
       await navigator.share({ files: [file], title: file.name, text: S.title });
+      markForm("sent");
     } else {
-      download(file);
+      download(file); markForm("sent");
       const num = (typeof WHATSAPP_NUMBER === "string" ? WHATSAPP_NUMBER : "").replace(/\D/g, "").replace(/^0/, "972");
       const msg = encodeURIComponent(`מצרף/ת את „${S.title}” (הקובץ ירד עכשיו למחשב – יש לצרף אותו כאן 📎)`);
       window.open(`https://wa.me/${num}?text=${msg}`, "_blank", "noopener");
@@ -569,7 +643,7 @@ async function shareWhatsApp(btn){
 }
 async function downloadPdf(btn){
   const old = btn.textContent; btn.disabled = true; btn.textContent = "מכין את הקובץ…";
-  try{ download(await makePdf()); } catch(e){ alert("לא הצלחתי ליצור את הקובץ. אפשר להשתמש בכפתור „שמירה כ-PDF / הדפסה”."); console.error(e); }
+  try{ download(await makePdf()); markForm("saved"); } catch(e){ alert("לא הצלחתי ליצור את הקובץ. אפשר להשתמש בכפתור „שמירה כ-PDF / הדפסה”."); console.error(e); }
   btn.disabled = false; btn.textContent = old;
 }
 
