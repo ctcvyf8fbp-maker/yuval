@@ -22,21 +22,14 @@ const SITE_TITLE = "מעקב אישורים ליציאה לשליחות";
 const FORMS = [
   { title: "טופס 101 – כרטיס עובד", file: "form-101.pdf", online: "form.html?f=101" },
   { title: "כתב התחייבות והוראה בלתי חוזרת", file: "form-commitment.pdf", online: "form.html?f=commitment" },
-  { title: "הצהרה – קיום הוראות משהב״ט", file: "form-instructions.pdf", online: "form.html?f=instructions" },
   { title: "תלוש שכר אחרון", upload: true },
   { title: "שאלון רפואי", file: "form-medical.pdf", online: "form.html?f=medical",
     note: "ממלאים שאלון נפרד לכל אחד מבני המשפחה המצטרפים לשליחות, כולל השליח/ה." },
-  { title: "סיכום מידע רפואי", upload: true,
-    note: "עבור כל אחד מבני המשפחה (שליח – בצה״ל, בני המשפחה – בקופ״ח)." },
   { title: "טופס איש קשר למקרי חירום", file: "form-1.pdf", online: "form.html?f=contact",
     note: "איש הקשר חייב להיות קרוב משפחה מדרגה ראשונה." },
   { title: "קורות חיים מצומצם", file: "form-cv-short.pdf", online: "form.html?f=cvshort" },
-  { title: "קורות חיים מורחבים", upload: true,
-    note: "מעלים בפורמט האישי שלכם." },
   { title: "הצהרה על תאריכי שליחות", file: "form-mission-dates.pdf", online: "form.html?f=missiondates" },
   { title: "הצהרת שליח בדבר אישור מועדי היציאה לשליחות", file: "form-departure.pdf", online: "form.html?f=departure" },
-  { title: "פרטי דרכון ותעודת זהות", online: "form.html?f=passport",
-    note: "עבור השליח/ה ועבור כל בן/בת משפחה שמצטרף/ת. אפשר לצלם ישירות מהטלפון." },
   { title: "טופס בקשה לדרכון דיפלומטי", file: "form-passport-request.pdf", online: "form.html?f=passreq",
     note: "טופס זה הינו לשליחים דיפלומטיים בלבד. יש למלא רק את החלק של „פרטי מבקש הדרכון” למטה." }
 ];
@@ -58,11 +51,21 @@ const OVERDUE_DAYS = 7;
 // עמודה בגיליון שהכותרת שלה כוללת אחת מהמילים האלה = לשונית המידע והצ׳ק ליסט (בלי סבב אישורים)
 const INFO_TAB_WORDS = ["מידע"];
 // עמודה בגיליון שהכותרת שלה כוללת אחת מהמילים האלה = לשונית המסמכים והטפסים (בלי סבב אישורים)
+// ===== קבצים שצריך לשלוח לגורם המטפל – מופיע בסוף רשימת הטפסים (רק תזכורת, בלי העלאה) =====
+const SEND_DOCS = [
+  { title: "דרכון", note: "של השליח/ה ושל כל בן/בת משפחה שמצטרף/ת" },
+  { title: "תעודת זהות" },
+  { title: "סיכום רפואי", note: "נשלח על ידי המרפאה" },
+  { title: "קורות חיים מורחבים", note: "קורות חיים רגילים" }
+];
 const FORMS_TAB_WORDS = ["טפסים"];
 // עמודה בגיליון שהכותרת שלה כוללת „ויזה” = לשונית מדריך הוויזה
 const VISA_TAB_WORDS = ["ויזה"];
 // עמודה בגיליון שהכותרת שלה כוללת אחת מהמילים האלה = לשונית הצ׳ק ליסט
 const CHECKLIST_TAB_WORDS = ["ליסט", "לסיט", "צ׳ק", "צ'ק", "צק", "checklist"];
+
+// כתובת שירות שמירת הסטטוסים (Google Apps Script – ראו הוראות). אם ריק – הסטטוס נשמר רק במכשיר.
+const STATUS_API = "";
 
 // מספר וואטסאפ לקבלת מסמכים (למשל "0501234567"). אם ריק – וואטסאפ ייפתח עם בחירת איש קשר.
 const WHATSAPP_NUMBER = "";

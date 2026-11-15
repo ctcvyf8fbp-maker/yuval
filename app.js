@@ -323,7 +323,6 @@ function renderForms(trip){
       }
       acts.append(d);
     }
-    if(f.upload && up){ const u = el("a","fbtn primary","📤 העלאת קובץ"); u.href = up; u.target = "_blank"; u.rel = "noopener"; acts.append(u); }
     if(f.upload){
       const num = (typeof WHATSAPP_NUMBER === "string" ? WHATSAPP_NUMBER : "").replace(/\D/g, "").replace(/^0/, "972");
       const w = el("a","fbtn wa","📲 שליחה בוואטסאפ"); w.target = "_blank"; w.rel = "noopener";
@@ -343,6 +342,17 @@ function renderForms(trip){
     }));
     ul.append(li);
   });
+  // קבצים שצריך לשלוח לגורם המטפל (תזכורת בלבד)
+  const sd = (typeof SEND_DOCS !== "undefined" && Array.isArray(SEND_DOCS)) ? SEND_DOCS.filter(x => x && x.title) : [];
+  if(sd.length){
+    const li = el("li","form-card send-card");
+    li.style.cssText = "background:color-mix(in srgb,var(--amber) 10%,var(--paper))";
+    const head = el("div","form-head"); head.append(el("span","form-title","📎 קבצים שצריך לשלוח לגורם המטפל")); li.append(head);
+    const l = document.createElement("ul"); l.style.cssText = "margin:8px 0 0;padding-inline-start:22px;line-height:1.9";
+    sd.forEach(x => { const it = document.createElement("li"); const b = document.createElement("b"); b.textContent = x.title; it.append(b);
+      if(x.note) it.append(" – " + x.note); l.append(it); });
+    li.append(l); ul.append(li);
+  }
   sec.hidden = !list.length;
   const sum = document.getElementById("docs-summary");
   sum.hidden = !list.length;
