@@ -149,7 +149,7 @@ const codeGet = () => { try{ return localStorage.getItem("admin-code") || ""; }c
 let statusRows = null;
 async function loadStatus(){
   const m = document.getElementById("api-msg"); m.hidden = true; statusRows = null;
-  if(!API){ m.hidden = false; m.textContent = "שמירת הסטטוסים בענן עוד לא הוגדרה (STATUS_API ב-data.js) – עמודות „טפסים” ו„צ׳ק ליסט” יתמלאו אחרי ההגדרה."; return; }
+  if(!API) return;
   const code = codeGet();
   if(!code){ m.hidden = false; m.textContent = "כדי לראות אילו טפסים כל שליח מילא – לוחצים „🔑 קוד ניהול” ומקלידים את הקוד."; return; }
   try{
@@ -233,7 +233,7 @@ function draw(){
           const dr = document.createElement("tr"); dr.className = "det"; const dc = document.createElement("td"); dc.colSpan = 8; dc.innerHTML = x.detail(); dr.append(dc); tr.after(dr);
           b.textContent = "סגירה ▴"; b.setAttribute("aria-expanded","true");
         };
-      } else { td("טפסים", d.docs ? `${d.got} מתוך ${d.docs}` : "—"); td("צ׳ק ליסט", "—"); }
+      } else { td("מסמכים", d.docs ? `${d.got} מתוך ${d.docs}` : "—"); if(API) td("צ׳ק ליסט", "—"); }
     }
     const c = td("", "");
     if(!r.s.main){ const b = document.createElement("button"); b.className = "x"; b.type = "button"; b.textContent = "✕"; b.title = "הסרה מהרשימה"; b.setAttribute("aria-label","הסרה מהרשימה");
@@ -248,8 +248,13 @@ function draw(){
   document.getElementById("stamp").textContent = "עודכן ב-" + new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" }) + " · מסודר לפי מועד היציאה · הגיליונות מתעדכנים כל כ-5 דקות";
 }
 
+// בלי שמירה בענן: דף הניהול מציג רק את הגיליון (בלי טפסים/צ׳ק ליסט של השליחים)
+if(!API){
+  document.getElementById("code-btn").remove();
+  const ths = document.querySelectorAll("thead th"); ths[5].textContent = "מסמכים"; ths[6].remove();
+}
 document.getElementById("refresh").onclick = refresh;
-document.getElementById("code-btn").onclick = () => {
+if(document.getElementById("code-btn")) document.getElementById("code-btn").onclick = () => {
   const v = prompt("קוד הניהול (מופיע בתחילת קובץ הסקריפט):", codeGet());
   if(v === null) return; try{ localStorage.setItem("admin-code", v.trim()); }catch(e){} refresh();
 };
