@@ -297,10 +297,7 @@ function field(f, idp){
 // ---------- בניית העמוד ----------
 function build(){
   document.title = S.title + " – מילוי מקוון";
-  const back = el("a","back","→ חזרה לאתר"); let bq = ""; try{ bq = sessionStorage.getItem("sheet-q") || ""; }catch(e){}
-  const kq = new URLSearchParams(location.search).get("k") || ""; const km = kq.match(/^(2PACX-[\w-]{20,})\.(\d+)$/);
-  if(km) bq = "?s=" + km[1] + "&g=" + km[2];
-  back.href = "index.html" + bq + "#forms";
+  const back = el("a","back","→ חזרה לאתר"); let bq = ""; try{ bq = sessionStorage.getItem("sheet-q") || ""; }catch(e){} back.href = "index.html" + bq;
   wrap.append(back, el("h1","",S.title));
   if(S.subtitle) wrap.append(el("p","sub",S.subtitle));
   wrap.append(el("p","privacy","🔒 הפרטים לא נשמרים באתר ולא נשלחים לשום מקום – הם נשארים במכשיר שלך עד שתשלחו את הקובץ."));
@@ -373,8 +370,7 @@ function build(){
       err.textContent = "לא ניתן להפיק עדיין. יש להשלים או לתקן: " + [...new Set(names)].join(" · ");
       first.scrollIntoView({ block: "center" }); if(first.focus) first.focus(); return; }
     if(S.sign && !sig.signed()){ err.textContent = "יש לחתום בתיבת החתימה."; sig.cv.scrollIntoView({ block: "center" }); return; }
-    try{ renderDoc(); }catch(ex){ console.error(ex); err.textContent = "הפקת הטופס נכשלה. נסו שוב, או רעננו את הדף."; return; }
-    markForm("filled"); done.classList.add("show"); done.scrollIntoView({ behavior: "smooth", block: "center" });
+    renderDoc(); markForm("filled"); done.classList.add("show"); done.scrollIntoView({ behavior: "smooth", block: "center" });
   });
 }
 
@@ -620,24 +616,13 @@ async function makePdf(){
   return new File([pdf.output("blob")], fname, { type: "application/pdf" });
 }
 // ---------- סימון התקדמות (נשמר במכשיר, מוצג ברשימת הטפסים באתר) ----------
-// השליח מזוהה לפי הקישור האישי שדרכו נכנס לאתר
-const QP = new URLSearchParams(location.search);
-const TKEY = (() => { const k = QP.get("k") || ""; if(/^(main|2PACX-[\w-]{20,}\.\d+)$/.test(k)) return k; try{ return sessionStorage.getItem("traveler-key") || "main"; }catch(e){ return "main"; } })();
-const TNAME = (() => { const n = (QP.get("n") || "").slice(0, 80); if(n) return n; try{ return sessionStorage.getItem("traveler-name") || ""; }catch(e){ return ""; } })();
-const RANK = { filled: 1, saved: 1, sent: 3 };
+const RANK = { filled: 1, saved: 2, sent: 3 };
 function markForm(state){
-  const now = new Date().toISOString();
   try{
-    const pk = "forms-progress:" + TKEY;
-    const all = JSON.parse(localStorage.getItem(pk) || "{}"), k = "f:" + key, cur = all[k];
-    // מפיקים שוב → מתעדכן מועד ההפקה האחרון (בלי כפילויות); „נשלח” לא חוזר ל„הופק”
-    all[k] = { state: cur && RANK[cur.state] > RANK[state] ? cur.state : state, ts: now, date: now.slice(0,10) };
-    localStorage.setItem(pk, JSON.stringify(all));
-    state = all[k].state;
+    const all = JSON.parse(localStorage.getItem("forms-progress") || "{}"), k = "f:" + key, cur = all[k];
+    if(cur && RANK[cur.state] > RANK[state]) return;
+    all[k] = { state, date: new Date().toISOString().slice(0,10) }; localStorage.setItem("forms-progress", JSON.stringify(all));
   }catch(e){}
-  const u = (typeof STATUS_API === "string" ? STATUS_API.trim() : "");
-  if(u) try{ fetch(u, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, keepalive: true,
-    body: JSON.stringify({ key: TKEY, name: TNAME, kind: "form", item: "f:" + key, title: S.title, status: state === "sent" ? "נשלח" : "הופק" }) }).catch(() => {}); }catch(e){}
 }
 function download(file){ const u = URL.createObjectURL(file); const a = document.createElement("a"); a.href = u; a.download = file.name; document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 4000); }
 async function shareWhatsApp(btn){
