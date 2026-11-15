@@ -478,7 +478,7 @@ function overlayOps(){
     if(it.signDate){ if(dateInp && dateInp.value) put(it.p, it.x, it.y, fmt(dateInp.value), it); return; }
     if(it.combo){ const t = it.combo.map(k => fmtV(vals[k] || "", it)).filter(Boolean).join(" – "); if(t) put(it.p, it.x, it.y, t, { ...it, ltr: true }); return; }
     const v = vals[it.id];
-    if(it.circle){ if(v === it.opt) pages[it.p].ops.push({ t: "circle", x: it.x, y: it.y, r: it.r || 5.5 }); return; }
+    if(it.circle){ if(v === it.opt) pages[it.p].ops.push({ t: "circle", x: it.x, y: it.y, r: it.r || 5.5, rx: it.rx, ry: it.ry }); return; }
     if(it.parts && v && /^\d{4}-\d{2}-\d{2}$/.test(v)){
       const [yy, mm, dd] = v.split("-");
       [dd, mm, yy].forEach((t, j) => put(it.p, it.parts[j], it.y, t, { align: "center", size: it.size }));
@@ -503,7 +503,7 @@ function renderOverlay(){
   const pct = (a, b) => (a / b * 100).toFixed(3) + "%";
   let h = pages.map(pg => `<div class="ovp"><img class="bg" alt="" src="${pg.bg}">${pg.ops.map(op => {
     if(op.t === "sig" || op.t === "img") return `<img class="ovs" alt="" src="${op.t === "sig" ? sig.url() : op.src}" style="left:${pct(op.x, W)};top:${pct(op.y, H)};width:${pct(op.w, W)};height:${pct(op.h, H)};object-fit:contain">`;
-    if(op.t === "circle") return `<span class="ovc" style="left:${pct(op.x - op.r, W)};top:${pct(op.y - op.r, H)};width:${pct(2 * op.r, W)};height:${pct(2 * op.r, H)}"></span>`;
+    if(op.t === "circle"){ const rx = op.rx || op.r, ry = op.ry || op.r; return `<span class="ovc" style="left:${pct(op.x - rx, W)};top:${pct(op.y - ry, H)};width:${pct(2 * rx, W)};height:${pct(2 * ry, H)}"></span>`; }
     let pos = `top:${pct(op.y - op.size * 0.85, H)};font-size:${op.size}pt;`;
     if(op.align === "center") pos += `left:${pct(op.x, W)};transform:translateX(-50%);`;
     else if(op.align === "left") pos += `left:${pct(op.x, W)};`;
@@ -537,7 +537,7 @@ async function overlayCanvases(){
         x.drawImage(op.im, op.x * sx + (op.w * sx - w) / 2, op.y * sy + (op.h * sy - h) / 2, w, h); } return; }
       if(op.t === "sig"){ if(sigImg){ const r = Math.min(op.w * sx / sigImg.width, op.h * sy / sigImg.height); const w = sigImg.width * r, h = sigImg.height * r;
         x.drawImage(sigImg, op.x * sx + (op.w * sx - w) / 2, op.y * sy + (op.h * sy - h) / 2, w, h); } return; }
-      if(op.t === "circle"){ x.lineWidth = 2.6; x.beginPath(); x.ellipse(op.x * sx, op.y * sy, op.r * sx, op.r * sy, 0, 0, Math.PI * 2); x.stroke(); return; }
+      if(op.t === "circle"){ x.lineWidth = 2.6; x.beginPath(); x.ellipse(op.x * sx, op.y * sy, (op.rx || op.r) * sx, (op.ry || op.r) * sy, 0, 0, Math.PI * 2); x.stroke(); return; }
       x.font = `bold ${op.size * sx}px ${FONT}`;
       x.direction = op.ltr ? "ltr" : "rtl";
       x.textAlign = op.align === "center" ? "center" : op.align === "left" ? "left" : "right";

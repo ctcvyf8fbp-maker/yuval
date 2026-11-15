@@ -1,0 +1,730 @@
+// =====================================================================
+//  הגדרות הטפסים המקוונים. כל טופס = רשימת חלקים ושדות.
+//  type: text / number / date / tel / email / id (ת.ז. 9 ספרות) / textarea
+//        select / radio / checks (כמה אפשרויות) / table / repeat / image
+//        para (טקסט קבוע) / officer (חלק שממלא גורם מאשר – נשאר ריק)
+// =====================================================================
+
+const KUPOT = ["כללית", "מכבי", "מאוחדת", "לאומית"];
+const INCOME = ["משכורת חודש", "משכורת בעד משרה נוספת", "משכורת חלקית", "שכר עבודה (עובד יומי)", "קצבה", "מלגה"];
+const RELATION = ["השליח/ה", "בן/בת זוג", "בן", "בת", "אחר"];
+
+
+// ---------- מיקומי המילוי על גבי טופס 101 המקורי (בנקודות PDF: רוחב 595, גובה 842; x = קצה ימין של הטקסט) ----------
+const O101 = (() => {
+  const T = (p, id, x, y, o = {}) => ({ p, id, x, y, ...o });
+  const C = (p, id, opt, x, y) => ({ p, id, opt, x, y, check: true });
+  const kidsRows = Array.from({ length: 11 }, (_, i) => 396 + i * 22.6);
+  return {
+    pages: ["preview-101-1.jpg", "preview-101-2.jpg"],
+    items: [
+      T(0, "taxYear", 320, 98, { align: "center", size: 10 }),
+      T(0, "id", 535, 230), T(0, "last", 432, 230), T(0, "first", 307, 230), T(0, "dob", 205, 230, { date: true }), T(0, "aliya", 113, 230, { date: true }),
+      T(0, "passport", 535, 254), T(0, "street", 395, 254), T(0, "houseNo", 215, 254, { align: "center" }), T(0, "city", 155, 254, { align: "center" }), T(0, "zip", 69, 254, { align: "center" }),
+      C(0, "sex", "זכר", 532.5, 287), C(0, "sex", "נקבה", 532.5, 300),
+      C(0, "marital", "רווק/ה", 493.5, 286), C(0, "marital", "נשוי/אה", 434.5, 286), C(0, "marital", "גרוש/ה", 367, 286),
+      C(0, "marital", "אלמן/ה", 493.5, 299), C(0, "marital", "פרוד/ה (חובה לצרף אישור פ״ש)", 446.5, 299),
+      C(0, "resident", "כן", 314, 287), C(0, "resident", "לא", 314, 300),
+      C(0, "kibbutz", "לא", 274.5, 287), C(0, "kibbutz", "כן – הכנסותיי ממעסיק זה מועברות לקיבוץ", 252, 288), C(0, "kibbutz", "כן – הכנסותיי ממעסיק זה אינן מועברות לקיבוץ", 274.5, 300),
+      C(0, "kupa", "לא", 127.5, 286), C(0, "kupa", "כן", 127.5, 299), T(0, "kupaName", 66, 302, { size: 7.5 }),
+      T(0, "email", 365, 322, { align: "left", size: 8.5 }), T(0, "phone", 352, 322), T(0, "mobile", 200, 322),
+      { p: 0, table: "kids", rows: kidsRows, cols: { name: { x: 512 }, id: { x: 381, align: "center" }, dob: { x: 312, align: "center", date: true }, custody: { x: 533, check: true }, allowance: { x: 523, check: true } } },
+      C(0, "incomeType", "משכורת חודש", 242.5, 365), C(0, "incomeType", "משכורת בעד משרה נוספת", 242.5, 377), C(0, "incomeType", "משכורת חלקית", 242.5, 389),
+      C(0, "incomeType", "שכר עבודה (עובד יומי)", 242.5, 401), C(0, "incomeType", "קצבה", 242.5, 413), C(0, "incomeType", "מלגה", 242.5, 425),
+      T(0, "startDate", 81, 392, { align: "center", date: true, size: 8 }),
+      C(0, "otherIncome", "אין לי הכנסות אחרות ממשכורת (משכורת חודש, משרה נוספת, משכורת חלקית, שכר עבודה), מקצבה וממלגה", 241, 462),
+      C(0, "otherIncome", "יש לי הכנסות אחרות כמפורט להלן", 241, 487),
+      C(0, "otherTypes", "משכורת חודש", 241, 499), C(0, "otherTypes", "משכורת בעד משרה נוספת", 241, 510), C(0, "otherTypes", "משכורת חלקית", 241, 521),
+      C(0, "otherTypes", "שכר עבודה (עובד יומי)", 123, 499), C(0, "otherTypes", "קצבה", 123, 510), C(0, "otherTypes", "מלגה", 123, 521),
+      C(0, "otherFlags", "אבקש לקבל נקודות זיכוי ומדרגות מס כנגד הכנסתי זו (סעיף ד). איני מקבל/ת אותן בהכנסה אחרת", 239.5, 544),
+      C(0, "otherFlags", "אני מקבל/ת נקודות זיכוי ומדרגות מס בהכנסה אחרת ועל כן איני זכאי/ת להן כנגד הכנסה זו", 240, 568),
+      C(0, "otherFlags", "אין מפרישים עבורי לקרן השתלמות בגין הכנסתי האחרת, או שכל הפרשות המעסיק לקרן השתלמות בגין הכנסתי האחרת מצורפות להכנסתי האחרת", 240, 592),
+      C(0, "otherFlags", "אין מפרישים עבורי לקצבה/לביטוח אובדן כושר עבודה/פיצויים בגין הכנסתי האחרת, או שכל ההפרשות כאמור מצורפות להכנסתי האחרת", 240, 626),
+      T(0, "spId", 535, 702), T(0, "spLast", 432, 702), T(0, "spFirst", 307, 702), T(0, "spDob", 205, 702, { date: true }), T(0, "spAliya", 113, 702, { date: true }),
+      T(0, "spPassport", 535, 728),
+      C(0, "spIncome", "אין לבן/בת הזוג כל הכנסה", 414.5, 724),
+      C(0, "spIncome", "יש לבן/בת הזוג הכנסה מעבודה/קצבה/עסק", 287, 724), C(0, "spIncome", "יש לבן/בת הזוג הכנסה מעבודה/קצבה/עסק", 164, 726),
+      C(0, "spIncome", "יש לבן/בת הזוג הכנסה אחרת", 287, 724), C(0, "spIncome", "יש לבן/בת הזוג הכנסה אחרת", 84.5, 726),
+      { p: 0, table: "changes", rows: [779, 796, 813], cols: { date: { x: 533, date: true }, details: { x: 475 }, notice: { x: 153, align: "center", parts: [170, 153, 133] } } },
+      T(1, "id", 168, 22),
+      ...[["1. ",48],["2א. ",63],["2ב. ",86],["3. ",103],["4. ",130],["5. ",169],["6. ",192],["7. ",215],["8. ",274],["9. ",323],["10. ",341],["11. ",366],["12. ",389],["13. ",406],["14. ",421],["15. ",445],["16. ",458]]
+        .map(([pre, y]) => ({ p: 1, id: "credits", prefix: pre, x: 516, y, check: true })),
+      ...[["1. ",488],["2. ",517],["3. ",597]].map(([pre, y]) => ({ p: 1, id: "coord", prefix: pre, x: 517.5, y, check: true })),
+      { p: 1, table: "coordTable", rows: [557, 571, 585], cols: { name: { x: 530 }, addr: { x: 440 }, file: { x: 244, align: "left" }, kind: { x: 200, align: "center" }, monthly: { x: 136, align: "center" }, tax: { x: 65, align: "center" } } },
+      { p: 1, sig: true, x: 38, y: 634, w: 95, h: 19 },
+      { p: 1, signDate: true, x: 185, y: 650, align: "center" }
+    ],
+    extra: "creditDetails"
+  };
+})();
+
+
+// ---------- מיקומי מילוי על גבי הטפסים הסרוקים ----------
+const OCOMMIT = { pages: ["preview-commitment-1.jpg", "preview-commitment-2.jpg"], items: [
+  { p: 1, signDate: true, x: 427, y: 584, align: "center" },
+  { p: 1, id: "name", x: 336, y: 584, align: "center" },
+  { p: 1, id: "id", x: 245, y: 584, align: "center" },
+  { p: 1, sig: true, x: 108, y: 562, w: 88, h: 24 }
+]};
+const OINSTR = { pages: ["preview-instructions-1.jpg"], items: [
+  { p: 0, id: "pn", x: 433, y: 327, align: "center" },
+  { p: 0, id: "rank", x: 354, y: 327, align: "center" },
+  { p: 0, id: "name", x: 256, y: 327, align: "center" },
+  { p: 0, id: "corps", x: 154, y: 327, align: "center" },
+  { p: 0, signDate: true, x: 335, y: 583, align: "center" },
+  { p: 0, sig: true, x: 203, y: 562, w: 66, h: 22 }
+]};
+const OMDATES = { pages: ["preview-missiondates-1.jpg"], items: [
+  { p: 0, combo: ["from", "to"], x: 318, y: 189, size: 7.5, date: true },
+  { p: 0, id: "role", x: 150, y: 194, align: "center", size: 8 },
+  { p: 0, table: "family", rows: [273, 291, 309, 327, 344], cols: {
+      name: { x: 470, size: 8.5 }, age: { x: 362, align: "center" }, from: { x: 272, align: "center", date: true, size: 8 },
+      to: { x: 193, align: "center", date: true, size: 8 }, notes: { x: 160, size: 8 } } },
+  { p: 0, id: "name", x: 432, y: 418, align: "center" },
+  { p: 0, id: "id", x: 354, y: 418, align: "center" },
+  { p: 0, signDate: true, x: 266, y: 418, align: "center" },
+  { p: 0, sig: true, x: 138, y: 398, w: 66, h: 22 }
+]};
+
+
+// ---------- בקשה לדרכון רשמי – חלק „פרטי מבקש הדרכון” ----------
+const OPASSREQ = { h: 871.5, pages: ["preview-passreq-1.jpg"], items: [
+  { p: 0, id: "lastHe", x: 367, y: 440, align: "center" },
+  { p: 0, id: "lastEn", x: 274, y: 440, align: "center" },
+  { p: 0, id: "firstHe", x: 371, y: 453, align: "center" },
+  { p: 0, id: "firstEn", x: 282, y: 453, align: "center" },
+  { p: 0, id: "id", x: 310, y: 466, align: "center" },
+  { p: 0, id: "israeli", opt: "כן", x: 378.5, y: 483, check: true },
+  { p: 0, id: "israeli", opt: "לא", x: 347, y: 483, check: true },
+  { p: 0, id: "otherCit", x: 322, y: 492, size: 8 },
+  { p: 0, signDate: true, x: 383.5, y: 210.5, align: "center", size: 5.6 },
+  { p: 0, id: "dob", x: 392, y: 512, parts: [379.2, 392.1, 408.2], size: 5.6 },
+  { p: 0, id: "sex", opt: "זכר", x: 326.9, y: 510.6, circle: true, r: 3, rx: 2.4, ry: 3.7 },
+  { p: 0, id: "sex", opt: "נקבה", x: 320.4, y: 510.6, circle: true, r: 3, rx: 2.4, ry: 3.7 },
+  { p: 0, id: "marital", opt: "רווק/ה", x: 408.1, y: 523.4, circle: true, r: 3, rx: 2.6, ry: 3.9 },
+  { p: 0, id: "marital", opt: "נשוי/אה", x: 400.9, y: 523.4, circle: true, r: 3, rx: 2.6, ry: 3.9 },
+  { p: 0, id: "marital", opt: "אלמן/ה", x: 394.6, y: 523.4, circle: true, r: 3, rx: 2.6, ry: 3.9 },
+  { p: 0, id: "marital", opt: "גרוש/ה", x: 387.7, y: 523.4, circle: true, r: 3, rx: 2.6, ry: 3.9 },
+  { p: 0, id: "street", x: 420, y: 552, align: "center", size: 8 },
+  { p: 0, id: "houseNo", x: 316, y: 552, align: "center", size: 8 },
+  { p: 0, id: "apt", x: 268, y: 552, align: "center", size: 8 },
+  { p: 0, id: "city", x: 416, y: 569, align: "center", size: 8 },
+  { p: 0, id: "zip", x: 328, y: 569, align: "center", size: 8 },
+  { p: 0, id: "phoneHome", x: 401, y: 585, align: "center", size: 8 },
+  { p: 0, id: "mobile", x: 329, y: 585, align: "center", size: 8 },
+  { p: 0, id: "phoneWork", x: 225, y: 585, align: "center", size: 8 },
+  { p: 0, id: "father", x: 414, y: 599, align: "center", size: 8 },
+  { p: 0, id: "mother", x: 323, y: 599, align: "center", size: 8 },
+  { p: 0, id: "birthCountry", x: 242, y: 599, align: "center", size: 8 },
+  { p: 0, id: "prevPassport", x: 460, y: 634, size: 8 },
+  { p: 0, sig: true, x: 165, y: 640, w: 92, h: 20 }
+]};
+
+// ---------- התחשבנות לאחר נסיעת חו״ל ----------
+const SROWS = { food: 300, lodging: 365, car: 428, ilTrans: 476, abTrans: 527, other: 576 };
+const OSETTLE = { h: 875.2, pages: ["preview-settle-1.jpg"], items: [
+  { p: 0, signDate: true, x: 488, y: 51, align: "center", size: 8 },
+  { p: 0, id: "name", x: 431, y: 114, align: "center" },
+  { p: 0, id: "id", x: 203, y: 114, align: "center" },
+  { p: 0, id: "dest", x: 66, y: 114, align: "center", size: 8 },
+  { p: 0, id: "depDate", x: 440, y: 138, align: "center", date: true, size: 8 },
+  { p: 0, id: "depTime", x: 322, y: 138, align: "center", size: 8 },
+  { p: 0, id: "retDate", x: 154, y: 138, align: "center", date: true, size: 8 },
+  { p: 0, id: "landTime", x: 481, y: 155, align: "center", size: 8 },
+  { p: 0, id: "rankRole", x: 368, y: 155, align: "center", size: 7.5 },
+  { p: 0, id: "mobile", x: 248, y: 155, align: "center", size: 8 },
+  { p: 0, id: "email", x: 77, y: 155, align: "center", size: 7 },
+  { p: 0, id: "advance", x: 375, y: 177, align: "center" },
+  ...Object.entries(SROWS).flatMap(([k, y]) => [
+    { p: 0, id: k + "Date", x: 455, y, align: "center", size: 7 },
+    { p: 0, id: k + "Sum", x: 294, y, align: "center", size: 8 }
+  ]),
+  { p: 0, id: "foodB", x: 419, y: 300, align: "center", size: 8 },
+  { p: 0, id: "foodL", x: 377, y: 300, align: "center", size: 8 },
+  { p: 0, id: "foodD", x: 331, y: 300, align: "center", size: 8 },
+  { p: 0, id: "name", x: 469, y: 687, align: "center", size: 8 },
+  { p: 0, id: "id", x: 328, y: 687, align: "center", size: 8 },
+  { p: 0, id: "unitRole", x: 146, y: 687, align: "center", size: 7 },
+  { p: 0, id: "rank", x: 68, y: 687, align: "center", size: 7.5 },
+  { p: 0, sig: true, x: 430, y: 697, w: 70, h: 18 }
+], extra: ["foodNotes", "lodgingNotes", "carNotes", "ilTransNotes", "abTransNotes", "otherNotes"] };
+
+
+// ---------- קורות חיים מצומצם ----------
+const OCV = { pages: ["preview-cvshort-1.jpg"], items: [
+  { p: 0, image: "photo", x: 119, y: 171, w: 76, h: 88 },
+  { p: 0, id: "role", x: 400, y: 145, size: 9 },
+  { p: 0, id: "name", x: 432, y: 167 },
+  { p: 0, id: "rank", x: 418, y: 192, size: 8.5 },
+  { p: 0, id: "age", x: 332, y: 205, align: "center", size: 8.5 },
+  { p: 0, id: "marital", x: 392, y: 222, size: 8 },
+  { p: 0, id: "kids", x: 285, y: 220, align: "center", size: 8 },
+  { p: 0, id: "start", x: 322, y: 236, align: "center", date: true, size: 8 },
+  { p: 0, id: "roleStart", x: 322, y: 249, align: "center", date: true, size: 8 },
+  { p: 0, id: "deg1", x: 284, y: 263, size: 8 },
+  { p: 0, id: "inst1", x: 288, y: 276, size: 8 },
+  { p: 0, id: "deg2", x: 264, y: 289, size: 8 },
+  { p: 0, id: "inst2", x: 288, y: 302, size: 8 },
+  { p: 0, id: "missionEnd", x: 286, y: 315, align: "center", date: true, size: 8 },
+  { p: 0, table: "history", rows: [431, 448, 465, 482, 497], cols: { period: { x: 455, size: 8 }, role: { x: 340, size: 8 } } }
+]};
+// ---------- הצהרת שליח בדבר אישור מועדי היציאה ----------
+const ODEP = { pages: ["preview-departure-1.jpg", "preview-departure-2.jpg"], items: [
+  { p: 1, id: "name", x: 412, y: 125, size: 8.5 },
+  { p: 1, id: "id", x: 202, y: 128, align: "center", size: 8.5 },
+  { p: 1, id: "post", x: 373, y: 145, size: 8 },
+  { p: 1, id: "name", x: 408, y: 455, size: 8 },
+  { p: 1, sig: true, x: 352, y: 458, w: 62, h: 18 },
+  { p: 1, signDate: true, x: 385, y: 490, align: "center", size: 8 }
+]};
+// ---------- טופס איש קשר למקרי חירום ----------
+const OCONTACT = { h: 847.1, pages: ["preview-contact-1.jpg"], items: [
+  ...[["last",208],["first",225],["empno",242],["id",257],["dept",273],["unit",290]].map(([id, y]) => ({ p: 0, id, x: 415, y, size: 8.5 })),
+  { p: 0, id: "dob", x: 403, y: 300, date: true, size: 8 },
+  { p: 0, id: "addr", x: 418, y: 314, size: 8 },
+  ...[["telOffice",330],["telHome",347],["telMobile",362]].map(([id, y]) => ({ p: 0, id, x: 393, y, size: 8.5 })),
+  ...[["c1Name",412],["c1Tel",429],["c1Mobile",444],["c1Rel",459],["c2Name",484],["c2Tel",501],["c2Mobile",516],["c2Rel",531]].map(([id, y]) => ({ p: 0, id, x: 395, y, size: 8.5 })),
+  { p: 0, sig: true, x: 115, y: 572, w: 104, h: 20 },
+  { p: 0, signDate: true, x: 168, y: 608, align: "center", size: 8.5 }
+]};
+// ---------- מקדמה / הקצאה בכרטיס אשראי ----------
+const OADV = { pages: ["preview-advance-1.jpg", "preview-advance-2.jpg"], items: [
+  { p: 0, signDate: true, x: 469, y: 52, align: "center", size: 8.5 },
+  { p: 0, id: "name", x: 440, y: 126, align: "center", size: 8.5 },
+  { p: 0, id: "id", x: 260, y: 126, align: "center", size: 8.5 },
+  { p: 0, id: "dest", x: 155, y: 126, align: "center", size: 8 },
+  { p: 0, id: "depDate", x: 433, y: 148, align: "center", date: true, size: 8 },
+  { p: 0, id: "depTime", x: 322, y: 148, align: "center", size: 8 },
+  { p: 0, id: "retDate", x: 190, y: 148, align: "center", date: true, size: 8 },
+  { p: 0, id: "landTime", x: 88, y: 148, align: "center", size: 8 },
+  { p: 0, id: "rankRole", x: 445, y: 172, align: "center", size: 7.5 },
+  { p: 0, id: "mobile", x: 319, y: 172, align: "center", size: 8 },
+  { p: 0, id: "email", x: 186, y: 172, align: "center", size: 6.5 },
+  { p: 1, signDate: true, x: 500, y: 337, align: "center", size: 8 },
+  { p: 1, id: "name", x: 335, y: 334, align: "center", size: 8.5 },
+  { p: 1, sig: true, x: 110, y: 307, w: 105, h: 22 },
+  { p: 1, id: "id", x: 446, y: 472, align: "center", size: 8, if: "agentName" },
+  { p: 1, id: "name", x: 253, y: 468, align: "center", size: 8, if: "agentName" },
+  { p: 1, id: "agentName", x: 404, y: 489, align: "center", size: 8 },
+  { p: 1, id: "agentId", x: 282, y: 485, align: "center", size: 8 },
+  { p: 1, sig: true, x: 333, y: 546, w: 88, h: 20, if: "agentName" }
+]};
+
+
+// ---------- שאלון רפואי (כט קליטה שליח 2022, עמ׳ 21–24) ----------
+const MED_ROWS = ["בעיות נשימה או ריאות, כולל שחפת, אסטמה וברונכיטיס", "שיתוק ילדים", "דלקת זיהומית בכבד, צהבת, מחלת כבד אחרת", "סרטן, גידולים שפירים, ציסטות", "סכרת", "אנמיה, לוקמיה, הפרעות אחרות בדם", "מחלת נפש", "הפרעה במערכת העצבים", "פרכוסים, איבודי הכרה", "כאבי ראש חוזקים או מיגרנה", "בעיות לב – כולל מחלות כלי דם ומסתמי הלב", "כאבי גב תכופים או חבלה בגב", "כל בעיה בעצמות, פרקים – כולל דלקת, נקע, שברים, קטיעות", "כל בעיה בירכיים, ברכיים, קרסוליים, רגליים", "כל בעיה בידיים, מרפקים, כתפיים", "חבלה בראש", "פריחות בעור", "אלרגיות", "רגישות לעשן או אבק", "לחץ דם גבוה או נמוך", "דליות ברגליים", "כיב קיבה, כיב תריסריון, בעיה אחרת בעיכול", "בקעים", "בעיות בכיס המרה", "בעיות בכליות ו/או שלפוחית השתן", "קוצר נשימה", "בעיה בדיבור", "שימוש יתר בתרופות, משקאות חריפים, סמים", "הרכבת משקפיים בעבר/בהווה", "הרכבת עדשות מגע בעבר/בהווה", "ניתוח/מחלה/חבלה בעין", "עיוורון בעין אחת", "עיוורון בשתי עיניים / תעודת עיוור", "בעיות שמיעה / הרכבת מכשיר שמיעה", "המצאות בתקופת התאוששות מניתוח/הריון", "אשפוז בבי״ח בחמש השנים האחרונות", "מחלות ניווניות/מחלות ממושכות/אחרות שלא פורטו לעיל"];
+const OMED = { pages: ["preview-medical-1.jpg", "preview-medical-2.jpg", "preview-medical-3.jpg", "preview-medical-4.jpg"], items: [
+  { p: 0, id: "last", x: 400, y: 173, size: 9 },
+  { p: 0, id: "first", x: 266, y: 173, size: 9 },
+  { p: 0, id: "id", x: 177, y: 173, size: 9 },
+  { p: 0, id: "dob", x: 401, y: 220, date: true, size: 9 },
+  { p: 0, id: "rel", x: 140, y: 220, size: 8 },
+  { p: 0, id: "depDate", x: 364, y: 289, date: true, size: 9 },
+  { p: 0, id: "dest", x: 140, y: 289, size: 8.5 },
+  { p: 1, ynrows: "diseases", from: 0, rows: [207.3, 235.8, 255.0, 283.6, 302.5, 321.3, 350.0, 368.8, 387.5, 406.7, 425.1, 453.2, 471.9, 499.8, 528.1, 547.3, 566.0, 584.7, 621.9, 659.1, 696.5], no: 329.5, yes: 310.5, dy: 5, r: 5.5, ty: 10, size: 6.5, desc: { x: 297, max: 19 }, doc: { x: 185, max: 19 } },
+  { p: 2, ynrows: "diseases", from: 21, rows: [151.6, 179.9, 198.9, 217.4, 236.1, 255.0, 274.2, 302.3, 320.8, 339.5, 358.7, 377.2, 395.6, 423.5, 451.8, 479.8], no: 329.5, yes: 310.5, dy: 5, r: 5.5, ty: 10, size: 6.5, desc: { x: 297, max: 19 }, doc: { x: 185, max: 19 } },
+  { p: 2, yn: "surgery", label: "2. ניתוח – פירוט", no: 327.5, yes: 307.5, y: 538.5, lines: { x: 470, ys: [577, 601], max: 80 } },
+  { p: 2, yn: "hosp", label: "3. אשפוז – פירוט", no: 332.5, yes: 317, y: 636.8, lines: { x: 470, ys: [661, 685], max: 80 } },
+  { p: 3, yn: "psych", label: "4. טיפול פסיכולוגי/פסיכיאטרי – פירוט", no: 139, yes: 119, y: 114.6, lines: { x: 470, ys: [152], max: 85 } },
+  { p: 3, yn: "meds", label: "5. טיפול תרופתי – פירוט", no: 310.7, yes: 291, y: 183.4, lines: { x: 455, ys: [209, 233], max: 75 } },
+  { p: 3, yn: "fertility", label: "6. טיפולי פוריות – פירוט", no: 257.8, yes: 239.3, y: 268.8, lines: { x: 455, ys: [295, 319, 344], max: 75 } },
+  { p: 3, text: "special", label: "7. בעיה רפואית חריגה", lines: { x: 455, ys: [397, 422, 446], max: 75 } },
+  { p: 3, text: "other", label: "8. בעיה רפואית נוספת", lines: { x: 455, ys: [497, 521, 546], max: 75 } }
+], extra: [] };
+
+const FORM_SCHEMAS = {
+
+  // ---------------------------------------------------------------- 101
+  "101": {
+    preview: ["preview-101-1.jpg", "preview-101-2.jpg"], previewPdf: "form-101.pdf", overlay: O101,
+    title: "טופס 101 – כרטיס עובד",
+    subtitle: "ובקשה להקלה ולתיאום מס על ידי המעסיק · לפי תקנות מס הכנסה (ניכוי ממשכורת ומשכר עבודה), התשנ״ג–1993",
+    header: true,
+    intro: "טופס זה ממולא על ידי כל עובד עם תחילת עבודתו ובתחילת כל שנת מס. אם חל שינוי בפרטים – יש להצהיר על כך תוך שבוע ימים.",
+    sections: [
+      { title: "שנת המס", fields: [
+        { id: "taxYear", label: "שנת המס", type: "number", required: true, value: "2026" }
+      ]},
+      { title: "חלק א׳ – פרטי המעסיק", note: "ימולא על ידי המעסיק – אין צורך למלא." },
+      { title: "חלק ב׳ – פרטי העובד/ת",
+        fields: [
+        { id: "id", label: "מספר זהות (9 ספרות)", type: "id", required: true },
+        { id: "passport", label: "מספר דרכון (למי שאין מספר זהות)", type: "text" },
+        { id: "last", label: "שם משפחה", type: "text", required: true },
+        { id: "first", label: "שם פרטי", type: "text", required: true },
+        { id: "dob", label: "תאריך לידה", type: "date", required: true },
+        { id: "aliya", label: "תאריך עלייה", type: "date" },
+        { id: "street", label: "כתובת – רחוב/שכונה", type: "text", required: true },
+        { id: "houseNo", label: "מספר", type: "text" },
+        { id: "city", label: "עיר/יישוב", type: "text", required: true },
+        { id: "zip", label: "מיקוד", type: "text" },
+        { id: "phone", label: "מספר טלפון", type: "tel" },
+        { id: "mobile", label: "מספר טלפון נייד", type: "tel", required: true },
+        { id: "email", label: "כתובת דואר אלקטרוני", type: "email", full: true, required: true },
+        { id: "sex", label: "מין", type: "radio", options: ["זכר", "נקבה"], required: true },
+        { id: "marital", label: "מצב משפחתי", type: "radio", options: ["רווק/ה", "נשוי/אה", "גרוש/ה", "אלמן/ה", "פרוד/ה (חובה לצרף אישור פ״ש)"], required: true, full: true },
+        { id: "resident", label: "תושב/ת ישראל", type: "radio", options: ["כן", "לא"], required: true },
+        { id: "kibbutz", label: "חבר/ת קיבוץ/מושב שיתופי", type: "radio", options: ["לא", "כן – הכנסותיי ממעסיק זה מועברות לקיבוץ", "כן – הכנסותיי ממעסיק זה אינן מועברות לקיבוץ"], required: true, full: true },
+        { id: "kupa", label: "חבר/ה בקופת חולים", type: "radio", options: ["לא", "כן"], required: true },
+        { id: "kupaName", label: "שם הקופה", type: "select", options: KUPOT }
+      ]},
+      { title: "חלק ג׳ – ילדיי שבשנת המס טרם מלאו להם 19 שנה",
+        note: "לפי ספח תעודת הזהות. מסמנים „בחזקתי” אם הילד בחזקתך, ו„קצבת ילדים” אם את/ה מקבל/ת בגינו קצבת ילדים מב״ל.",
+        fields: [
+        { id: "kids", type: "table", rows: 3, addLabel: "הוספת ילד/ה", cols: [
+          { id: "name", label: "שם", type: "text" },
+          { id: "id", label: "מספר זהות", type: "text" },
+          { id: "dob", label: "תאריך לידה", type: "date" },
+          { id: "custody", label: "בחזקתי", type: "check" },
+          { id: "allowance", label: "קצבת ילדים", type: "check" }
+        ]}
+      ]},
+      { title: "חלק ד׳ – הכנסותיי ממעסיק זה", fields: [
+        { id: "incomeType", label: "אני מקבל/ת", type: "radio", options: INCOME, required: true, full: true },
+        { id: "startDate", label: "תאריך תחילת העבודה בשנת המס", type: "date", hint: "תאריך התחילה הוא תאריך היציאה לשליחות." }
+      ]},
+      { title: "חלק ה׳ – הכנסות אחרות", fields: [
+        { id: "otherIncome", label: "הכנסות אחרות", type: "radio", required: true, full: true, options: [
+          "אין לי הכנסות אחרות ממשכורת (משכורת חודש, משרה נוספת, משכורת חלקית, שכר עבודה), מקצבה וממלגה",
+          "יש לי הכנסות אחרות כמפורט להלן"
+        ]},
+        { id: "otherTypes", label: "סוגי ההכנסות האחרות (אם יש)", type: "checks", options: INCOME, full: true },
+        { id: "otherFlags", label: "אם יש לך הכנסה אחרת – סמן/י", type: "checks", full: true, options: [
+          "אבקש לקבל נקודות זיכוי ומדרגות מס כנגד הכנסתי זו (סעיף ד). איני מקבל/ת אותן בהכנסה אחרת",
+          "אני מקבל/ת נקודות זיכוי ומדרגות מס בהכנסה אחרת ועל כן איני זכאי/ת להן כנגד הכנסה זו",
+          "אין מפרישים עבורי לקרן השתלמות בגין הכנסתי האחרת, או שכל הפרשות המעסיק לקרן השתלמות בגין הכנסתי האחרת מצורפות להכנסתי האחרת",
+          "אין מפרישים עבורי לקצבה/לביטוח אובדן כושר עבודה/פיצויים בגין הכנסתי האחרת, או שכל ההפרשות כאמור מצורפות להכנסתי האחרת"
+        ]}
+      ]},
+      { title: "חלק ו׳ – פרטים על בן/בת הזוג", fields: [
+        { id: "spId", label: "מספר זהות (9 ספרות)", type: "id" },
+        { id: "spPassport", label: "מספר דרכון (למי שאין מספר זהות)", type: "text" },
+        { id: "spLast", label: "שם משפחה", type: "text" },
+        { id: "spFirst", label: "שם פרטי", type: "text" },
+        { id: "spDob", label: "תאריך לידה", type: "date" },
+        { id: "spAliya", label: "תאריך עלייה", type: "date" },
+        { id: "spIncome", label: "הכנסת בן/בת הזוג", type: "radio", full: true, options: [
+          "אין לבן/בת הזוג כל הכנסה", "יש לבן/בת הזוג הכנסה מעבודה/קצבה/עסק", "יש לבן/בת הזוג הכנסה אחרת"
+        ]}
+      ]},
+      { title: "חלק ז׳ – שינויים במהלך השנה", fields: [
+        { id: "changes", type: "table", rows: 2, addLabel: "הוספת שינוי", cols: [
+          { id: "date", label: "תאריך השינוי", type: "date" },
+          { id: "details", label: "פרטי השינוי", type: "text" },
+          { id: "notice", label: "תאריך ההודעה", type: "date" }
+        ]}
+      ]},
+      { title: "חלק ח׳ – אני מבקש/ת פטור או זיכוי ממס מהסיבות הבאות", fields: [
+        { id: "credits", type: "checks", full: true, options: [
+          "1. אני תושב/ת ישראל",
+          "2א. אני נכה 100% / עיוור/ת לצמיתות (מצורף אישור)",
+          "2ב. בנוסף, אני מקבל/ת תגמול חודשי לפי חוק הנכים או חוק התגמולים לנפגעי פעולות איבה (מצורף אישור)",
+          "3. אני תושב/ת קבוע/ה ביישוב מזכה (מצורף אישור הרשות על גבי טופס 1312א)",
+          "4. אני עולה חדש/ה / תושב/ת חוזר/ת (חובה לצרף תעודת עולה)",
+          "5. בגין בן/בת זוגי המתגורר/ת עימי ואין לו/לה הכנסות בשנת המס (רק אם הגיע/ה לגיל פרישה או נכה/עיוור/ת)",
+          "6. אני הורה במשפחה חד הורית החי בנפרד",
+          "7. בגין ילדיי שבחזקתי המפורטים בחלק ג׳",
+          "8. בגין ילדיי המפורטים בחלק ג׳ (הורה שלא סימן סעיף 7)",
+          "9. אני הורה יחיד לילדיי שבחזקתי",
+          "10. בגין ילדיי שאינם בחזקתי ואני משתתף/ת בכלכלתם (מצורף פס״ד)",
+          "11. אני הורה לילדים עם מוגבלות שטרם מלאו להם 19 (מצורף אישור גמלת ילד נכה)",
+          "12. בגין מזונות לבן/בת זוגי לשעבר (מצורף פסק דין)",
+          "13. מלאו לי או לבן/בת זוגי 16 וטרם מלאו 18 בשנת המס",
+          "14. אני חייל/ת משוחרר/ת / שירתתי בשירות לאומי (מצורף צילום תעודת שחרור)",
+          "15. בגין סיום לימודים לתואר אקדמי, התמחות או לימודי מקצוע (מצורפת הצהרה בטופס 119)",
+          "16. שירתתי כלוחם/ת מילואים בשנת המס הקודמת (מצורף אישור מצה״ל)"
+        ]},
+        { id: "creditDetails", label: "פרטים להשלמה (תאריכים, שם יישוב, מספר ילדים לפי גילאים, ימי מילואים וכו׳)", type: "textarea", full: true }
+      ]},
+      { title: "חלק ט׳ – אני מבקש/ת תיאום מס מהסיבות הבאות", fields: [
+        { id: "coord", type: "checks", full: true, options: [
+          "1. לא הייתה לי הכנסה מתחילת שנת המס הנוכחית עד לתחילת עבודתי אצל מעסיק זה (יש להמציא הוכחה)",
+          "2. יש לי הכנסות נוספות ממשכורת כמפורט להלן",
+          "3. פקיד השומה אישר תיאום לפי אישור מצורף"
+        ]},
+        { id: "coordTable", type: "table", rows: 1, addLabel: "הוספת מעסיק", cols: [
+          { id: "name", label: "שם המעסיק/משלם", type: "text" },
+          { id: "addr", label: "כתובת", type: "text" },
+          { id: "file", label: "מספר תיק ניכויים", type: "text" },
+          { id: "kind", label: "סוג ההכנסה", type: "text" },
+          { id: "monthly", label: "הכנסה חודשית", type: "number" },
+          { id: "tax", label: "המס שנוכה", type: "number" }
+        ]}
+      ]},
+      { title: "חלק י׳ – הצהרה", fields: [
+        { type: "para", text: "אני מצהיר/ה כי הפרטים שמסרתי בטופס זה הינם מלאים ונכונים. ידוע לי שהשמטה או מסירת פרטים לא נכונים הינה עבירה על פקודת מס הכנסה. אני מתחייב/ת להודיע למעסיק על כל שינוי שיחול בפרטיי האישיים ובפרטים דלעיל תוך שבוע ימים מתאריך השינוי." }
+      ]}
+    ],
+    sign: true
+  },
+
+  // ---------------------------------------------------------- התחייבות
+  "commitment": {
+    preview: ["preview-commitment-1.jpg", "preview-commitment-2.jpg"], previewPdf: "form-commitment.pdf", overlay: OCOMMIT,
+    title: "כתב התחייבות והוראה בלתי חוזרת",
+    sections: [
+      { title: "1. מתן הוראה לכיסוי חובות מתקופת השליחות", fields: [
+        { type: "para", text: "הואיל ואני נשלח/ת מטעם משרד הביטחון לעבוד במשלחת / נספחות משרד הביטחון בחו״ל, אני, הח״מ, נותן/ת בזה הוראה בלתי חוזרת למשרד, לזקוף כל סכום המגיע לי מהמשרד לכיסוי חובי הכספי הנובע מפעולותיי במסגרת השליחות, וזאת מבלי לגרוע מכל דרך גבייה חוקית אחרת." }
+      ]},
+      { title: "2. חוק שירות הציבור", fields: [
+        { type: "para", text: "א. הואיל ואני נשלח מטעם משרד הביטחון / צה״ל, לעבוד במשלחת / נספחות הגנה של משהב״ט בחו״ל, אני, הח״מ, מתחייב בזה כלהלן:" },
+        { type: "para", indent: true, text: "1. שלא לקבל על עצמי במשך שנתיים מיום סיום שירותי או שליחותי בחוץ לארץ (להלן: „תקופת ההגבלה”), במדינות בהן אשרת או במדינות בהן אהיה אחראי לגביהן פורמאלית במסגרת תפקידי בחו״ל (להלן: „מדינת השליחות”), כל משרה, תפקיד או עבודה כשכיר או שלא כשכיר או ארכוש זכות בעסק או אקבל זכות בעסק בדרך אחרת." },
+        { type: "para", indent: true, text: "2. שלא לעסוק כאמור בישראל, במשרה כאמור בסעיף א׳ לעיל, תוך ניצול במישרין או בעקיפין של קשרים מקצועיים שארכוש במדינת השליחות בתקופת ההגבלה." },
+        { type: "para", text: "והכל אלא אם אבקש ואקבל מראש היתר בכתב בהתאם לחוק שירות הציבור (הגבלות לאחר פרישה), התשכ״ט–1969 (להלן: „חוק שירות הציבור”)." },
+        { type: "para", text: "ב. ידוע לי כי אי מילוי התחייבותי זו, מהווה עבירה לפי סעיף 8 לחוק שירות הציבור." },
+        { type: "para", text: "ג. הנני מסכים לכך כי הממשלה, המשרד, נציב שירות המדינה או כל המוסמך לכך מטעמם, יהיו רשאים, בכל מועד הנראה להם, להביא תוכן התחייבותי זו לידיעת הממשלות והשלטונות בארצות שבהן אשרת וכן כי הם יהיו רשאים לנקוט בכל האמצעים המנהלתיים, המשמעתיים, או השיפוטיים, הקשורים בקיום התחייבותי זו." },
+        { type: "para", text: "ד. הנני מסכים לכך, כי השיפוט על איזה עניין שהוא הקשור בהתחייבותי זו או הנובע ממנה, אם יגיע לערכאות באיזו צורה שהיא, יהיה נתון אך ורק לבתי המשפט בישראל." }
+      ]},
+      { title: "3. הטבות „הנוסע המתמיד” ושינוי מסלול טיסה", fields: [
+        { type: "para", text: "אני הח״מ מצהיר ומתחייב:" },
+        { type: "para", text: "א. שכל ההטבות ו/או הזכויות הנובעות ו/או עשויות לנבוע מנסיעה זו, הן במסגרת תוכנית „הנוסע המתמיד” של חברת אל על או של כל חברה אחרת, והן במסגרת אחרת, הינן קניין משרד הביטחון. לא אנצל את הזכויות, שאני עשוי לקבל או כל אחת מהן, ואני מעביר את הזכויות למשרד הביטחון לכל שימוש שימצא לנכון." },
+        { type: "para", text: "ב. באופן עקרוני, לא אסכים לכל שינוי מסלול או דחיית טיסה שיוצע ע״י חברות התעופה, וכן הנני מתחייב לא ליזום שינויים כנ״ל." },
+        { type: "para", text: "ג. במידה והשינוי האמור בסעיף ב׳ הינו הכרחי, הריני מתחייב להחזיר למשרד הביטחון, בעת עריכת גמר ההתחשבנות, כל זיכוי כספי שיינתן לי ע״י חברת התעופה, בשל שינוי מסלול או דחיית טיסה או כל סיבה אחרת מרצון או מאילוץ." },
+        { type: "para", text: "ד. הריני מתחייב להחזיר כרטיסי טיסה מנוצלים / בלתי מנוצלים שקיבלתי מהמערכת." },
+        { type: "para", text: "ה. הובא לידיעתי כי אין ביטוח על מזומנים." }
+      ]},
+      { title: "פרטי החותם/ת", fields: [
+        { id: "name", label: "שם פרטי ומשפחה", type: "text", required: true },
+        { id: "id", label: "מס׳ ת.ז.", type: "id", required: true }
+      ]}
+    ],
+    sign: true,
+    officer: [{ title: "הנ״ל חתם בנוכחותי:", lines: ["שם וחתימת קצין הנסיעות הזרועי"] }]
+  },
+
+  // ------------------------------------------------------- קיום הוראות
+  "instructions": {
+    preview: ["preview-instructions-1.jpg", "preview-instructions-2.jpg", "preview-instructions-3.jpg", "preview-instructions-4.jpg", "preview-instructions-5.jpg", "preview-instructions-6.jpg"], previewPdf: "form-instructions.pdf", overlay: OINSTR,
+    title: "הצהרה – קיום הוראות משהב״ט",
+    sections: [
+      { fields: [
+        { type: "para", text: "בהתאם להפ״ע 1.0106 – „תחולת הוראות משהב״ט על חיילים בצה״ל” ולהמ״ב מספר 10.02," },
+        { type: "para", text: "אני החתום מטה:" },
+        { id: "pn", label: "מספר אישי", type: "text", required: true },
+        { id: "rank", label: "דרגה", type: "text", required: true },
+        { id: "name", label: "שם פרטי ושם משפחה", type: "text", required: true },
+        { id: "corps", label: "חיל", type: "text", required: true },
+        { type: "para", text: "מצהיר בזאת כדלקמן:" },
+        { type: "para", text: "1. קראתי את הפ״ע 1.0106." },
+        { type: "para", text: "2. הממונה עלי במשרד הביטחון הביא לידיעתי את רשימת הוראות המשרד הנוגעות לתחום פעילותי והדרושות למילוי תפקידי." },
+        { type: "para", text: "3. הנני מתחייב לציית להוראות משהב״ט שהובאו לידיעתי ולקיים את האמור בהן." }
+      ]}
+    ],
+    sign: true
+  },
+
+  // ------------------------------------------------------- שאלון רפואי
+  "medical": {
+    title: "שאלון רפואי",
+    preview: ["preview-medical-1.jpg", "preview-medical-2.jpg", "preview-medical-3.jpg", "preview-medical-4.jpg"], previewPdf: "form-medical.pdf", overlay: OMED,
+    intro: "ממלאים שאלון נפרד לכל אחד מבני המשפחה המצטרפים לשליחות, כולל השליח/ה. המידע רגיש – הוא נשלח רק לגורם המטפל ואינו נשמר באתר.",
+    sections: [
+      { title: "פרטים אישיים", fields: [
+        { id: "last", label: "שם משפחה", type: "text", required: true },
+        { id: "first", label: "שם פרטי", type: "text", required: true },
+        { id: "id", label: "ת.ז.", type: "id", required: true },
+        { id: "dob", label: "תאריך לידה", type: "date", required: true },
+        { id: "rel", label: "קרבה לשליח", type: "select", options: ["השליח/ה", "בן/בת זוג", "בן", "בת", "אחר"], required: true },
+        { id: "depDate", label: "תאריך יציאה לשליחות", type: "date" },
+        { id: "dest", label: "יעד השליחות", type: "text" }
+      ]},
+      { title: "1. האם הנך סובל/ת או סבלת מהמחלות הבאות?", fields: [
+        { id: "diseases", type: "ynrows", rows: MED_ROWS }
+      ]},
+      { title: "שאלות נוספות", fields: [
+        { id: "surgery", label: "2. האם עברת ניתוח כלשהו?", type: "yesno", detailLabel: "סוג הניתוח, שם ביה״ח והמחלקה בה טופלת" },
+        { id: "hosp", label: "3. האם אושפזת עקב מחלה?", type: "yesno", detailLabel: "סוג המחלה, שם ביה״ח והמחלקה בה טופלת" },
+        { id: "psych", label: "4. האם קיבלת בעבר או הנך מקבל/ת כיום טיפול פסיכולוגי או פסיכיאטרי?", type: "yesno", detailLabel: "שם המטפל והמוסד הרפואי" },
+        { id: "meds", label: "5. האם הנך מקבל/ת טיפול תרופתי?", type: "yesno", detailLabel: "שם התרופה והמינון" },
+        { id: "fertility", label: "6. האם קיבלת או הנך מטופל/ת בטיפולי פוריות?", type: "yesno", detailLabel: "שם המטפל / המוסד הרפואי" },
+        { id: "special", label: "7. האם קיימת בעיה רפואית חריגה, המחייבת היערכות לפני ובמהלך השליחות? אנא פרט", type: "textarea", full: true, placeholder: "אם אין – משאירים ריק" },
+        { id: "other", label: "8. אם קיימת בעיה רפואית נוספת כלשהי, שלא באה לביטוי בשאלון הנ״ל – אנא פרט", type: "textarea", full: true, placeholder: "אם אין – משאירים ריק" }
+      ]}
+    ],
+    sign: false
+  },
+
+  // --------------------------------------------------- קורות חיים מצומצם
+  "cvshort": {
+    title: "קורות חיים מצומצם",
+    preview: ["preview-cvshort-1.jpg"], previewPdf: "form-cv-short.pdf", overlay: OCV,
+    sections: [
+      { fields: [
+        { id: "photo", label: "תמונה", type: "image", full: true },
+        { id: "role", label: "תפקיד", type: "text", required: true, full: true },
+        { id: "name", label: "שם", type: "text", required: true },
+        { id: "rank", label: "דרגה", type: "text" },
+        { id: "age", label: "גיל", type: "number" },
+        { id: "marital", label: "מצב משפחתי", type: "select", options: ["נשוי/אה", "רווק/ה", "גרוש/ה", "אלמן/ה"] },
+        { id: "kids", label: "מספר ילדים", type: "number" },
+        { id: "start", label: "תאריך תחילת עבודה", type: "date" },
+        { id: "roleStart", label: "תאריך כניסה לתפקיד", type: "date" },
+        { id: "missionEnd", label: "תום שליחות", type: "date" }
+      ]},
+      { title: "השכלה", fields: [
+        { id: "deg1", label: "תואר ראשון ב־", type: "text" },
+        { id: "inst1", label: "שם המוסד", type: "text" },
+        { id: "deg2", label: "תואר שני ב־", type: "text" },
+        { id: "inst2", label: "שם המוסד", type: "text" }
+      ]},
+      { title: "היסטוריה תעסוקתית", note: "יש לפרט תפקידים בצה״ל טרם השליחות.", fields: [
+        { id: "history", type: "table", rows: 5, addLabel: "הוספת תפקיד", cols: [
+          { id: "period", label: "תקופה מ־ עד־", type: "text" },
+          { id: "role", label: "תפקיד", type: "text" }
+        ]}
+      ]}
+    ],
+    sign: false
+  },
+
+  // ------------------------------------------------ הצהרה על תאריכי שליחות
+  "missiondates": {
+    preview: ["preview-missiondates-1.jpg"], previewPdf: "form-mission-dates.pdf", overlay: OMDATES,
+    title: "הצהרה על תאריכי שליחות",
+    sections: [
+      { title: "ימולא על ידי השליח", fields: [
+        { type: "para", text: "1. הנני החתום/ה מטה מתוכנן/ת לצאת לשליחות בין התאריכים:" },
+        { id: "from", label: "מתאריך", type: "date", required: true },
+        { id: "to", label: "עד תאריך", type: "date", required: true },
+        { id: "role", label: "בתפקיד / כלומד", type: "text", required: true, full: true },
+        { type: "para", text: "2. הרכב משפחתי המצטרף לשליחות:" },
+        { id: "family", type: "table", rows: 3, addLabel: "הוספת בן/בת משפחה", cols: [
+          { id: "name", label: "שם", type: "text" },
+          { id: "age", label: "גיל", type: "number" },
+          { id: "from", label: "לימודים מ־", type: "date" },
+          { id: "to", label: "לימודים עד־", type: "date" },
+          { id: "notes", label: "הערות", type: "text" }
+        ]},
+        { type: "para", text: "3. ידוע לי והנני מאשר/ת כי מועד תום השליחות נקבע בהתאמה ובתיאום למועד סיום הלימודים במקום השירות ולא יהיו לי טענות או דרישה לשינוי תום השליחות במועד מאוחר מהנקוב באסמכתא וכמסוכם." },
+        { id: "name", label: "שם מלא", type: "text", required: true },
+        { id: "id", label: "ת.ז.", type: "id", required: true }
+      ]}
+    ],
+    sign: true,
+    officer: [{ title: "ימולא על ידי הזרוע (באישור הקצ״מ):",
+      text: "1. אני החתום/ה מטה, מאשר/ת כי תום השליחות של השליח ____________ תואם עם כל הגורמים וכי לא יבוצעו שינויים במועד תום השליחות בגין תאריכי תום לימודים של מוסדות הלימוד של הילדים במקום השירות.",
+      lines: ["שם מלא", "תאריך", "חתימה"] }]
+  },
+
+  // --------------------------------------- הצהרה על מועדי יציאה לשליחות
+  "departure": {
+    title: "הצהרת שליח בדבר אישור מועדי היציאה לשליחות",
+    preview: ["preview-departure-1.jpg", "preview-departure-2.jpg"], previewPdf: "form-departure.pdf", overlay: ODEP,
+    sections: [
+      { fields: [
+        { id: "name", label: "אני (שם מלא)", type: "text", required: true },
+        { id: "id", label: "מספר זהות / מס׳ אישי", type: "text", required: true },
+        { id: "post", label: "המיועד/ת לצאת לשליחות בנציגות", type: "text", required: true, full: true },
+        { type: "para", text: "מצהיר/ה ומאשר/ת בזאת כי:" },
+        { type: "para", text: "ידועים לי מועדי היציאה לשליחות כפי שנקבעו ואושרו על ידי המשרד, לרבות לוחות הזמנים הנגזרים מהם לצורך ההיערכות הלוגיסטית, המנהלית והתפעולית." },
+        { type: "para", text: "הובהר לי כי המשרד מבצע היערכות מורכבת המבוססת על מועדים אלה, ובכלל זה תיאום טיסות, שינוע מטען, טיפול במערכות המידע, הנפקת אישורים וביצוע פעולות נוספות מול גורמים שונים בארץ ובחו״ל." },
+        { type: "para", text: "אני מאשר/ת כי בחנתי את נסיבותיי האישיות וכי אין בכוונתי לבקש שינוי במועדי היציאה שנקבעו." },
+        { type: "para", text: "ידוע לי כי בקשה לשינוי מועד היציאה מטעמים אישיים, לאחר שנקבעו המועדים והחלה ההיערכות, עלולה לגרום לעיכובים, לעבודה מנהלית נוספת, להוצאות מיותרות ולפגיעה בתהליכי העבודה של המשרד." },
+        { type: "para", text: "אני מתחייב/ת לעדכן באופן מיידי את הגורמים המוסמכים בכל נסיבה חריגה ובלתי צפויה אשר עשויה להשפיע באופן מהותי על יכולתי לעמוד במועד היציאה שנקבע." },
+        { type: "para", text: "אני מודע/ת והובהר לי חד משמעית שבהינתן שהבקשה לשינוי המתווה מטעמים שאינם מבצעיים תאושר, אזי כל העלויות הנוספות בגין השינוי ימומנו על ידי ועל חשבוני באופן אישי." },
+        { type: "para", text: "אני חותם/ת על הצהרה זו לאחר שקראתי את תוכנה, הבנתי את משמעותה ואת השלכותיה, והיא ניתנת מרצוני החופשי." }
+      ]}
+    ],
+    sign: true
+  },
+
+  // ------------------------------------------------- דרכון ותעודת זהות
+  "passport": {
+    title: "פרטי דרכון ותעודת זהות",
+    intro: "ממלאים עבור השליח/ה ועבור כל בן/בת משפחה שמצטרף/ת לשליחות. אפשר לצלם את עמוד הדרכון ואת תעודת הזהות ישירות מהטלפון.",
+    sections: [
+      { title: "פרטים", fields: [
+        { id: "people", type: "repeat", min: 1, addLabel: "הוספת בן/בת משפחה", itemLabel: "נוסע/ת", fields: [
+          { id: "name", label: "שם מלא (כפי שמופיע בדרכון)", type: "text", required: true, full: true },
+          { id: "rel", label: "קרבה", type: "select", options: RELATION, required: true },
+          { id: "id", label: "מספר תעודת זהות", type: "id", required: true },
+          { id: "pass", label: "מספר דרכון", type: "text", required: true },
+          { id: "issue", label: "תאריך הנפקת הדרכון", type: "date" },
+          { id: "expiry", label: "תוקף הדרכון עד", type: "date", required: true },
+          { id: "passImg", label: "צילום עמוד הדרכון", type: "image" },
+          { id: "idImg", label: "צילום תעודת זהות (כולל ספח)", type: "image" }
+        ]}
+      ]}
+    ],
+    sign: false
+  },
+
+  // ----------------------------------------------- אישור סיום צ'ק ליסט
+  "checklist": {
+    title: "אישור סיום צ׳ק ליסט לפני שליחות",
+    intro: "הסימונים מהצ׳ק ליסט באתר מופיעים כאן. יש לסמן את כל המשימות, למלא פרטים ולחתום.",
+    sections: [
+      { title: "פרטי השליח/ה", fields: [
+        { id: "name", label: "שם מלא", type: "text", required: true },
+        { id: "id", label: "מספר זהות / מס׳ אישי", type: "text", required: true },
+        { id: "post", label: "מקום השליחות", type: "text", full: true }
+      ]},
+      { title: "משימות שהושלמו", fields: [
+        { id: "tasks", label: "המשימות", type: "checks", full: true, requireAll: true, storeKey: (typeof CHECKLIST_KEY !== "undefined" ? CHECKLIST_KEY : "mission-checklist") + ":" + ((() => { const k = new URLSearchParams(location.search).get("k"); if(k) return k; try{ return sessionStorage.getItem("traveler-key") || "main"; }catch(e){ return "main"; } })()),
+          options: (typeof CHECKLIST !== "undefined" ? CHECKLIST.flatMap(g => g.items.map(i => i.title)) : []) }
+      ]},
+      { title: "הצהרה", fields: [
+        { type: "para", text: "אני מצהיר/ה כי השלמתי את כל המשימות המפורטות בצ׳ק ליסט לפני היציאה לשליחות, וכי ידוע לי שבמקרה של סתירה בין המידע באתר ובחוברת לבין הוראות התכ״ם – הוראות התכ״ם גוברות." }
+      ]}
+    ],
+    sign: true
+  },
+  // ------------------------------------------------ בקשה לדרכון רשמי
+  "passreq": {
+    title: "טופס בקשה לדרכון דיפלומטי",
+    preview: ["preview-passreq-1.jpg"], previewPdf: "form-passport-request.pdf", overlay: OPASSREQ,
+    intro: "טופס זה הינו לשליחים דיפלומטיים בלבד. ממלאים רק את החלק „פרטי מבקש הדרכון”. החלק העליון ממולא על ידי הגוף המשגר.",
+    sections: [
+      { title: "פרטי מבקש הדרכון", fields: [
+        { id: "lastHe", label: "שם משפחה (עברית)", type: "text", required: true },
+        { id: "lastEn", label: "Surname (באנגלית, כמו בדרכון)", type: "text", required: true },
+        { id: "firstHe", label: "שם פרטי (עברית)", type: "text", required: true },
+        { id: "firstEn", label: "Given name (באנגלית, כמו בדרכון)", type: "text", required: true },
+        { id: "id", label: "מספר תעודת זהות מלא", type: "id", required: true },
+        { id: "israeli", label: "אזרחות ישראלית", type: "radio", options: ["כן", "לא"], required: true },
+        { id: "otherCit", label: "אזרחות נוספת (אם אין – כותבים „לא”; אם יש – פרטו)", type: "text", required: true, full: true },
+        { id: "dob", label: "תאריך לידה", type: "date", required: true },
+        { id: "sex", label: "מין", type: "radio", options: ["זכר", "נקבה"], required: true },
+        { id: "marital", label: "מצב משפחתי", type: "radio", options: ["רווק/ה", "נשוי/אה", "אלמן/ה", "גרוש/ה"], required: true, full: true },
+        { id: "street", label: "רחוב", type: "text", required: true },
+        { id: "houseNo", label: "מס׳ בית", type: "text", required: true },
+        { id: "apt", label: "דירה", type: "text" },
+        { id: "city", label: "עיר", type: "text", required: true },
+        { id: "zip", label: "מיקוד", type: "text" },
+        { id: "phoneHome", label: "טלפון בבית", type: "tel" },
+        { id: "mobile", label: "נייד", type: "tel", required: true },
+        { id: "phoneWork", label: "טלפון בעבודה", type: "tel" },
+        { id: "father", label: "שם האב", type: "text", required: true },
+        { id: "mother", label: "שם האם", type: "text", required: true },
+        { id: "birthCountry", label: "ארץ לידה", type: "text", required: true },
+        { id: "prevPassport", label: "החזקה קודמת בדרכון רשמי – אם כן, פרטו מדוע הונפק (אם לא – כותבים „לא”)", type: "text", full: true, required: true }
+      ]}
+    ],
+    sign: true
+  },
+
+  // ------------------------------------------- התחשבנות לאחר נסיעה
+  "settlement": {
+    title: "התחשבנות לאחר נסיעת חו״ל בתפקיד",
+    preview: ["preview-settle-1.jpg"], previewPdf: "form-settlement.pdf", overlay: OSETTLE,
+    intro: "ההוצאות המפורטות הן הוצאות בפועל לזמן השהות בתפקיד בלבד. מביאים את הטופס עם הקבלות לתור ב-MY VISIT.",
+    sections: [
+      { title: "פרטי הנסיעה", fields: [
+        { id: "name", label: "שם הנוסע/ת", type: "text", required: true },
+        { id: "id", label: "מספר תעודת זהות", type: "id", required: true },
+        { id: "dest", label: "יעד", type: "text", required: true },
+        { id: "rankRole", label: "דרגה / תפקיד", type: "text", required: true },
+        { id: "depDate", label: "תאריך יציאה מהארץ", type: "date", required: true },
+        { id: "depTime", label: "שעת המראה", type: "time" },
+        { id: "retDate", label: "תאריך חזרה לארץ", type: "date", required: true },
+        { id: "landTime", label: "שעת נחיתה", type: "time" },
+        { id: "mobile", label: "מס׳ נייד", type: "tel", required: true },
+        { id: "email", label: "כתובת מייל", type: "email", required: true },
+        { id: "advance", label: "נמשכה מקדמה בסכום של", type: "text" }
+      ]},
+      { title: "כלכלה", note: "ללא קבלות בהתחשבנות. הצהרה על ניכוי ארוחות רשמיות שהוזמנתי על חשבון השותף בחו״ל / מארחים / כנס / קורס. ממלאים בכל עמודה (בוקר/צהריים/ערב) את מספר הארוחות שיש לקזז.", fields: [
+        { id: "foodDate", label: "תאריך/ים", type: "text" },
+        { id: "foodB", label: "בוקר (מס׳ ארוחות לקיזוז)", type: "number" },
+        { id: "foodL", label: "צהריים", type: "number" },
+        { id: "foodD", label: "ערב", type: "number" },
+        { id: "foodSum", label: "סכום", type: "text" },
+        { id: "foodNotes", label: "הערות", type: "text", full: true }
+      ]},
+      { title: "לינה", note: "יש להגיש קבלה בפירוט מספר ימים ומחיר ללילה. חריגה מקצובת הלינה מצריכה אישור טרם הנסיעה.", fields: [
+        { id: "lodgingDate", label: "תאריך/ים", type: "text" },
+        { id: "lodgingSum", label: "סכום", type: "text" },
+        { id: "lodgingNotes", label: "הערות", type: "text", full: true }
+      ]},
+      { title: "הוצאות רכב בחו״ל", note: "קבלה על דלק עם פירוט כמות ומחיר; חל איסור על תדלוק בחברת השכרת הרכב; קבלה על חניה וכבישי אגרה.", fields: [
+        { id: "carDate", label: "תאריך/ים", type: "text" },
+        { id: "carSum", label: "סכום", type: "text" },
+        { id: "carNotes", label: "הערות", type: "text", full: true }
+      ]},
+      { title: "תחבורה ל/מ שדה התעופה בארץ", note: "מוניות בארץ כנגד קבלה / חניה בשדה עד 50 ליום.", fields: [
+        { id: "ilTransDate", label: "תאריך/ים", type: "text" },
+        { id: "ilTransSum", label: "סכום", type: "text" },
+        { id: "ilTransNotes", label: "הערות", type: "text", full: true }
+      ]},
+      { title: "תחבורה ל/מ שדה התעופה בחו״ל", note: "מוניות כנגד קבלה, תחבורה ציבורית לצרכי עבודה בלבד – יש לציין את היעד והמטרה.", fields: [
+        { id: "abTransDate", label: "תאריך/ים", type: "text" },
+        { id: "abTransSum", label: "סכום", type: "text" },
+        { id: "abTransNotes", label: "הערות", type: "text", full: true }
+      ]},
+      { title: "אחר", note: "באישור מראש: כנס, קורס, מזוודה.", fields: [
+        { id: "otherDate", label: "תאריך/ים", type: "text" },
+        { id: "otherSum", label: "סכום", type: "text" },
+        { id: "otherNotes", label: "הערות", type: "text", full: true }
+      ]},
+      { title: "הצהרה", fields: [
+        { type: "para", text: "אני הח״מ מצהיר בזאת כי הקבלות וההוצאות שהצגתי בפני אגף הכספים/חטיבת פרט והסדרי נסיעות חו״ל הינן הוצאות שהוצאו בפועל במסגרת נסיעתי בתפקיד בלבד. הנני מודע לכך כי במקרה הפרטים הנ״ל אינם נכונים אדרש להשיב את הכספים ששולמו לי ביתר ועלול להיפתח נגדי הליך משמעתי." },
+        { id: "unitRole", label: "אגף/חייל ותפקיד", type: "text", required: true },
+        { id: "rank", label: "דרגה", type: "text" }
+      ]}
+    ],
+    sign: true
+  },
+  // ------------------------------------------------ איש קשר למקרי חירום
+  "contact": {
+    title: "טופס איש קשר למקרי חירום",
+    preview: ["preview-contact-1.jpg"], previewPdf: "form-1.pdf", overlay: OCONTACT,
+    intro: "איש הקשר חייב להיות קרוב משפחה מדרגה ראשונה.",
+    sections: [
+      { title: "חלק א׳ – פרטי העובד", fields: [
+        { id: "last", label: "שם משפחה", type: "text", required: true },
+        { id: "first", label: "שם פרטי", type: "text", required: true },
+        { id: "empno", label: "מס׳ עובד מלא", type: "text" },
+        { id: "id", label: "ת.ז.", type: "id", required: true },
+        { id: "dept", label: "אגף", type: "text" },
+        { id: "unit", label: "יחידה", type: "text" },
+        { id: "dob", label: "תאריך לידה", type: "date", required: true },
+        { id: "addr", label: "כתובת", type: "text", required: true, full: true },
+        { id: "telOffice", label: "טלפון במשרד", type: "tel" },
+        { id: "telHome", label: "טלפון בבית", type: "tel" },
+        { id: "telMobile", label: "טלפון נייד", type: "tel", required: true }
+      ]},
+      { title: "חלק ב׳ – איש קשר 1", fields: [
+        { id: "c1Name", label: "שם מלא", type: "text", required: true },
+        { id: "c1Rel", label: "קירבה", type: "select", options: ["אב", "אם", "אח", "אחות"], required: true },
+        { id: "c1Tel", label: "טלפון נייח", type: "tel" },
+        { id: "c1Mobile", label: "טלפון נייד", type: "tel", required: true }
+      ]},
+      { title: "איש קשר 2 (לא חובה)", fields: [
+        { id: "c2Name", label: "שם מלא", type: "text" },
+        { id: "c2Rel", label: "קירבה", type: "select", options: ["אב", "אם", "אח", "אחות"] },
+        { id: "c2Tel", label: "טלפון נייח", type: "tel" },
+        { id: "c2Mobile", label: "טלפון נייד", type: "tel" }
+      ]}
+    ],
+    sign: true
+  },
+
+  // --------------------------------------- מקדמה / הקצאה בכרטיס אשראי
+  "advance": {
+    title: "מקדמה מזומן / הקצאה בכרטיס אשראי עבור נסיעה בתפקיד",
+    preview: ["preview-advance-1.jpg", "preview-advance-2.jpg"], previewPdf: "form-advance.pdf", overlay: OADV,
+    intro: "יש לצרף צילום של כרטיס האשראי האישי משני צדדיו, וטופס ניהול חשבון.",
+    sections: [
+      { title: "פרטי הנסיעה", fields: [
+        { id: "name", label: "שם הנוסע/ת", type: "text", required: true },
+        { id: "id", label: "מספר תעודת זהות", type: "id", required: true },
+        { id: "dest", label: "יעד", type: "text", required: true },
+        { id: "rankRole", label: "דרגה / תפקיד", type: "text", required: true },
+        { id: "depDate", label: "תאריך יציאה מהארץ", type: "date", required: true },
+        { id: "depTime", label: "שעת המראה", type: "time" },
+        { id: "retDate", label: "תאריך חזרה לארץ", type: "date", required: true },
+        { id: "landTime", label: "שעת נחיתה", type: "time" },
+        { id: "mobile", label: "מס׳ נייד", type: "tel", required: true },
+        { id: "email", label: "כתובת מייל", type: "email", required: true }
+      ]},
+      { title: "הצהרות", fields: [
+        { id: "agree", label: "", type: "checks", required: true, full: true,
+          options: ["קראתי את כל ההצהרות וההתחייבויות שבטופס (בתצוגה המקדימה למעלה) ואני מאשר/ת אותן"] }
+      ]},
+      { title: "ייפוי כוח – רק אם הכסף נמשך באמצעות אדם אחר", note: "אם ממלאים – המיופה חותם בעצמו על הטופס המודפס.", fields: [
+        { id: "agentName", label: "שם פרטי + משפחה של המיופה", type: "text" },
+        { id: "agentId", label: "ת.ז. של המיופה", type: "id" }
+      ]}
+    ],
+    sign: true
+  }
+};
