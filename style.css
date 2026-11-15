@@ -270,3 +270,6 @@ h1{font-size:1.6rem;font-weight:700;margin:0;letter-spacing:-.01em}
 .thumb img{width:100%;display:block;border-radius:6px;aspect-ratio:16/9;object-fit:cover}
 .thumb span{position:absolute;bottom:3px;inset-inline-start:3px;background:var(--ink);color:var(--paper);font-size:.72rem;border-radius:6px;padding:0 5px}
 .thumb.on{border-color:var(--amber)}
+
+.admin-btn{display:inline-block;margin:4px 0 10px;padding:6px 14px;border-radius:999px;background:var(--amber);color:#16243D;font-weight:700;text-decoration:none;font-size:.92rem}
+.admin-btn:focus-visible{outline:3px solid var(--ink);outline-offset:2px}

@@ -720,8 +720,10 @@ function syncFromSheet(){
     .catch(() => { state.textContent = "· לא הצלחתי לטעון את הגיליון – מוצגים הנתונים השמורים"; });
 }
 
+// פתיחה לפי #trip2 בכתובת (רק בעמוד הראשי – דף הניהול משתמש באותן פונקציות בלי להפעיל את העמוד)
+if(document.getElementById("tabs")){
 // פתיחה לפי #trip2 בכתובת
-const m = location.hash.match(/^#trip(\d+)$/);
+  const m = location.hash.match(/^#trip(\d+)$/);
 if(m && TRIPS[+m[1]-1]) tripIndex = +m[1]-1;
 if(location.hash === "#info") view = "info";
 if(location.hash === "#forms") view = "forms";
@@ -736,3 +738,11 @@ window.addEventListener("hashchange", () => {
 });
 render();
 syncFromSheet();
+
+  // כפתור „כל השליחים” – מופיע רק במכשירים שבהם נפתח דף הניהול
+  let isAdmin = false; try{ isAdmin = localStorage.getItem("admin-on") === "1"; }catch(e){}
+  if(isAdmin){
+    const a = el("a","admin-btn","📊 כל השליחים"); a.href = "admin.html";
+    document.getElementById("site-title").after(a);
+  }
+}

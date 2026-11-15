@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>כל השליחים – ניהול</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="style.css">
+<style>
+  .ad{max-width:1180px;margin:0 auto;padding:20px 16px 60px}
+  .ad h1{font-size:1.6rem;margin:6px 0 2px}
+  .muted{color:var(--muted)}
+  .top-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}
+  .kpi{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+  .kpi span{display:block;color:var(--muted);font-size:.85rem}
+  .kpi strong{font-size:1.7rem}
+  .kpi.warn strong{color:var(--no)}
+  @media (max-width:700px){.kpis{grid-template-columns:1fr 1fr}}
+  .tblw{background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  table{width:100%;border-collapse:collapse;font-size:.93rem}
+  th{background:var(--ink);color:var(--paper);font-weight:500;text-align:right;padding:10px 10px;font-size:.85rem;white-space:nowrap}
+  td{padding:10px;border-top:1px solid var(--line);vertical-align:top}
+  tr.late td{background:color-mix(in srgb,var(--no) 6%,transparent)}
+  .nm a{font-weight:700;color:var(--ink)}
+  .sub{display:block;color:var(--muted);font-size:.8rem}
+  .bar{height:7px;border-radius:9px;background:var(--line);margin-top:5px;overflow:hidden;min-width:70px}
+  .bar i{display:block;height:100%;background:var(--ok)}
+  .late-t{color:var(--no);font-weight:700}
+  .soon{color:var(--amber);font-weight:700}
+  .done{color:var(--ok);font-weight:700}
+  .err{color:var(--no)}
+  .x{background:none;border:0;color:var(--muted);cursor:pointer;font-size:1rem;padding:2px 6px}
+  .x:focus-visible{outline:3px solid var(--amber);border-radius:6px}
+  @media (max-width:760px){
+    table,thead,tbody,tr,td{display:block} thead{display:none}
+    tr{border-top:1px solid var(--line);padding:8px 0} td{border:0;padding:4px 12px}
+    td[data-l]:before{content:attr(data-l) ": ";color:var(--muted);font-size:.8rem}
+  }
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:16px 0}
+  .card h2{font-size:1.05rem;margin:0 0 8px}
+  .add{display:flex;gap:8px;flex-wrap:wrap}
+  .add input{flex:1;min-width:220px;font:inherit;color:var(--ink);background:var(--sky);border:1.5px solid var(--line);border-radius:10px;padding:9px 12px}
+  .add input.u{direction:ltr;text-align:left}
+  .note{font-size:.85rem;color:var(--muted);margin:8px 0 0}
+</style>
+</head>
+<body>
+<main class="ad">
+  <a class="back" href="index.html">→ חזרה לאתר</a>
+  <h1>📊 כל השליחים</h1>
+  <p class="muted" id="stamp">טוען…</p>
+
+  <div class="kpis">
+    <div class="kpi"><span>שליחים</span><strong id="k-n">–</strong></div>
+    <div class="kpi warn"><span>אישור ממתין מעל שבוע</span><strong id="k-late">–</strong></div>
+    <div class="kpi"><span>יוצאים ב-30 הימים הקרובים</span><strong id="k-soon">–</strong></div>
+    <div class="kpi"><span>כל האישורים התקבלו</span><strong id="k-done">–</strong></div>
+  </div>
+
+  <div class="top-row">
+    <button class="fbtn primary" id="refresh" type="button">🔄 רענון</button>
+    <a class="fbtn" href="link.html">🔗 יצירת קישור לשליח חדש</a>
+    <button class="fbtn" id="share" type="button">📋 קישור לדף הזה במכשיר אחר</button>
+  </div>
+
+  <div class="tblw">
+    <table>
+      <thead><tr><th>שליח/ה</th><th>יציאה</th><th>אישורים</th><th>השלב הנוכחי</th><th>אוריינטציה</th><th>מסמכים</th><th></th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+  </div>
+
+  <section class="card">
+    <h2>➕ הוספת שליח לרשימה</h2>
+    <div class="add">
+      <input id="add-link" class="u" type="url" placeholder="הקישור האישי של השליח, או קישור הפרסום של הגיליון">
+      <input id="add-name" type="text" placeholder="שם (לא חובה)">
+      <button class="fbtn primary" id="add-go" type="button">הוספה</button>
+    </div>
+    <p class="note">שליחים שנוצר להם קישור ב„יצירת קישור לשליח” במכשיר הזה נוספים לכאן לבד. הרשימה נשמרת רק במכשיר הזה – כדי לפתוח אותה במכשיר אחר, לוחצים „קישור לדף הזה במכשיר אחר” ושולחים את הקישור לעצמך.</p>
+  </section>
+</main>
+
+<script src="data.js"></script>
+<script src="mission-info.js"></script>
+<script src="app.js"></script>
+<script>
+(() => {
+const KEY = "traveler-links";
+try{ localStorage.setItem("admin-on", "1"); }catch(e){}
+const load = () => { try{ return JSON.parse(localStorage.getItem(KEY) || "[]"); }catch(e){ return []; } };
+const save = v => { try{ localStorage.setItem(KEY, JSON.stringify(v)); }catch(e){} };
+const parseCode = u => {
+  u = String(u || "");
+  const m = u.match(/[?&]s=(2PACX-[\w-]{20,})/) || u.match(/\/d\/e\/(2PACX-[\w-]{20,})\//);
+  if(!m) return null;
+  const g = (u.match(/[?&]g=(\d+)/) || u.match(/[?&]gid=(\d+)/) || [])[1] || "";
+  return { s: m[1], g };
+};
+const BASE = location.href.replace(/admin\.html.*$/, "");
+const personal = p => BASE + "?s=" + p.s + (p.g ? "&g=" + p.g : "");
+const csvOf = p => `https://docs.google.com/spreadsheets/d/e/${p.s}/pub?${p.g ? "gid=" + p.g + "&single=true&" : ""}output=csv`;
+
+// ייבוא מקישור: admin.html#t=<קוד>.<לשונית>,<קוד>.<לשונית>
+(function importHash(){
+  const m = location.hash.match(/^#t=(.+)$/); if(!m) return;
+  const v = load();
+  decodeURIComponent(m[1]).split(",").forEach(x => {
+    const [s, g] = x.split("."); if(!/^2PACX-[\w-]{20,}$/.test(s)) return;
+    const link = personal({ s, g: (g || "").replace(/\D/g, "") });
+    if(!v.some(r => r.link === link)) v.push({ name: "", link });
+  });
+  save(v); history.replaceState(null, "", "admin.html");
+})();
+
+function sources(){
+  const out = [];
+  const main = (typeof SHEET_CSV_URL === "string" ? SHEET_CSV_URL : "").trim();
+  if(main) out.push({ name: "", link: BASE, csv: main, main: true });
+  load().forEach((r, i) => { const p = parseCode(r.link); if(p) out.push({ name: r.name, link: personal(p), csv: csvOf(p), idx: i }); });
+  const seen = new Set(); return out.filter(r => !seen.has(r.csv) && seen.add(r.csv));
+}
+
+function summarize(trips){
+  const mis = trips.find(t => isMission(t) && t.rounds.length) || trips[0];
+  const ori = trips.find(t => !isMission(t) && t.rounds.length);
+  const prog = t => { if(!t) return null; const st = flatten(t); const ok = st.filter(s => s.status === "אושר").length;
+    const ci = st.findIndex(s => s.status !== "אושר"); return { ok, n: st.length, cur: ci === -1 ? null : st[ci] }; };
+  const docs = mis && mis.docs ? Object.keys(mis.docs) : [];
+  const got = docs.filter(k => docStatus(mis, k) === "ok").length;
+  return { mis, ori, p: prog(mis), po: prog(ori), docs: docs.length, got };
+}
+
+let results = [];
+async function refresh(){
+  document.getElementById("stamp").textContent = "טוען…";
+  const src = sources();
+  results = await Promise.all(src.map(async s => {
+    try{
+      const r = await fetch(s.csv + (s.csv.includes("?") ? "&" : "?") + "_=" + Date.now(), { cache: "no-store" });
+      if(!r.ok) throw new Error(r.status);
+      return { s, d: summarize(tripsFromSheet(parseCSV(await r.text()))) };
+    }catch(e){ return { s, err: true }; }
+  }));
+  draw();
+}
+
+function draw(){
+  const today = todayISO(), tb = document.getElementById("rows"); tb.innerHTML = "";
+  const rows = results.map(r => {
+    if(r.err) return { r, sort: 1e9 };
+    const dep = r.d.mis && r.d.mis.departure, days = dep && /^\d{4}-\d{2}-\d{2}$/.test(dep) ? daysBetween(today, dep) : null;
+    const cur = r.d.p && r.d.p.cur, wait = cur && cur.date ? daysBetween(cur.date, today) : null;
+    return { r, days, wait, late: wait !== null && wait > OVERDUE(), done: r.d.p && r.d.p.n && !cur, sort: days === null ? 1e8 : days };
+  }).sort((a, b) => a.sort - b.sort);
+  let late = 0, soon = 0, done = 0;
+  rows.forEach(x => {
+    const { r } = x, tr = document.createElement("tr");
+    const td = (l, h) => { const c = document.createElement("td"); if(l) c.dataset.l = l; c.innerHTML = h; tr.append(c); return c; };
+    if(r.err){
+      td("", `<span class="nm"><a href="${esc(r.s.link)}" target="_blank" rel="noopener">${esc(r.s.name || "שליח")}</a></span>`);
+      const c = td("", `<span class="err">לא הצלחתי לטעון את הגיליון – ודאו שהוא מפורסם באינטרנט.</span>`); c.colSpan = 5;
+    } else {
+      const d = r.d, t = d.mis || {};
+      if(x.late) late++; if(x.done) done++; if(x.days !== null && x.days >= 0 && x.days <= 30) soon++;
+      if(x.late) tr.className = "late";
+      const name = t.traveler || r.s.name || "—";
+      td("", `<span class="nm"><a href="${esc(r.s.link)}" target="_blank" rel="noopener">${esc(name)}</a></span><span class="sub">${esc(t.destination || "")}${r.s.main ? " · הגיליון הראשי" : ""}</span>`);
+      td("יציאה", t.departure ? `${esc(fmtDate(t.departure))}<span class="sub ${x.days !== null && x.days >= 0 && x.days <= 30 ? "soon" : ""}">${x.days === null ? "" : x.days > 0 ? "עוד " + x.days + " ימים" : x.days === 0 ? "היום!" : "יצא/ה"}</span>` : "—");
+      const p = d.p;
+      td("אישורים", p && p.n ? `<b>${p.ok} מתוך ${p.n}</b><div class="bar" aria-hidden="true"><i style="width:${Math.round(p.ok / p.n * 100)}%"></i></div>` : "—");
+      td("השלב הנוכחי", !p || !p.n ? "—" : !p.cur ? `<span class="done">✓ הכול אושר</span>` :
+        `${esc(p.cur.role)}<span class="sub">${esc(p.cur.status)}${x.wait !== null && x.wait >= 0 ? ` · <span class="${x.late ? "late-t" : ""}">${x.late ? "⚠ " : ""}${x.wait} ימים</span>` : ""}</span>`);
+      const po = d.po;
+      td("אוריינטציה", po && po.n ? `${po.ok} מתוך ${po.n}${po.cur ? `<span class="sub">${esc(po.cur.role)}</span>` : `<span class="sub done">✓ הושלם</span>`}` : "—");
+      td("מסמכים", d.docs ? `${d.got} מתוך ${d.docs}` : "—");
+    }
+    const c = td("", "");
+    if(!r.s.main){ const b = document.createElement("button"); b.className = "x"; b.type = "button"; b.textContent = "✕"; b.title = "הסרה מהרשימה"; b.setAttribute("aria-label","הסרה מהרשימה");
+      b.onclick = () => { if(!confirm("להסיר את השליח מהרשימה בדף הזה? (הגיליון והקישור שלו לא נמחקים)")) return; const v = load(); v.splice(r.s.idx, 1); save(v); refresh(); }; c.append(b); }
+    tb.append(tr);
+  });
+  if(!rows.length) tb.innerHTML = `<tr><td colspan="7" class="muted">אין עדיין שליחים ברשימה. מוסיפים למטה, או יוצרים קישור ב„יצירת קישור לשליח”.</td></tr>`;
+  document.getElementById("k-n").textContent = rows.length;
+  document.getElementById("k-late").textContent = late;
+  document.getElementById("k-soon").textContent = soon;
+  document.getElementById("k-done").textContent = done;
+  document.getElementById("stamp").textContent = "עודכן ב-" + new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" }) + " · מסודר לפי מועד היציאה · הגיליונות מתעדכנים כל כ-5 דקות";
+}
+
+document.getElementById("refresh").onclick = refresh;
+document.getElementById("add-go").onclick = () => {
+  const p = parseCode(document.getElementById("add-link").value);
+  if(!p){ alert("לא זיהיתי קישור. מדביקים את הקישור האישי של השליח (עם ?s=) או את קישור הפרסום של הגיליון."); return; }
+  const v = load(), link = personal(p);
+  if(!v.some(r => r.link === link)) v.push({ name: document.getElementById("add-name").value.trim(), link });
+  save(v); document.getElementById("add-link").value = ""; document.getElementById("add-name").value = ""; refresh();
+};
+document.getElementById("share").onclick = () => {
+  const codes = load().map(r => parseCode(r.link)).filter(Boolean).map(p => p.s + (p.g ? "." + p.g : ""));
+  const url = BASE + "admin.html" + (codes.length ? "#t=" + codes.join(",") : "");
+  const btn = document.getElementById("share");
+  (navigator.clipboard ? navigator.clipboard.writeText(url) : Promise.reject()).then(() => { btn.textContent = "✓ הקישור הועתק"; setTimeout(() => btn.textContent = "📋 קישור לדף הזה במכשיר אחר", 2000); })
+    .catch(() => prompt("העתיקו את הקישור:", url));
+};
+refresh();
+})();
+</script>
+</body>
+</html>
