@@ -692,8 +692,17 @@ function tripsFromSheet(rows){
   if(!real.length || !real.some(t => t.rounds.length)) throw new Error("empty");
   return real;
 }
+// ===== גיליון לפי קישור אישי (?s=<קוד הפרסום>&g=<מספר הלשונית>) =====
+function sheetFromLink(){
+  const q = new URLSearchParams(location.search);
+  let s = (q.get("s") || "").trim();
+  try{ if(s) sessionStorage.setItem("sheet-q", location.search); }catch(e){}
+  if(!/^2PACX-[\w-]{20,}$/.test(s)) return "";
+  const g = (q.get("g") || "").replace(/\D/g, "");
+  return `https://docs.google.com/spreadsheets/d/e/${s}/pub?${g ? "gid=" + g + "&single=true&" : ""}output=csv`;
+}
 function syncFromSheet(){
-  const url = (typeof SHEET_CSV_URL === "string" ? SHEET_CSV_URL : "").trim();
+  const url = sheetFromLink() || (typeof SHEET_CSV_URL === "string" ? SHEET_CSV_URL : "").trim();
   if(!url) return;
   const state = document.getElementById("sync-state");
   state.textContent = "· טוען מהגיליון…";

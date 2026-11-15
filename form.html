@@ -73,6 +73,7 @@ input:focus,select:focus,textarea:focus{outline:3px solid color-mix(in srgb,var(
 .btn.wa{background:#1fa855;border-color:#1fa855;color:#fff}
 .yn-opts{display:flex;gap:18px;flex-wrap:wrap}
 .yn-det{margin-top:8px}
+.yn-det[hidden]{display:none}
 .missing{background:var(--paper);border-radius:14px;padding:24px;text-align:center}
 @media (max-width:560px){ .grid{grid-template-columns:1fr} }
 
@@ -261,7 +262,7 @@ function field(f, idp){
 // ---------- בניית העמוד ----------
 function build(){
   document.title = S.title + " – מילוי מקוון";
-  const back = el("a","back","→ חזרה לאתר"); back.href = "index.html";
+  const back = el("a","back","→ חזרה לאתר"); let bq = ""; try{ bq = sessionStorage.getItem("sheet-q") || ""; }catch(e){} back.href = "index.html" + bq;
   wrap.append(back, el("h1","",S.title));
   if(S.subtitle) wrap.append(el("p","sub",S.subtitle));
   wrap.append(el("p","privacy","🔒 הפרטים לא נשמרים באתר ולא נשלחים לשום מקום – הם נשארים במכשיר שלך עד שתשלחו את הקובץ."));

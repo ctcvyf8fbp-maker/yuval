@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>יצירת קישור לשליח</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="style.css">
+<style>
+  .lk{max-width:760px;margin:0 auto;padding:24px 16px 60px}
+  .lk h1{font-size:1.6rem;margin:6px 0 4px}
+  .lk .muted{color:var(--muted)}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:16px 0}
+  .card h2{font-size:1.1rem;margin:0 0 8px}
+  .card ol{margin:0;padding-inline-start:22px;line-height:1.7}
+  .fld{display:flex;flex-direction:column;gap:6px;margin:12px 0;font-weight:500}
+  .fld input{font:inherit;font-weight:400;color:var(--ink);background:var(--sky);border:1.5px solid var(--line);border-radius:10px;padding:10px 12px;direction:ltr;text-align:left}
+  .fld input.he{direction:rtl;text-align:right}
+  .fld input:focus{outline:3px solid color-mix(in srgb,var(--amber) 60%,transparent);border-color:var(--amber)}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+  .msg{margin:10px 0 0;padding:10px 12px;border-radius:10px;font-weight:500}
+  .msg.ok{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
+  .msg.bad{background:color-mix(in srgb,var(--no) 12%,transparent);color:var(--no)}
+  .out{direction:ltr;text-align:left;word-break:break-all;background:var(--sky);border:1px dashed var(--line);border-radius:10px;padding:10px 12px;font-size:.92rem;margin-top:10px}
+  table{width:100%;border-collapse:collapse;font-size:.92rem}
+  th,td{border-bottom:1px solid var(--line);padding:8px 6px;text-align:right;vertical-align:middle}
+  td.u{direction:ltr;text-align:left;word-break:break-all;font-size:.8rem;color:var(--muted)}
+  .fbtn.wa{background:#1fa855;border-color:#1fa855;color:#fff}
+  .small{font-size:.85rem}
+</style>
+</head>
+<body>
+<main class="lk">
+  <a class="back" href="index.html">→ חזרה לאתר</a>
+  <h1>🔗 יצירת קישור לשליח</h1>
+  <p class="muted">לכל שליח גיליון משלו וקישור משלו לאתר. הדף הזה לא משנה שום דבר באתר – הוא רק מייצר קישור.</p>
+
+  <section class="card">
+    <h2>לפני שמתחילים – בגיליון Google</h2>
+    <ol>
+      <li>פותחים את הגיליון לדוגמה ← <b>קובץ ← יצירת עותק</b> (עותק לכל שליח).</li>
+      <li>בעותק ממלאים: שם השליח, יעד, תאריך יציאה, וסטטוסים.</li>
+      <li><b>קובץ ← שיתוף ← פרסום באינטרנט</b> ← בוחרים את הלשונית <b>אישורים</b> ואת <b>ערכים מופרדים בפסיקים (csv.)</b> ← <b>פרסום</b>.</li>
+      <li>מעתיקים את הקישור שמופיע ומדביקים כאן למטה.</li>
+    </ol>
+  </section>
+
+  <section class="card">
+    <h2>יצירת הקישור</h2>
+    <label class="fld">קישור הפרסום של הגיליון
+      <input id="pub" type="url" placeholder="https://docs.google.com/spreadsheets/d/e/2PACX-…/pub?gid=…&single=true&output=csv" autocomplete="off">
+    </label>
+    <label class="fld">שם השליח (לרשימה שלך בלבד – לא חובה)
+      <input id="nm" class="he" type="text" placeholder="למשל: דנה כהן" autocomplete="off">
+    </label>
+    <div class="row"><button class="fbtn primary" id="go" type="button">יצירת קישור ובדיקה</button></div>
+    <p class="msg" id="msg" hidden></p>
+    <div id="res" hidden>
+      <div class="out" id="out"></div>
+      <div class="row">
+        <button class="fbtn primary" id="copy" type="button">📋 העתקה</button>
+        <a class="fbtn wa" id="wa" target="_blank" rel="noopener">📲 שליחה בוואטסאפ</a>
+        <a class="fbtn" id="open" target="_blank" rel="noopener">👀 פתיחה</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="card" id="saved-card" hidden>
+    <h2>הקישורים שיצרת (נשמרים רק במכשיר הזה)</h2>
+    <table><thead><tr><th>שליח</th><th>קישור</th><th></th></tr></thead><tbody id="saved"></tbody></table>
+  </section>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const BASE = location.href.replace(/link\.html.*$/, "");
+const KEY = "traveler-links";
+function parsePub(u){
+  u = (u || "").trim();
+  const m = u.match(/docs\.google\.com\/spreadsheets\/d\/e\/(2PACX-[\w-]{20,})\//);
+  if(!m) return null;
+  const g = (u.match(/[?&]gid=(\d+)/) || [])[1] || "";
+  return { s: m[1], g };
+}
+const makeLink = p => BASE + "?s=" + p.s + (p.g ? "&g=" + p.g : "");
+const csvUrl = p => `https://docs.google.com/spreadsheets/d/e/${p.s}/pub?${p.g ? "gid=" + p.g + "&single=true&" : ""}output=csv`;
+function show(t, ok){ const m = $("msg"); m.hidden = false; m.className = "msg " + (ok ? "ok" : "bad"); m.textContent = t; }
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY) || "[]"); }catch(e){ return []; } }
+function save(v){ try{ localStorage.setItem(KEY, JSON.stringify(v)); }catch(e){} }
+function renderSaved(){
+  const v = load(), tb = $("saved"); tb.innerHTML = ""; $("saved-card").hidden = !v.length;
+  v.forEach((r, i) => {
+    const tr = document.createElement("tr");
+    const a = document.createElement("td"); a.textContent = r.name || "—";
+    const b = document.createElement("td"); b.className = "u"; b.textContent = r.link;
+    const c = document.createElement("td");
+    const cp = document.createElement("button"); cp.className = "fbtn small"; cp.type = "button"; cp.textContent = "📋";
+    cp.onclick = () => navigator.clipboard && navigator.clipboard.writeText(r.link).then(() => { cp.textContent = "✓"; setTimeout(() => cp.textContent = "📋", 1500); });
+    const rm = document.createElement("button"); rm.className = "fbtn small"; rm.type = "button"; rm.textContent = "✕"; rm.setAttribute("aria-label","מחיקה מהרשימה");
+    rm.onclick = () => { const x = load(); x.splice(i, 1); save(x); renderSaved(); };
+    c.append(cp, " ", rm); tr.append(a, b, c); tb.append(tr);
+  });
+}
+function readName(txt){
+  const line = txt.split(/\r?\n/).find(l => l.startsWith("שם השליח"));
+  if(!line) return "";
+  const cells = line.split(","); return (cells[3] || "").replace(/^"|"$/g, "").trim();
+}
+$("go").onclick = async () => {
+  $("res").hidden = true;
+  const p = parsePub($("pub").value);
+  if(!p){ show("זה לא נראה כמו קישור פרסום של Google Sheets. הקישור צריך להתחיל ב-https://docs.google.com/spreadsheets/d/e/2PACX-", false); return; }
+  const link = makeLink(p);
+  $("out").textContent = link; $("open").href = link;
+  const nm = $("nm").value.trim();
+  $("wa").href = "https://wa.me/?text=" + encodeURIComponent((nm ? `היי ${nm}, ` : "") + "זה הקישור האישי שלך למעקב היציאה לשליחות:\n" + link);
+  $("res").hidden = false;
+  show("בודק את הגיליון…", true);
+  try{
+    const r = await fetch(csvUrl(p) + "&_=" + Date.now(), { cache: "no-store" });
+    if(!r.ok) throw new Error(r.status);
+    const t = await r.text();
+    if(!t.includes("סבב")) throw new Error("format");
+    const found = readName(t);
+    show("✓ הגיליון נמצא" + (found ? ` – שם השליח: ${found}` : "") + ". הקישור מוכן.", true);
+    if(!nm && found) $("nm").value = found;
+  } catch(e){
+    show(e.message === "format" ? "הגיליון נפתח, אבל לא נמצאה בו טבלת האישורים. ודאו שפרסמתם את הלשונית „אישורים” בפורמט CSV." : "לא הצלחתי לפתוח את הגיליון. ודאו שהוא מפורסם באינטרנט (קובץ ← שיתוף ← פרסום באינטרנט). הקישור נוצר בכל זאת.", false);
+  }
+  const v = load().filter(x => x.link !== link); v.unshift({ name: $("nm").value.trim(), link }); save(v.slice(0, 50)); renderSaved();
+};
+$("copy").onclick = () => { const t = $("out").textContent; (navigator.clipboard ? navigator.clipboard.writeText(t) : Promise.reject()).then(() => { $("copy").textContent = "✓ הועתק"; setTimeout(() => $("copy").textContent = "📋 העתקה", 1500); }).catch(() => {}); };
+renderSaved();
+</script>
+</body>
+</html>
