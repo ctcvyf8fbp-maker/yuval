@@ -428,6 +428,8 @@ function calcRun(){
 // ===== לשונית ויזה – צפייה במצגת =====
 let visaReady = false, visaIdx = 1;
 const vsrc = (i, t) => `visa/${t ? "thumb" : "visa"}-${String(i).padStart(2, "0")}.jpg`;
+// אם התמונות הועלו בלי התיקייה visa – מחפשים אותן בתיקייה הראשית
+const vfallback = img => { img.onerror = () => { img.onerror = null; const s = img.getAttribute("src"); if(s && s.startsWith("visa/")) img.src = s.slice(5); }; };
 function renderVisa(){
   if(typeof VISA === "undefined") return;
   const n = VISA.count;
@@ -444,7 +446,7 @@ function renderVisa(){
     const th = document.getElementById("visa-thumbs");
     for(let i = 1; i <= n; i++){
       const b = el("button","thumb"); b.type = "button"; b.setAttribute("aria-label", "שקופית " + i);
-      const im = el("img"); im.src = vsrc(i, true); im.alt = ""; im.loading = "lazy";
+      const im = el("img"); vfallback(im); im.src = vsrc(i, true); im.alt = ""; im.loading = "lazy";
       b.append(im, el("span","", i)); b.onclick = () => showSlide(i, true); th.append(b);
     }
     document.getElementById("visa-prev").onclick = () => showSlide(visaIdx - 1);
@@ -465,7 +467,7 @@ function renderVisa(){
 function showSlide(i, scroll){
   const n = VISA.count; i = Math.min(n, Math.max(1, i)); visaIdx = i;
   const img = document.getElementById("visa-img");
-  img.src = vsrc(i); img.alt = `${VISA.title} – שקופית ${i} מתוך ${n}`;
+  vfallback(img); img.src = vsrc(i); img.alt = `${VISA.title} – שקופית ${i} מתוך ${n}`;
   if(i < n){ const pre = new Image(); pre.src = vsrc(i + 1); }
   document.getElementById("visa-zoom").href = vsrc(i);
   document.getElementById("visa-count").textContent = `${i} מתוך ${n}`;
