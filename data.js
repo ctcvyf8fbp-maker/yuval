@@ -22,7 +22,6 @@ const SITE_TITLE = "מעקב אישורים ליציאה לשליחות";
 const FORMS = [
   { title: "טופס 101 – כרטיס עובד", file: "form-101.pdf", online: "form.html?f=101" },
   { title: "כתב התחייבות והוראה בלתי חוזרת", file: "form-commitment.pdf", online: "form.html?f=commitment" },
-  { title: "תלוש שכר אחרון", upload: true },
   { title: "שאלון רפואי", file: "form-medical.pdf", online: "form.html?f=medical",
     note: "ממלאים שאלון נפרד לכל אחד מבני המשפחה המצטרפים לשליחות, כולל השליח/ה." },
   { title: "טופס איש קשר למקרי חירום", file: "form-1.pdf", online: "form.html?f=contact",
@@ -56,7 +55,8 @@ const SEND_DOCS = [
   { title: "דרכון", note: "של השליח/ה ושל כל בן/בת משפחה שמצטרף/ת" },
   { title: "תעודת זהות" },
   { title: "סיכום רפואי", note: "נשלח על ידי המרפאה" },
-  { title: "קורות חיים מורחבים", note: "קורות חיים רגילים" }
+  { title: "קורות חיים מורחבים", note: "קורות חיים רגילים" },
+  { title: "תלוש שכר אחרון" }
 ];
 const FORMS_TAB_WORDS = ["טפסים"];
 // עמודה בגיליון שהכותרת שלה כוללת „ויזה” = לשונית מדריך הוויזה
