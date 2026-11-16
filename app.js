@@ -297,6 +297,7 @@ function renderForms(trip){
   }
   const prog = progLoad();
   let sentN = 0;
+  if(list.length){ const g = el("li","grp-h","✍️ טפסים למילוי באתר"); ul.append(g); }
   list.forEach((f, i) => {
     const li = el("li","form-card");
     const fm = f.online && f.online.match(/[?&]f=([\w-]+)/);
@@ -332,9 +333,10 @@ function renderForms(trip){
     if(f.note && String(f.note).trim()) li.append(el("p","form-note", "⚠️ " + String(f.note).trim()));
     // הסטטוס מתעדכן לבד: כשהטופס הופק בהצלחה, וכשנשלח
     if(pg){ sentN++; li.classList.add("fp-sent"); }
-    const pr = el("p","fp" + (pg ? " fp-on" : ""));
-    pr.textContent = !pg ? "עוד לא מולא" : pg.state === "sent" ? `✓ מלא ונשלח · ${fmtTs(pg.ts || pg.date)}` : `✓ מלא · הופק ${fmtTs(pg.ts || pg.date)} – לא לשכוח לשלוח בוואטסאפ`;
-    li.append(pr);
+    const pill = el("span","st", !pg ? "עוד לא מולא" : "✓ מולא");
+    if(pg) pill.title = (pg.state === "sent" ? "נשלח · " : "הופק · ") + fmtTs(pg.ts || pg.date);
+    head.append(pill);
+    if(pg && pg.state !== "sent") li.append(el("p","fp fp-on", `הופק ${fmtTs(pg.ts || pg.date)} – לא לשכוח לשלוח בוואטסאפ`));
     // טפסים שמעלים כקובץ: לחיצה על „העלאת קובץ” / „וואטסאפ” מסמנת שנשלח
     if(!f.online) acts.querySelectorAll("a").forEach(a => a.addEventListener("click", () => {
       const ts = new Date().toISOString(); prog[pk] = { state: "sent", ts, date: ts.slice(0,10) }; progSave(prog);
@@ -347,21 +349,25 @@ function renderForms(trip){
     const sd = Array.isArray(arr) ? arr.filter(x => x && x.title) : [];
     if(!sd.length) return;
     const li = el("li","form-card send-card");
-    li.style.cssText = `background:color-mix(in srgb,${tint} 10%,var(--paper))`;
+    li.style.cssText = `background:color-mix(in srgb,${tint} 10%,var(--paper));border-inline-start-color:${tint}`;
     const head = el("div","form-head"); head.append(el("span","form-title", title)); li.append(head);
-    const l = document.createElement("ul"); l.style.cssText = "margin:8px 0 0;padding-inline-start:22px;line-height:1.9";
+    const l = document.createElement("ul");
     sd.forEach(x => { const it = document.createElement("li"); const b = document.createElement("b"); b.textContent = x.title; it.append(b);
       if(x.note) it.append(" – " + x.note); l.append(it); });
     li.append(l); ul.append(li);
   };
+  const sdN = (typeof SEND_DOCS !== "undefined" && Array.isArray(SEND_DOCS) ? SEND_DOCS.length : 0) + (typeof IDF_FORMS !== "undefined" && Array.isArray(IDF_FORMS) ? IDF_FORMS.length : 0);
+  if(sdN) ul.append(el("li","grp-h","📌 לא למילוי באתר – רק לא לשכוח"));
   remBox(typeof SEND_DOCS !== "undefined" ? SEND_DOCS : [], "📎 קבצים שצריך לשלוח לגורם המטפל", "var(--amber)");
   remBox(typeof IDF_FORMS !== "undefined" ? IDF_FORMS : [], "💻 טפסים שיש למלא במחשב הצה״לי", "#2E5597");
   sec.hidden = !list.length;
   const sum = document.getElementById("docs-summary");
   sum.hidden = !list.length;
-  sum.innerHTML = `<strong>מילאת ${sentN} מתוך ${list.length} טפסים</strong>` + (sentN === list.length ? " · ✓ סיימת הכול!" : "")
-    + `<div class="bar fp-bar" aria-hidden="true"><span style="width:${list.length ? Math.round(sentN / list.length * 100) : 0}%"></span></div>`
-    + (tracked ? `<span class="fp-off">אושר שהוגשו: ${got} מתוך ${tracked}${got === tracked ? " ✓" : ""}</span>` : "");
+  const pct = list.length ? Math.round(sentN / list.length * 100) : 0;
+  sum.innerHTML = `<div class="ring" style="--p:${pct}%" aria-hidden="true"><b>${sentN}/${list.length}</b></div>`
+    + `<div><strong class="sum-t">מילאת ${sentN} מתוך ${list.length} טפסים${sentN === list.length ? " · ✓ סיימת הכול!" : ""}</strong>`
+    + `<span class="sum-s">ממלאים ← „הפקת הטופס” ← שולחים בוואטסאפ</span>`
+    + (tracked ? `<span class="fp-off">אושר שהוגשו: ${got} מתוך ${tracked}${got === tracked ? " ✓" : ""}</span>` : "") + `</div>`;
 }
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" }[c]));
 
