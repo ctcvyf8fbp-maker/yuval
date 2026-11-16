@@ -78,6 +78,21 @@ function renderPass(trip, steps, current){
       cd.append(el("span","cd-warn", ` · ⚠ חסר${miss.length === 1 ? " עוד טופס אחד" : `ים עוד ${miss.length} טפסים`}`));
     }
   } else cd.hidden = true;
+  // תוקף דרכון (שורה „תוקף דרכון”)
+  let pf = document.getElementById("f-pass");
+  const grid = document.getElementById("marital") && document.getElementById("marital").closest(".field") && document.getElementById("marital").closest(".field").parentElement;
+  if(!pf && grid){ pf = el("div","field"); pf.id = "f-pass"; pf.append(el("span","lbl","תוקף דרכון"), el("span","val","")); grid.append(pf); }
+  const pc = passportCheck(trip);
+  if(pf){ pf.hidden = !pc; if(pc) pf.querySelector(".val").textContent = fmtDate(trip.passport); }
+  let pw = document.getElementById("pass-warn");
+  if(!pw){ pw = el("p","pass-warn"); pw.id = "pass-warn"; cd.after(pw); }
+  pw.hidden = !pc || pc.level === "ok"; if(pc) { pw.textContent = pc.text; pw.className = "pass-warn " + pc.level; }
+  // הוספה ליומן – תאריך היציאה עם תזכורת שבוע לפני
+  let cb = document.getElementById("cal-btn");
+  if(!cb){ cb = el("button","cal-btn","📅 הוספה ליומן"); cb.id = "cal-btn"; cb.type = "button"; pw.after(cb); }
+  const okDate = trip.departure && /^\d{4}-\d{2}-\d{2}$/.test(trip.departure) && daysBetween(todayISO(), trip.departure) >= 0;
+  cb.hidden = !okDate;
+  cb.onclick = () => addToCalendar(trip);
   // הערה אישית מהגיליון (שורה „הערה לשליח”)
   let nb = document.getElementById("trav-note");
   const pass = document.querySelector("section.pass");
@@ -183,6 +198,49 @@ function renderMap(trip, steps, current){
   animId = requestAnimationFrame(tick);
 }
 
+function addToCalendar(trip){
+  const d = (trip.departure || "").replace(/-/g, ""); if(!/^\d{8}$/.test(d)) return;
+  const nx = new Date(trip.departure); nx.setDate(nx.getDate() + 1);
+  const d2 = nx.toISOString().slice(0,10).replace(/-/g, "");
+  const what = (isMission(trip) ? "יציאה לשליחות" : "יציאה לאוריינטציה") + (trip.destination ? " – " + trip.destination : "");
+  const esc = s => String(s).replace(/[\\;,]/g, m => "\\" + m).replace(/\n/g, "\\n");
+  const link = location.href.split("#")[0];
+  const ics = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//mission-tracker//HE","CALSCALE:GREGORIAN","BEGIN:VEVENT",
+    "UID:" + d + "-" + Math.random().toString(36).slice(2) + "@mission","DTSTAMP:" + new Date().toISOString().replace(/[-:]/g, "").slice(0,15) + "Z",
+    "DTSTART;VALUE=DATE:" + d, "DTEND;VALUE=DATE:" + d2, "SUMMARY:" + esc("✈ " + what), "DESCRIPTION:" + esc("מעקב האישורים: " + link),
+    "BEGIN:VALARM","TRIGGER:-P7D","ACTION:DISPLAY","DESCRIPTION:" + esc("עוד שבוע: " + what),"END:VALARM",
+    "BEGIN:VALARM","TRIGGER:-P1D","ACTION:DISPLAY","DESCRIPTION:" + esc("מחר: " + what),"END:VALARM",
+    "END:VEVENT","END:VCALENDAR"].join("\r\n");
+  const url = URL.createObjectURL(new Blob([ics], { type: "text/calendar;charset=utf-8" }));
+  const a = document.createElement("a"); a.href = url; a.download = "יציאה.ics"; document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+}
+
+// ===== „מה חדש מאז הביקור הקודם” – לשליח =====
+let NEW_STEPS = new Set();
+function notifyProgress(){
+  const key = "seen-steps:" + travelerKey(), now = stepSnapshot(TRIPS), prev = memGet(key);
+  const ch = stepChanges(prev, now);
+  memSet(key, now);
+  if(!ch.length) return;
+  ch.forEach(c => NEW_STEPS.add(c.key));
+  render();
+  const multi = new Set(ch.map(c => c.title)).size > 1;
+  const line = c => { const who = c.role + (multi ? ` (${c.title})` : "");
+    return c.status === "אושר" ? `✓ ${who} – אישר/ה` : c.status === "נדחה" ? `${who} – יש עדכון, כדאי ליצור קשר` : `⏳ ${who} – בטיפול`; };
+  const ok = ch.some(c => c.status === "אושר");
+  const dlg = el("div","news-pop"); dlg.setAttribute("role","dialog"); dlg.setAttribute("aria-modal","true"); dlg.setAttribute("aria-labelledby","news-h");
+  const box = el("div","news-box");
+  const h = el("h2","", ok ? "🎉 יש התקדמות!" : "📣 יש עדכון"); h.id = "news-h";
+  const ul = el("ul"); ch.forEach(c => ul.append(el("li", c.status === "אושר" ? "ok" : c.status === "נדחה" ? "no" : "wait", line(c))));
+  const close = el("button","fbtn primary","מעולה, הבנתי"); close.type = "button";
+  const shut = () => { dlg.remove(); document.removeEventListener("keydown", onKey); };
+  const onKey = e => { if(e.key === "Escape") shut(); };
+  close.onclick = shut; dlg.onclick = e => { if(e.target === dlg) shut(); };
+  box.append(h, el("p","news-sub","מאז הביקור הקודם שלך:"), ul, close); dlg.append(box); document.body.append(dlg);
+  document.addEventListener("keydown", onKey); close.focus();
+}
+
 function renderLegend(trip){
   const ul = document.getElementById("legend"); ul.innerHTML = "";
   trip.rounds.forEach(r => {
@@ -210,6 +268,7 @@ function renderRounds(trip, current){
         el("span","chip " + st.cls, st.text),
         el("span","date", s.status === "אושר" ? fmtDate(s.date) : (s.date ? "נשלח " + fmtDate(s.date) : ""))
       );
+      if(NEW_STEPS.has(trip.title + "|" + r.name + "|" + s.role)){ li.classList.add("is-new"); li.querySelector(".role").append(el("span","new-tag","חדש")); }
       if(s.status !== "אושר" && s.date){
         const w = daysBetween(s.date, todayISO());
         if(w > OVERDUE()){ li.classList.add("late"); li.querySelector(".role").append(el("span","late-tag", ` ⚠ ממתין ${w} ימים`)); }
@@ -253,6 +312,33 @@ function missingForms(trip){
   if(!trip || !trip.docs || !Object.keys(trip.docs).length) return null;
   const list = (typeof FORMS !== "undefined" && Array.isArray(FORMS)) ? FORMS.filter(f => f && f.title) : [];
   return list.filter(f => docStatus(trip, f.title) !== "ok").map(f => f.title);
+}
+// ===== מעקב שינויים בסטטוס האישורים (לשליח ולדף הניהול) =====
+// מצב כל השלבים בכל העמודות האמיתיות: "כותרת|סבב|גורם" → סטטוס
+function stepSnapshot(trips){
+  const m = {};
+  (trips || []).filter(t => t && t.rounds && !specialKind(t.title)).forEach(t => t.rounds.forEach(r => r.steps.forEach(s => { m[t.title + "|" + r.name + "|" + s.role] = s.status; })));
+  return m;
+}
+// מה השתנה: רק מעבר לסטטוס חדש (אושר / נדחה / בטיפול) של שלב שכבר היה קודם
+function stepChanges(prev, now){
+  if(!prev) return [];
+  return Object.keys(now).filter(k => k in prev && prev[k] !== now[k] && now[k] !== "ממתין")
+    .map(k => { const [title, round, role] = k.split("|"); return { key: k, title, round, role, status: now[k] }; });
+}
+const memGet = k => { try{ return JSON.parse(localStorage.getItem(k) || "null"); }catch(e){ return null; } };
+const memSet = (k, v) => { try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} };
+// דרכון: פג תוקף / פחות מ-6 חודשים מיום היציאה
+function passportCheck(trip){
+  const p = trip && trip.passport, dep = trip && trip.departure;
+  if(!p || !/^\d{4}-\d{2}-\d{2}$/.test(p)) return null;
+  const today = todayISO();
+  if(p < today) return { level: "bad", text: `⚠ הדרכון פג תוקף ב-${fmtDate(p)} – צריך לחדש` };
+  if(dep && /^\d{4}-\d{2}-\d{2}$/.test(dep)){
+    const lim = new Date(dep); lim.setMonth(lim.getMonth() + 6);
+    if(new Date(p) < lim) return { level: "warn", text: `⚠ הדרכון בתוקף עד ${fmtDate(p)} – פחות מ-6 חודשים מיום היציאה. לבדוק את דרישת היעד ולשקול חידוש` };
+  }
+  return { level: "ok", text: `✓ בתוקף עד ${fmtDate(p)}` };
 }
 const todayISO = () => { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0,10); };
 const daysBetween = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000);
@@ -433,6 +519,7 @@ function buildIndex(){
   const docs = [];
   const add = (src, title, text, link) => docs.push({ src, title, text, link });
   (typeof RIGHTS !== "undefined" ? RIGHTS : []).forEach(r => add("הזכויות שלך", r.title, r.items.join(" "), "#info"));
+  (typeof FAQ !== "undefined" && Array.isArray(FAQ) ? FAQ : []).forEach(f => f && f.q && add("שאלות נפוצות", f.q, f.a || "", "#info"));
   (typeof INFO_NOTES !== "undefined" ? INFO_NOTES : []).forEach(n => add("מידע לשליח", n.title, [...(n.before||[]), ...(n.ol||[]), ...(n.after||[])].join(" "), "#info"));
   (typeof ORIENT_NOTES !== "undefined" ? ORIENT_NOTES : []).forEach(n => add("אוריינטציה", n.title, [ORIENT_NOTE || "", ...(n.before||[]), ...(n.ol||[])].join(" "), ""));
   (typeof CHECKLIST !== "undefined" ? CHECKLIST : []).forEach(g => g.items.forEach(i => add("צ׳ק ליסט", i.title, (i.detail || "") + (i.contact ? " · " + i.contact : ""), "#checklist")));
@@ -622,6 +709,11 @@ function renderInfo(){
     box.append(a);
   });
   noteCards(document.getElementById("notes-list"), typeof INFO_NOTES !== "undefined" ? INFO_NOTES : []);
+  // שאלות נפוצות (FAQ ב-data.js)
+  const faq = (typeof FAQ !== "undefined" && Array.isArray(FAQ)) ? FAQ.filter(f => f && f.q && f.a) : [];
+  const fb = document.getElementById("faq");
+  if(fb){ fb.hidden = !faq.length; const fl = document.getElementById("faq-list"); fl.innerHTML = "";
+    faq.forEach(f => { const d = el("details","faq-item"); d.append(el("summary","",f.q), el("p","",f.a)); fl.append(d); }); }
   const rl = document.getElementById("rights-list");
   (typeof RIGHTS !== "undefined" ? RIGHTS : []).forEach(r => {
     const c = el("div","right-card"); c.append(el("h3","", (r.icon ? r.icon + " " : "") + r.title));
@@ -782,12 +874,12 @@ function tripsFromSheet(rows){
   const head = rows[hi];
   const n = Math.floor((head.length - 3) / 2);
   const info = label => { const r = rows.slice(0, hi).find(r => r[0] === label); return k => r ? (r[3 + 2*k] || "") : ""; };
-  const name = info("שם השליח"), dest = info("יעד"), dep = info("תאריך יציאה"), folder = info("תיקיית מסמכים"), marital = info("מצב משפחתי"), spouse = info("בן/בת זוג"), kids = info("כמות ילדים"), note = info("הערה לשליח"), phone = info("טלפון");
+  const name = info("שם השליח"), dest = info("יעד"), dep = info("תאריך יציאה"), folder = info("תיקיית מסמכים"), marital = info("מצב משפחתי"), spouse = info("בן/בת זוג"), kids = info("כמות ילדים"), note = info("הערה לשליח"), phone = info("טלפון"), passExp = info("תוקף דרכון");
   const trips = [];
   for(let k = 0; k < n; k++){
     const old = TRIPS[k] || {};
     const t = { title: (head[3 + 2*k] || `שליח ${k+1}`).replace(/\s*[–-]\s*סטטוס$/,""),
-      traveler: name(k), destination: dest(k), departure: toISO(dep(k)), folder: folder(k), marital: marital(k), spouse: spouse(k), kids: kids(k), note: note(k), phone: phone(k),
+      traveler: name(k), destination: dest(k), departure: toISO(dep(k)), folder: folder(k), marital: marital(k), spouse: spouse(k), kids: kids(k), note: note(k), phone: phone(k), passport: toISO(passExp(k)),
       rounds: [], docs: {} };
     let cur = null, last = "";
     rows.slice(hi + 1).forEach(r => {
@@ -804,7 +896,7 @@ function tripsFromSheet(rows){
     trips.push(t);
   }
   // פרטים שכתובים רק בעמודה של השליחות (הערה, טלפון, משפחה) – תקפים לכל העמודות של אותו שליח
-  ["note","phone","marital","kids","spouse"].forEach(f => { const v = (trips.find(t => String(t[f] || "").trim()) || {})[f]; if(v) trips.forEach(t => { if(!String(t[f] || "").trim()) t[f] = v; }); });
+  ["note","phone","marital","kids","spouse","passport"].forEach(f => { const v = (trips.find(t => String(t[f] || "").trim()) || {})[f]; if(v) trips.forEach(t => { if(!String(t[f] || "").trim()) t[f] = v; }); });
   // עמודה בגיליון שהכותרת שלה כוללת „מידע” – היא לא שליח: היא לשונית המידע והצ׳ק ליסט
   const special = [];
   trips.forEach(t => { const k = specialKind(t.title); if(k) special.push({ kind: k, label: t.title }); });
@@ -839,6 +931,7 @@ function syncFromSheet(){
       const now = new Date();
       state.textContent = "✔ מסונכרן עם הגיליון · נטען ב-" + now.toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" });
       render(); rememberTraveler(); if(!remoteLoaded) loadRemote();
+      notifyProgress();
     })
     .catch(() => { state.textContent = "· לא הצלחתי לטעון את הגיליון – מוצגים הנתונים השמורים"; });
 }

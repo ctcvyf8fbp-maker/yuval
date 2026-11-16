@@ -326,3 +326,30 @@ h1{font-size:1.6rem;font-weight:700;margin:0;letter-spacing:-.01em}
 .cd-warn{color:var(--no);font-weight:700}
 .forms-list .fam-note{color:var(--ink);font-weight:600}
 .fam-cnt{font-weight:700}
+
+/* ===== מה חדש, דרכון, יומן, שאלות נפוצות ===== */
+.news-pop{position:fixed;inset:0;z-index:50;display:grid;place-items:center;padding:16px;background:rgb(10 20 40/.45);animation:npf .2s ease}
+.news-box{background:var(--paper);color:var(--ink);border-radius:18px;padding:22px 22px 18px;max-width:420px;width:100%;box-shadow:0 20px 60px rgb(0 0 0/.25);animation:npu .25s ease}
+.news-box h2{margin:0 0 4px;font-size:1.4rem}
+.news-sub{margin:0 0 10px;color:var(--muted)}
+.news-box ul{list-style:none;margin:0 0 16px;padding:0;display:grid;gap:8px}
+.news-box li{padding:10px 12px;border-radius:12px;font-weight:600;background:var(--sky)}
+.news-box li.ok{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
+.news-box li.no{background:color-mix(in srgb,var(--no) 12%,transparent);color:var(--no)}
+.news-box .fbtn{width:100%}
+@keyframes npf{from{opacity:0}}
+@keyframes npu{from{transform:translateY(12px);opacity:0}}
+@media (prefers-reduced-motion:reduce){.news-pop,.news-box{animation:none}}
+.step.is-new{box-shadow:0 0 0 2px color-mix(in srgb,var(--ok) 55%,transparent)}
+.new-tag{display:inline-block;margin-inline-start:8px;font-size:.72rem;font-weight:800;color:#fff;background:var(--ok);border-radius:999px;padding:1px 8px;vertical-align:middle}
+.pass-warn{margin:6px 0 0;font-weight:700;font-size:.92rem}
+.pass-warn[hidden]{display:none}
+.pass-warn.bad{color:var(--no)}
+.pass-warn.warn{color:color-mix(in srgb,var(--amber) 75%,var(--ink))}
+.cal-btn{align-self:flex-start;width:auto;display:inline-block;margin-top:8px;font:inherit;font-size:.85rem;font-weight:600;color:var(--ink);background:var(--sky);border:1px solid var(--line);border-radius:999px;padding:4px 12px;cursor:pointer}
+.cal-btn[hidden]{display:none}
+.faq{margin:14px 0}
+.faq h3{margin:0 0 8px;font-size:1.1rem}
+.faq-item{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:0 14px;margin-bottom:8px}
+.faq-item summary{cursor:pointer;font-weight:700;padding:12px 0}
+.faq-item p{margin:0 0 12px;color:var(--ink);white-space:pre-line}

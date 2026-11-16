@@ -11,12 +11,32 @@
   .ad h1{font-size:1.6rem;margin:6px 0 2px}
   .muted{color:var(--muted)}
   .top-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
-  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:14px 0}
-  .kpi{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+  .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin:14px 0}
+  .kpi{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font:inherit;color:inherit;text-align:start;cursor:pointer}
+  .kpi:hover{border-color:var(--ink)}
+  .kpi.on{border:2px solid var(--ink);padding:11px 13px;box-shadow:0 2px 8px rgb(0 0 0/.08)}
+  .flt-note{margin:-4px 0 10px;font-weight:600;color:var(--muted)}
+  .flt-note button{font:inherit;font-weight:700;color:var(--ink);background:none;border:none;text-decoration:underline;cursor:pointer}
+  .upd{background:color-mix(in srgb,var(--ok) 8%,var(--paper));border:1px solid color-mix(in srgb,var(--ok) 35%,var(--line));border-inline-start:5px solid var(--ok);border-radius:14px;padding:14px 16px;margin:0 0 14px}
+  .upd h2{margin:0 0 2px;font-size:1.15rem}
+  .upd .small{font-size:.85rem;margin:0 0 10px}
+  .upd ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+  .upd li{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+  .upd li .who{font-weight:800;min-width:120px}
+  .upd li .what{flex:1;min-width:180px;display:flex;flex-wrap:wrap;gap:6px}
+  .upd li .what span{font-size:.85rem;font-weight:700;border-radius:999px;padding:2px 10px;background:var(--sky)}
+  .upd li .what span.ok{background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ok)}
+  .upd li .what span.no{background:color-mix(in srgb,var(--no) 12%,transparent);color:var(--no)}
+  .upd li .act{display:flex;gap:6px;align-items:center}
+  .upd li.sent{opacity:.6}
+  .upd .dis{font:inherit;font-size:.8rem;color:var(--muted);background:none;border:1px solid var(--line);border-radius:999px;padding:3px 10px;cursor:pointer}
+  .pass-tag{display:inline-block;margin-top:4px;font-size:.75rem;font-weight:700;color:var(--no)}
+  .pass-tag.warn{color:color-mix(in srgb,var(--amber) 75%,var(--ink))}
   .kpi span{display:block;color:var(--muted);font-size:.85rem}
   .kpi strong{font-size:1.7rem}
   .kpi.warn strong{color:var(--no)}
-  @media (max-width:700px){.kpis{grid-template-columns:1fr 1fr}}
+  @media (max-width:900px){.kpis{grid-template-columns:repeat(3,1fr)}}
+  @media (max-width:560px){.kpis{grid-template-columns:1fr 1fr}}
   .tblw{background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden}
   table{width:100%;border-collapse:collapse;font-size:.93rem}
   th{background:var(--ink);color:var(--paper);font-weight:500;text-align:right;padding:10px 10px;font-size:.85rem;white-space:nowrap}
@@ -64,11 +84,20 @@
   <p class="muted" id="stamp">טוען…</p>
 
   <div class="kpis">
-    <div class="kpi"><span>שליחים</span><strong id="k-n">–</strong></div>
-    <div class="kpi warn"><span>אישור ממתין מעל שבוע</span><strong id="k-late">–</strong></div>
-    <div class="kpi"><span>יוצאים ב-30 הימים הקרובים</span><strong id="k-soon">–</strong></div>
-    <div class="kpi"><span>כל האישורים התקבלו</span><strong id="k-done">–</strong></div>
+    <button type="button" class="kpi on" data-f="all"><span>שליחים</span><strong id="k-n">–</strong></button>
+    <button type="button" class="kpi warn" data-f="late"><span>אישור ממתין מעל שבוע</span><strong id="k-late">–</strong></button>
+    <button type="button" class="kpi" data-f="soon"><span>יוצאים ב-30 הימים הקרובים</span><strong id="k-soon">–</strong></button>
+    <button type="button" class="kpi" data-f="miss"><span>חסרים טפסים</span><strong id="k-miss">–</strong></button>
+    <button type="button" class="kpi warn" data-f="pass"><span>דרכון לבדיקה</span><strong id="k-pass">–</strong></button>
+    <button type="button" class="kpi" data-f="done"><span>כל האישורים התקבלו</span><strong id="k-done">–</strong></button>
   </div>
+  <p class="flt-note" id="flt-note" hidden></p>
+
+  <section class="upd" id="upd" hidden aria-labelledby="upd-h">
+    <h2 id="upd-h">📣 עדכונים לשליחה</h2>
+    <p class="muted small">אישורים שהשתנו בגיליון מאז הפעם הקודמת שפתחת את הדף. לוחצים 📲 – ונפתחת הודעה מוכנה בוואטסאפ.</p>
+    <ul id="upd-list"></ul>
+  </section>
 
   <p class="msgline" id="api-msg" hidden></p>
   <div class="top-row">
@@ -96,9 +125,9 @@
   </section>
 </main>
 
-<script src="data.js?v=20261116d"></script>
-<script src="mission-info.js?v=20261116d"></script>
-<script src="app.js?v=20261116d"></script>
+<script src="data.js?v=20261116e"></script>
+<script src="mission-info.js?v=20261116e"></script>
+<script src="app.js?v=20261116e"></script>
 <script>
 (() => {
 const KEY = "traveler-links";
@@ -183,22 +212,91 @@ async function refresh(){
     try{
       const r = await fetch(s.csv + (s.csv.includes("?") ? "&" : "?") + "_=" + Date.now(), { cache: "no-store" });
       if(!r.ok) throw new Error(r.status);
-      return { s, d: summarize(tripsFromSheet(parseCSV(await r.text()))) };
+      const trips = tripsFromSheet(parseCSV(await r.text()));
+      return { s, d: summarize(trips), trips };
     }catch(e){ return { s, err: true }; }
   }));
+  collectUpdates();
   draw();
 }
 
+// ===== 📣 עדכונים לשליחה =====
+const UPD_SENT = new Set();
+function collectUpdates(){
+  results.forEach(r => {
+    if(r.err || !r.trips) return;
+    const sk = "admin-seen:" + r.s.csv, pk = "admin-pending:" + r.s.csv;
+    const now = stepSnapshot(r.trips), prev = memGet(sk);
+    const ch = stepChanges(prev, now);
+    memSet(sk, now);
+    if(ch.length){
+      const pend = (memGet(pk) || []).filter(p => !ch.some(c => c.key === p.key));
+      memSet(pk, pend.concat(ch));
+    }
+    // שלב שחזר ל„ממתין” או השתנה שוב – מעדכנים לפי המצב הנוכחי
+    const pend = (memGet(pk) || []).filter(p => now[p.key] && now[p.key] !== "ממתין").map(p => ({ ...p, status: now[p.key] }));
+    memSet(pk, pend);
+    r.pending = pend;
+  });
+}
+function updMessage(r){
+  const t = r.d.mis || {}, first = String(t.traveler || "").trim().split(/\s+/)[0];
+  const multi = new Set(r.pending.map(p => p.title)).size > 1 || r.pending.some(p => p.title !== t.title);
+  const lines = r.pending.map(p => { const who = p.role + (multi ? ` (${p.title})` : "");
+    return p.status === "אושר" ? `✓ ${who} – אישר/ה` : p.status === "נדחה" ? `⚠ ${who} – יש עדכון, אחזור אליך עם פרטים` : `⏳ ${who} – בטיפול`; });
+  const anyOk = r.pending.some(p => p.status === "אושר");
+  let msg = (first ? `היי ${first}, ` : "היי, ") + "עדכון לגבי היציאה לשליחות" + (anyOk ? " 🎉" : "") + "\n" + lines.join("\n") + "\n";
+  const p = r.d.p;
+  if(p && p.n){ msg += p.cur ? `\nהשלב הבא: ${p.cur.role}` : "\nכל האישורים התקבלו! ✓"; msg += `\nאושרו עד עכשיו: ${p.ok} מתוך ${p.n}\n`; }
+  return msg + "\nהקישור האישי שלך:\n" + r.s.link;
+}
+function drawUpdates(){
+  const box = document.getElementById("upd"), ul = document.getElementById("upd-list"); ul.innerHTML = "";
+  const list = results.filter(r => !r.err && r.pending && r.pending.length);
+  box.hidden = !list.length;
+  list.forEach(r => {
+    const t = r.d.mis || {}, li = document.createElement("li"), sent = UPD_SENT.has(r.s.csv);
+    if(sent) li.className = "sent";
+    const who = document.createElement("span"); who.className = "who"; who.textContent = t.traveler || r.s.name || "שליח";
+    const what = document.createElement("span"); what.className = "what";
+    r.pending.forEach(p => { const s = document.createElement("span"); s.className = p.status === "אושר" ? "ok" : p.status === "נדחה" ? "no" : "";
+      s.textContent = (p.status === "אושר" ? "✓ " : p.status === "נדחה" ? "✖ " : "⏳ ") + p.role + " – " + p.status; what.append(s); });
+    const act = document.createElement("span"); act.className = "act";
+    let ph = String(t.phone || "").replace(/\D/g, ""); if(/^0\d{8,9}$/.test(ph)) ph = "972" + ph.slice(1);
+    const wa = document.createElement("a"); wa.className = "wa-rem"; wa.target = "_blank"; wa.rel = "noopener";
+    wa.href = "https://wa.me/" + (ph.length >= 11 ? ph : "") + "?text=" + encodeURIComponent(updMessage(r));
+    wa.textContent = sent ? "✓ נשלח" : "📲 שליחת עדכון";
+    const clear = () => { memSet("admin-pending:" + r.s.csv, []); r.pending = []; };
+    wa.onclick = () => { UPD_SENT.add(r.s.csv); setTimeout(() => { clear(); }, 0); li.className = "sent"; wa.textContent = "✓ נשלח"; };
+    const dis = document.createElement("button"); dis.type = "button"; dis.className = "dis"; dis.textContent = "✕ לא צריך"; dis.title = "להסיר בלי לשלוח";
+    dis.onclick = () => { clear(); drawUpdates(); };
+    act.append(wa); if(!sent) act.append(dis);
+    li.append(who, what, act); ul.append(li);
+  });
+}
+
+let FLT = "all";
+const FLT_NAMES = { late: "אישור ממתין מעל שבוע", soon: "יוצאים ב-30 הימים הקרובים", miss: "חסרים טפסים", pass: "דרכון לבדיקה", done: "כל האישורים התקבלו" };
+document.querySelectorAll(".kpi[data-f]").forEach(b => b.onclick = () => { FLT = (FLT === b.dataset.f || b.dataset.f === "all") ? "all" : b.dataset.f; draw(); });
 function draw(){
+  drawUpdates();
   const today = todayISO(), tb = document.getElementById("rows"); tb.innerHTML = "";
   const rows = results.map(r => {
     if(r.err) return { r, sort: 1e9 };
     const dep = r.d.mis && r.d.mis.departure, days = dep && /^\d{4}-\d{2}-\d{2}$/.test(dep) ? daysBetween(today, dep) : null;
     const cur = r.d.p && r.d.p.cur, wait = cur && cur.date ? daysBetween(cur.date, today) : null;
-    return { r, days, wait, late: wait !== null && wait > OVERDUE(), done: r.d.p && r.d.p.n && !cur, sort: days === null ? 1e8 : days };
+    const miss = missingForms(r.d.mis), pc = passportCheck(r.d.mis);
+    return { r, days, wait, late: wait !== null && wait > OVERDUE(), done: r.d.p && r.d.p.n && !cur, sort: days === null ? 1e8 : days,
+      soon: days !== null && days >= 0 && days <= 30, miss: !!(miss && miss.length), pass: !!(pc && pc.level !== "ok"), pc };
   }).sort((a, b) => a.sort - b.sort);
-  let late = 0, soon = 0, done = 0;
+  let late = 0, soon = 0, done = 0, nmiss = 0, npass = 0;
+  rows.forEach(x => { if(x.miss) nmiss++; if(x.pass) npass++; });
+  document.querySelectorAll(".kpi[data-f]").forEach(b => { b.classList.toggle("on", b.dataset.f === FLT); b.setAttribute("aria-pressed", b.dataset.f === FLT ? "true" : "false"); });
+  const fn = document.getElementById("flt-note"); fn.hidden = FLT === "all";
+  if(FLT !== "all"){ fn.innerHTML = `מוצגים רק: <b>${FLT_NAMES[FLT]}</b> · <button type="button" id="flt-clear">הצגת כולם</button>`; document.getElementById("flt-clear").onclick = () => { FLT = "all"; draw(); }; }
   rows.forEach(x => {
+    if(!x.r.err){ if(x.late) late++; if(x.done) done++; if(x.soon) soon++; }
+    if(FLT !== "all" && (x.r.err || !x[FLT])) return;
     const { r } = x, tr = document.createElement("tr");
     const td = (l, h) => { const c = document.createElement("td"); if(l) c.dataset.l = l; c.innerHTML = h; tr.append(c); return c; };
     if(r.err){
@@ -206,7 +304,6 @@ function draw(){
       const c = td("", `<span class="err">לא הצלחתי לטעון את הגיליון – ודאו שהוא מפורסם באינטרנט.</span>`); c.colSpan = 6;
     } else {
       const d = r.d, t = d.mis || {};
-      if(x.late) late++; if(x.done) done++; if(x.days !== null && x.days >= 0 && x.days <= 30) soon++;
       if(x.late) tr.className = "late";
       const name = t.traveler || r.s.name || "—";
       const nc = td("", `<span class="nm"><a href="${esc(r.s.link)}" target="_blank" rel="noopener">${esc(name)}</a></span><span class="sub">${esc(t.destination || "")}${r.s.main ? " · הגיליון הראשי" : ""}</span>`);
@@ -221,6 +318,7 @@ function draw(){
       wa.href = "https://wa.me/" + (ph.length >= 11 ? ph : "") + "?text=" + encodeURIComponent(msg);
       wa.textContent = miss && miss.length ? `📲 תזכורת (${miss.length} חסרים)` : "📲 הודעה בוואטסאפ";
       nc.append(wa);
+      if(x.pass){ const pt = document.createElement("span"); pt.className = "pass-tag " + (x.pc.level === "warn" ? "warn" : ""); pt.textContent = x.pc.level === "bad" ? "⚠ דרכון פג תוקף" : "⚠ דרכון – פחות מ-6 חודשים"; pt.style.display = "block"; nc.append(pt); }
       td("יציאה", t.departure ? `${esc(fmtDate(t.departure))}<span class="sub ${x.days !== null && x.days >= 0 && x.days <= 30 ? "soon" : ""}">${x.days === null ? "" : x.days > 0 ? "עוד " + x.days + " ימים" : x.days === 0 ? "היום!" : "יצא/ה"}</span>` : "—");
       const p = d.p;
       td("אישורים", p && p.n ? `<b>${p.ok} מתוך ${p.n}</b><div class="bar" aria-hidden="true"><i style="width:${Math.round(p.ok / p.n * 100)}%"></i></div>` : "—");
@@ -253,11 +351,14 @@ function draw(){
       b.onclick = () => { if(!confirm("להסיר את השליח מהרשימה בדף הזה? (הגיליון והקישור שלו לא נמחקים)")) return; const v = load(); v.splice(r.s.idx, 1); save(v); refresh(); }; c.append(b); }
     tb.append(tr);
   });
+  if(rows.length && !tb.children.length) tb.innerHTML = `<tr><td colspan="8" class="muted">אין שליחים שמתאימים לסינון הזה.</td></tr>`;
   if(!rows.length) tb.innerHTML = `<tr><td colspan="8" class="muted">אין עדיין שליחים ברשימה. מוסיפים למטה, או יוצרים קישור ב„יצירת קישור לשליח”.</td></tr>`;
   document.getElementById("k-n").textContent = rows.length;
   document.getElementById("k-late").textContent = late;
   document.getElementById("k-soon").textContent = soon;
   document.getElementById("k-done").textContent = done;
+  document.getElementById("k-miss").textContent = nmiss;
+  document.getElementById("k-pass").textContent = npass;
   document.getElementById("stamp").textContent = "עודכן ב-" + new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" }) + " · מסודר לפי מועד היציאה · הגיליונות מתעדכנים כל כ-5 דקות";
 }
 
