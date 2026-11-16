@@ -72,7 +72,18 @@ function renderPass(trip, steps, current){
     cd.hidden = false;
     cd.textContent = d > 1 ? `✈ עוד ${d} ימים ליציאה` : d === 1 ? "✈ מחר יוצאים!" : d === 0 ? "✈ היום יוצאים!" : `יצא/ה לפני ${-d} ימים`;
     cd.className = "countdown" + (d >= 0 && d <= 14 ? " soon" : "");
+    const miss = isMission(trip) ? missingForms(trip) : null;
+    if(miss && miss.length && d >= 0 && d <= 30){
+      cd.classList.add("soon");
+      cd.append(el("span","cd-warn", ` · ⚠ חסר${miss.length === 1 ? " עוד טופס אחד" : `ים עוד ${miss.length} טפסים`}`));
+    }
   } else cd.hidden = true;
+  // הערה אישית מהגיליון (שורה „הערה לשליח”)
+  let nb = document.getElementById("trav-note");
+  const pass = document.querySelector("section.pass");
+  if(!nb && pass){ nb = el("div","trav-note"); nb.id = "trav-note"; nb.setAttribute("role","note"); pass.before(nb); }
+  if(nb){ const nt = String(trip.note || "").trim(); nb.hidden = !nt; nb.innerHTML = "";
+    if(nt){ nb.append(el("span","tn-ic","📌"), el("div","tn-tx")); nb.querySelector(".tn-tx").append(el("b","", "הודעה אישית"), el("span","", nt)); } }
   document.getElementById("count").textContent = `${approved} / ${steps.length}`;
   document.getElementById("bar-fill").style.width = (steps.length ? approved / steps.length * 100 : 0) + "%";
   const next = document.getElementById("next");
@@ -227,6 +238,22 @@ function docStatus(trip, title){
   if(/^(בטיפול|בתהליך)$/.test(v)) return "wait";
   return "missing";
 }
+// כמה אנשים יוצאים: השליח + בן/בת זוג (אם נשוי/אה ולא כתוב „לא”) + ילדים
+function familyInfo(trip){
+  trip = trip || {};
+  const mar = String(trip.marital || ""), sp = String(trip.spouse || "").trim();
+  const spouse = /נשו/.test(mar) && !/^לא$/.test(sp);
+  const kids = Math.max(0, parseInt(String(trip.kids || "").replace(/\D/g, ""), 10) || 0);
+  const parts = ["לך"]; if(spouse) parts.push("לבן/בת הזוג"); if(kids) parts.push(kids === 1 ? "לילד/ה" : `ל-${kids} הילדים`);
+  const who = parts.length > 1 ? parts.slice(0, -1).join(", ") + " ו" + parts[parts.length - 1] : parts[0];
+  return { n: 1 + (spouse ? 1 : 0) + kids, who };
+}
+// טפסים שעוד לא סומנו „הוגש” בגיליון (null אם אין בגיליון שורות „מסמכים”)
+function missingForms(trip){
+  if(!trip || !trip.docs || !Object.keys(trip.docs).length) return null;
+  const list = (typeof FORMS !== "undefined" && Array.isArray(FORMS)) ? FORMS.filter(f => f && f.title) : [];
+  return list.filter(f => docStatus(trip, f.title) !== "ok").map(f => f.title);
+}
 const todayISO = () => { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0,10); };
 const daysBetween = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000);
 const OVERDUE = () => (typeof OVERDUE_DAYS === "number" ? OVERDUE_DAYS : 7);
@@ -333,6 +360,8 @@ function renderForms(trip){
     }
     li.append(acts);
     if(f.note && String(f.note).trim()) li.append(el("p","form-note", "⚠️ " + String(f.note).trim()));
+    const fam = familyInfo(trip);
+    if(fam.n > 1 && /שאלון רפואי/.test(f.title)) li.append(el("p","form-note fam-note", `👨‍👩‍👧 סה״כ ${fam.n} שאלונים: ${fam.who}.`));
     // הסטטוס מתעדכן לבד: כשהטופס הופק בהצלחה, וכשנשלח
     if(pg){ sentN++; li.classList.add("fp-sent"); }
     const pill = el("span","st", !pg ? "עוד לא מולא" : "✓ מולא");
@@ -355,7 +384,10 @@ function renderForms(trip){
     const head = el("div","form-head"); head.append(el("span","form-title", title)); li.append(head);
     const l = document.createElement("ul");
     sd.forEach(x => { const it = document.createElement("li"); const b = document.createElement("b"); b.textContent = x.title; it.append(b);
-      if(x.note) it.append(" – " + x.note); l.append(it); });
+      if(x.note) it.append(" – " + x.note);
+      const fam = familyInfo(trip);
+      if(fam.n > 1 && /^(דרכון|תעודת זהות)$/.test(x.title)) it.append(el("span","fam-cnt", ` (סה״כ ${fam.n})`));
+      l.append(it); });
     li.append(l); ul.append(li);
   };
   const sdN = (typeof SEND_DOCS !== "undefined" && Array.isArray(SEND_DOCS) ? SEND_DOCS.length : 0) + (typeof IDF_FORMS !== "undefined" && Array.isArray(IDF_FORMS) ? IDF_FORMS.length : 0);
@@ -750,12 +782,12 @@ function tripsFromSheet(rows){
   const head = rows[hi];
   const n = Math.floor((head.length - 3) / 2);
   const info = label => { const r = rows.slice(0, hi).find(r => r[0] === label); return k => r ? (r[3 + 2*k] || "") : ""; };
-  const name = info("שם השליח"), dest = info("יעד"), dep = info("תאריך יציאה"), folder = info("תיקיית מסמכים"), marital = info("מצב משפחתי"), spouse = info("בן/בת זוג"), kids = info("כמות ילדים");
+  const name = info("שם השליח"), dest = info("יעד"), dep = info("תאריך יציאה"), folder = info("תיקיית מסמכים"), marital = info("מצב משפחתי"), spouse = info("בן/בת זוג"), kids = info("כמות ילדים"), note = info("הערה לשליח"), phone = info("טלפון");
   const trips = [];
   for(let k = 0; k < n; k++){
     const old = TRIPS[k] || {};
     const t = { title: (head[3 + 2*k] || `שליח ${k+1}`).replace(/\s*[–-]\s*סטטוס$/,""),
-      traveler: name(k), destination: dest(k), departure: toISO(dep(k)), folder: folder(k), marital: marital(k), spouse: spouse(k), kids: kids(k),
+      traveler: name(k), destination: dest(k), departure: toISO(dep(k)), folder: folder(k), marital: marital(k), spouse: spouse(k), kids: kids(k), note: note(k), phone: phone(k),
       rounds: [], docs: {} };
     let cur = null, last = "";
     rows.slice(hi + 1).forEach(r => {
@@ -771,6 +803,8 @@ function tripsFromSheet(rows){
     });
     trips.push(t);
   }
+  // פרטים שכתובים רק בעמודה של השליחות (הערה, טלפון, משפחה) – תקפים לכל העמודות של אותו שליח
+  ["note","phone","marital","kids","spouse"].forEach(f => { const v = (trips.find(t => String(t[f] || "").trim()) || {})[f]; if(v) trips.forEach(t => { if(!String(t[f] || "").trim()) t[f] = v; }); });
   // עמודה בגיליון שהכותרת שלה כוללת „מידע” – היא לא שליח: היא לשונית המידע והצ׳ק ליסט
   const special = [];
   trips.forEach(t => { const k = specialKind(t.title); if(k) special.push({ kind: k, label: t.title }); });

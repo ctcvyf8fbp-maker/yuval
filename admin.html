@@ -53,6 +53,8 @@
   .det-grid li{padding:3px 0;border-bottom:1px solid var(--line)}
   .det-grid li.ok{color:var(--ok)} .det-grid li.miss{color:var(--muted)}
   .det-grid .t{color:var(--muted);font-size:.78rem;margin-inline-start:6px}
+  .wa-rem{display:inline-block;margin-top:6px;font-size:.8rem;font-weight:700;color:#fff;background:#1fa855;border-radius:999px;padding:3px 10px;text-decoration:none;white-space:nowrap}
+  .wa-rem.ok{background:var(--muted)}
 </style>
 </head>
 <body>
@@ -94,9 +96,9 @@
   </section>
 </main>
 
-<script src="data.js"></script>
-<script src="mission-info.js"></script>
-<script src="app.js"></script>
+<script src="data.js?v=20261116d"></script>
+<script src="mission-info.js?v=20261116d"></script>
+<script src="app.js?v=20261116d"></script>
 <script>
 (() => {
 const KEY = "traveler-links";
@@ -207,7 +209,18 @@ function draw(){
       if(x.late) late++; if(x.done) done++; if(x.days !== null && x.days >= 0 && x.days <= 30) soon++;
       if(x.late) tr.className = "late";
       const name = t.traveler || r.s.name || "—";
-      td("", `<span class="nm"><a href="${esc(r.s.link)}" target="_blank" rel="noopener">${esc(name)}</a></span><span class="sub">${esc(t.destination || "")}${r.s.main ? " · הגיליון הראשי" : ""}</span>`);
+      const nc = td("", `<span class="nm"><a href="${esc(r.s.link)}" target="_blank" rel="noopener">${esc(name)}</a></span><span class="sub">${esc(t.destination || "")}${r.s.main ? " · הגיליון הראשי" : ""}</span>`);
+      // 📲 תזכורת בוואטסאפ – הודעה מוכנה לפי מה שעוד לא סומן „הוגש” בגיליון
+      const miss = missingForms(t), first = String(t.traveler || "").trim().split(/\s+/)[0];
+      const msg = (first ? `היי ${first}, ` : "היי, ") + "תזכורת לגבי היציאה לשליחות 🙂\n"
+        + (miss && miss.length ? "עדיין חסרים לי:\n" + miss.map(m => "• " + m).join("\n") + "\n"
+          : miss ? "כל הטפסים התקבלו – תודה! ✓\n" : "נא להשלים את הטפסים באתר.\n")
+        + "\nהקישור האישי שלך:\n" + r.s.link;
+      let ph = String(t.phone || "").replace(/\D/g, ""); if(/^0\d{8,9}$/.test(ph)) ph = "972" + ph.slice(1);
+      const wa = document.createElement("a"); wa.className = "wa-rem" + (miss && !miss.length ? " ok" : ""); wa.target = "_blank"; wa.rel = "noopener";
+      wa.href = "https://wa.me/" + (ph.length >= 11 ? ph : "") + "?text=" + encodeURIComponent(msg);
+      wa.textContent = miss && miss.length ? `📲 תזכורת (${miss.length} חסרים)` : "📲 הודעה בוואטסאפ";
+      nc.append(wa);
       td("יציאה", t.departure ? `${esc(fmtDate(t.departure))}<span class="sub ${x.days !== null && x.days >= 0 && x.days <= 30 ? "soon" : ""}">${x.days === null ? "" : x.days > 0 ? "עוד " + x.days + " ימים" : x.days === 0 ? "היום!" : "יצא/ה"}</span>` : "—");
       const p = d.p;
       td("אישורים", p && p.n ? `<b>${p.ok} מתוך ${p.n}</b><div class="bar" aria-hidden="true"><i style="width:${Math.round(p.ok / p.n * 100)}%"></i></div>` : "—");
