@@ -64,6 +64,8 @@ function renderPass(trip, steps, current){
   const sp = (trip.spouse || "").trim();
   document.getElementById("f-spouse").hidden = !sp;
   document.getElementById("spouse").textContent = /^(כן|v|✓)$/i.test(sp) ? "יוצא/ת עם בן/בת הזוג" : /^לא$/.test(sp) ? "יוצא/ת לבד" : sp;
+  const kd = String(trip.kids || "").trim(), kb = document.getElementById("f-kids");
+  if(kb){ kb.hidden = !kd; document.getElementById("kids").textContent = kd; }
   const cd = document.getElementById("countdown");
   if(trip.departure && /^\d{4}-\d{2}-\d{2}$/.test(trip.departure)){
     const d = daysBetween(todayISO(), trip.departure);
@@ -748,12 +750,12 @@ function tripsFromSheet(rows){
   const head = rows[hi];
   const n = Math.floor((head.length - 3) / 2);
   const info = label => { const r = rows.slice(0, hi).find(r => r[0] === label); return k => r ? (r[3 + 2*k] || "") : ""; };
-  const name = info("שם השליח"), dest = info("יעד"), dep = info("תאריך יציאה"), folder = info("תיקיית מסמכים"), marital = info("מצב משפחתי"), spouse = info("בן/בת זוג");
+  const name = info("שם השליח"), dest = info("יעד"), dep = info("תאריך יציאה"), folder = info("תיקיית מסמכים"), marital = info("מצב משפחתי"), spouse = info("בן/בת זוג"), kids = info("כמות ילדים");
   const trips = [];
   for(let k = 0; k < n; k++){
     const old = TRIPS[k] || {};
     const t = { title: (head[3 + 2*k] || `שליח ${k+1}`).replace(/\s*[–-]\s*סטטוס$/,""),
-      traveler: name(k), destination: dest(k), departure: toISO(dep(k)), folder: folder(k), marital: marital(k), spouse: spouse(k),
+      traveler: name(k), destination: dest(k), departure: toISO(dep(k)), folder: folder(k), marital: marital(k), spouse: spouse(k), kids: kids(k),
       rounds: [], docs: {} };
     let cur = null, last = "";
     rows.slice(hi + 1).forEach(r => {
