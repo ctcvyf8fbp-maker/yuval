@@ -12,22 +12,23 @@ const RELATION = ["השליח/ה", "בן/בת זוג", "בן", "בת", "אחר"]
 
 // ---------- מיקומי המילוי על גבי טופס 101 המקורי (בנקודות PDF: רוחב 595, גובה 842; x = קצה ימין של הטקסט) ----------
 const O101 = (() => {
+  const ID = [444, 455.3, 466.7, 478, 489.4, 500.8, 512.1, 523.5, 534.4], DOB = [125.1, 136.5, 147.9, 159.2, 170.6, 182, 193.3, 204.7], AL = [34.2, 45.6, 56.9, 68.3, 79.7, 91, 102.4, 113.7];
   const T = (p, id, x, y, o = {}) => ({ p, id, x, y, ...o });
   const C = (p, id, opt, x, y) => ({ p, id, opt, x, y, check: true });
   const kidsRows = Array.from({ length: 11 }, (_, i) => 396 + i * 22.6);
   return {
     pages: ["preview-101-1.jpg", "preview-101-2.jpg"],
     items: [
-      T(0, "taxYear", 320, 98, { align: "center", size: 10 }),
-      T(0, "id", 535, 230), T(0, "last", 432, 230), T(0, "first", 307, 230), T(0, "dob", 205, 230, { date: true }), T(0, "aliya", 113, 230, { date: true }),
-      T(0, "passport", 535, 254), T(0, "street", 395, 254), T(0, "houseNo", 215, 254, { align: "center" }), T(0, "city", 155, 254, { align: "center" }), T(0, "zip", 69, 254, { align: "center" }),
+      T(0, "taxYear", 253, 98, { align: "center", size: 9, cells: [228.5, 244.9, 261.1, 277.4] }),
+      T(0, "id", 535, 234.5, { cells: ID }), T(0, "last", 432, 232), T(0, "first", 307, 232), T(0, "dob", 205, 234.5, { date: true, cells: DOB }), T(0, "aliya", 113, 234.5, { date: true, cells: AL }),
+      T(0, "passport", 535, 263.5, { cells: [398.8, 410.2, 421.5, 432.9, 444.2, 455.6, 467.0, 478.3, 489.7, 501.0, 512.4, 523.8, 535.1] }), T(0, "street", 388, 256.5, { size: 8.5 }), T(0, "houseNo", 216, 256.5, { align: "center", size: 8.5 }), T(0, "city", 156, 256.5, { align: "center", size: 8.5 }), T(0, "zip", 69, 257.5, { align: "center", cells: [34.7, 46.1, 57.5, 68.9, 80.2, 91.6, 102.9] }),
       C(0, "sex", "זכר", 532.5, 287), C(0, "sex", "נקבה", 532.5, 300),
       C(0, "marital", "רווק/ה", 493.5, 286), C(0, "marital", "נשוי/אה", 434.5, 286), C(0, "marital", "גרוש/ה", 367, 286),
       C(0, "marital", "אלמן/ה", 493.5, 299), C(0, "marital", "פרוד/ה (חובה לצרף אישור פ״ש)", 446.5, 299),
       C(0, "resident", "כן", 314, 287), C(0, "resident", "לא", 314, 300),
       C(0, "kibbutz", "לא", 274.5, 287), C(0, "kibbutz", "כן – הכנסותיי ממעסיק זה מועברות לקיבוץ", 252, 288), C(0, "kibbutz", "כן – הכנסותיי ממעסיק זה אינן מועברות לקיבוץ", 274.5, 300),
       C(0, "kupa", "לא", 127.5, 286), C(0, "kupa", "כן", 127.5, 299), T(0, "kupaName", 66, 302, { size: 7.5 }),
-      T(0, "email", 365, 322, { align: "left", size: 8.5 }), T(0, "phone", 352, 322), T(0, "mobile", 200, 322),
+      T(0, "email", 365, 324, { align: "left", size: 8.5 }), T(0, "phone", 300, 324, { align: "center", phoneSplit: { pre: 221, num: 277 } }), T(0, "mobile", 110, 324, { align: "center", phoneSplit: { pre: 52, num: 111 } }),
       { p: 0, table: "kids", rows: kidsRows, cols: { name: { x: 512 }, id: { x: 381, align: "center" }, dob: { x: 312, align: "center", date: true }, custody: { x: 533, check: true }, allowance: { x: 523, check: true } } },
       C(0, "incomeType", "משכורת חודש", 242.5, 365), C(0, "incomeType", "משכורת בעד משרה נוספת", 242.5, 377), C(0, "incomeType", "משכורת חלקית", 242.5, 389),
       C(0, "incomeType", "שכר עבודה (עובד יומי)", 242.5, 401), C(0, "incomeType", "קצבה", 242.5, 413), C(0, "incomeType", "מלגה", 242.5, 425),
@@ -40,8 +41,8 @@ const O101 = (() => {
       C(0, "otherFlags", "אני מקבל/ת נקודות זיכוי ומדרגות מס בהכנסה אחרת ועל כן איני זכאי/ת להן כנגד הכנסה זו", 240, 568),
       C(0, "otherFlags", "אין מפרישים עבורי לקרן השתלמות בגין הכנסתי האחרת, או שכל הפרשות המעסיק לקרן השתלמות בגין הכנסתי האחרת מצורפות להכנסתי האחרת", 240, 592),
       C(0, "otherFlags", "אין מפרישים עבורי לקצבה/לביטוח אובדן כושר עבודה/פיצויים בגין הכנסתי האחרת, או שכל ההפרשות כאמור מצורפות להכנסתי האחרת", 240, 626),
-      T(0, "spId", 535, 702), T(0, "spLast", 432, 702), T(0, "spFirst", 307, 702), T(0, "spDob", 205, 702, { date: true }), T(0, "spAliya", 113, 702, { date: true }),
-      T(0, "spPassport", 535, 728),
+      T(0, "spId", 535, 708.5, { cells: ID }), T(0, "spLast", 432, 704), T(0, "spFirst", 307, 704), T(0, "spDob", 205, 708.5, { date: true, cells: DOB }), T(0, "spAliya", 113, 708.5, { date: true, cells: AL }),
+      T(0, "spPassport", 535, 734.5, { cells: [426.9, 435.9, 444.8, 454, 462.9, 471.8, 481, 490, 498.9, 508.1, 517, 525.9, 535.1] }),
       C(0, "spIncome", "אין לבן/בת הזוג כל הכנסה", 414.5, 724),
       C(0, "spIncome", "יש לבן/בת הזוג הכנסה מעבודה/קצבה/עסק", 287, 724), C(0, "spIncome", "יש לבן/בת הזוג הכנסה מעבודה/קצבה/עסק", 164, 726),
       C(0, "spIncome", "יש לבן/בת הזוג הכנסה אחרת", 287, 724), C(0, "spIncome", "יש לבן/בת הזוג הכנסה אחרת", 84.5, 726),
@@ -97,13 +98,14 @@ const OPASSREQ = { h: 871.5, pages: ["preview-passreq-1.jpg"], items: [
   { p: 0, id: "israeli", opt: "כן", x: 378.5, y: 483, check: true },
   { p: 0, id: "israeli", opt: "לא", x: 347, y: 483, check: true },
   { p: 0, id: "otherCit", x: 322, y: 492, size: 8 },
-  { p: 0, id: "dob", x: 392, y: 512.5, parts: [379.5, 391.8, 408.2], size: 5.6 },
-  { p: 0, id: "sex", opt: "זכר", x: 325.8, y: 511.3, circle: true, r: 4 },
-  { p: 0, id: "sex", opt: "נקבה", x: 320, y: 511.3, circle: true, r: 4 },
-  { p: 0, id: "marital", opt: "רווק/ה", x: 407.6, y: 523.2, circle: true, r: 3.6 },
-  { p: 0, id: "marital", opt: "נשוי/אה", x: 402.1, y: 523.2, circle: true, r: 3.6 },
-  { p: 0, id: "marital", opt: "אלמן/ה", x: 395.8, y: 523.2, circle: true, r: 3.6 },
-  { p: 0, id: "marital", opt: "גרוש/ה", x: 388.3, y: 523.2, circle: true, r: 3.6 },
+  { p: 0, signDate: true, x: 383.5, y: 210.5, align: "center", size: 5.6 },
+  { p: 0, id: "dob", x: 392, y: 512, parts: [379.2, 392.1, 408.2], size: 5.6 },
+  { p: 0, id: "sex", opt: "זכר", x: 326.9, y: 510.6, circle: true, r: 3, rx: 2.4, ry: 3.7 },
+  { p: 0, id: "sex", opt: "נקבה", x: 320.4, y: 510.6, circle: true, r: 3, rx: 2.4, ry: 3.7 },
+  { p: 0, id: "marital", opt: "רווק/ה", x: 408.1, y: 523.4, circle: true, r: 3, rx: 2.6, ry: 3.9 },
+  { p: 0, id: "marital", opt: "נשוי/אה", x: 400.9, y: 523.4, circle: true, r: 3, rx: 2.6, ry: 3.9 },
+  { p: 0, id: "marital", opt: "אלמן/ה", x: 394.6, y: 523.4, circle: true, r: 3, rx: 2.6, ry: 3.9 },
+  { p: 0, id: "marital", opt: "גרוש/ה", x: 387.7, y: 523.4, circle: true, r: 3, rx: 2.6, ry: 3.9 },
   { p: 0, id: "street", x: 420, y: 552, align: "center", size: 8 },
   { p: 0, id: "houseNo", x: 316, y: 552, align: "center", size: 8 },
   { p: 0, id: "apt", x: 268, y: 552, align: "center", size: 8 },
@@ -182,7 +184,7 @@ const OCONTACT = { h: 847.1, pages: ["preview-contact-1.jpg"], items: [
   { p: 0, id: "dob", x: 403, y: 300, date: true, size: 8 },
   { p: 0, id: "addr", x: 418, y: 314, size: 8 },
   ...[["telOffice",330],["telHome",347],["telMobile",362]].map(([id, y]) => ({ p: 0, id, x: 393, y, size: 8.5 })),
-  ...[["c1Name",412],["c1Tel",429],["c1Mobile",444],["c1Rel",459],["c2Name",484],["c2Tel",501],["c2Mobile",516],["c2Rel",531]].map(([id, y]) => ({ p: 0, id, x: 395, y, size: 8.5 })),
+  ...[["c1Name",410],["c1Tel",427],["c1Mobile",442],["c1Rel",457],["c2Name",482],["c2Tel",499],["c2Mobile",514],["c2Rel",529]].map(([id, y]) => ({ p: 0, id, x: 395, y, size: 8.5 })),
   { p: 0, sig: true, x: 115, y: 572, w: 104, h: 20 },
   { p: 0, signDate: true, x: 168, y: 608, align: "center", size: 8.5 }
 ]};
@@ -666,21 +668,8 @@ const FORM_SCHEMAS = {
   "contact": {
     title: "טופס איש קשר למקרי חירום",
     preview: ["preview-contact-1.jpg"], previewPdf: "form-1.pdf", overlay: OCONTACT,
-    intro: "איש הקשר חייב להיות קרוב משפחה מדרגה ראשונה.",
+    intro: "ממלאים רק את חלק ב׳ – פרטי איש הקשר. איש הקשר חייב להיות קרוב משפחה מדרגה ראשונה.",
     sections: [
-      { title: "חלק א׳ – פרטי העובד", fields: [
-        { id: "last", label: "שם משפחה", type: "text", required: true },
-        { id: "first", label: "שם פרטי", type: "text", required: true },
-        { id: "empno", label: "מס׳ עובד מלא", type: "text" },
-        { id: "id", label: "ת.ז.", type: "id", required: true },
-        { id: "dept", label: "אגף", type: "text" },
-        { id: "unit", label: "יחידה", type: "text" },
-        { id: "dob", label: "תאריך לידה", type: "date", required: true },
-        { id: "addr", label: "כתובת", type: "text", required: true, full: true },
-        { id: "telOffice", label: "טלפון במשרד", type: "tel" },
-        { id: "telHome", label: "טלפון בבית", type: "tel" },
-        { id: "telMobile", label: "טלפון נייד", type: "tel", required: true }
-      ]},
       { title: "חלק ב׳ – איש קשר 1", fields: [
         { id: "c1Name", label: "שם מלא", type: "text", required: true },
         { id: "c1Rel", label: "קירבה", type: "select", options: ["אב", "אם", "אח", "אחות"], required: true },

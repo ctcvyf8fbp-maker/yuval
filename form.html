@@ -479,6 +479,21 @@ function overlayOps(){
     if(it.combo){ const t = it.combo.map(k => fmtV(vals[k] || "", it)).filter(Boolean).join(" – "); if(t) put(it.p, it.x, it.y, t, { ...it, ltr: true }); return; }
     const v = vals[it.id];
     if(it.circle){ if(v === it.opt) pages[it.p].ops.push({ t: "circle", x: it.x, y: it.y, r: it.r || 5.5, rx: it.rx, ry: it.ry }); return; }
+    // ספרה בכל משבצת (ת״ז, דרכון, מיקוד, תאריך, שנה) – cells = מרכזי המשבצות משמאל לימין
+    if(it.cells && v){
+      const s = /^\d{4}-\d{2}-\d{2}$/.test(v) ? v.split("-").reverse().join("") : String(v).replace(/[^0-9A-Za-z]/g, "");
+      if(s.length <= it.cells.length){
+        const start = it.cellsAlign === "left" ? 0 : it.cells.length - s.length;
+        [...s].forEach((ch, j) => put(it.p, it.cells[start + j], it.y, ch, { align: "center", size: it.size || 8.5 }));
+        return;
+      }
+    }
+    // טלפון: קידומת לפני הלוכסן, המספר אחריו
+    if(it.phoneSplit && v){
+      const d = String(v).replace(/\D/g, ""), k = /^0[57]/.test(d) ? 3 : 2;
+      if(d.length >= 9){ put(it.p, it.phoneSplit.pre, it.y, d.slice(0, k), { align: "center", size: it.size || 8.5 });
+        put(it.p, it.phoneSplit.num, it.y, d.slice(k), { align: "center", size: it.size || 8.5 }); return; }
+    }
     if(it.parts && v && /^\d{4}-\d{2}-\d{2}$/.test(v)){
       const [yy, mm, dd] = v.split("-");
       [dd, mm, yy].forEach((t, j) => put(it.p, it.parts[j], it.y, t, { align: "center", size: it.size }));
