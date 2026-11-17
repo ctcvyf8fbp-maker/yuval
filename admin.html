@@ -75,6 +75,7 @@
   .det-grid .t{color:var(--muted);font-size:.78rem;margin-inline-start:6px}
   .wa-rem{display:inline-block;margin-top:6px;font-size:.8rem;font-weight:700;color:#fff;background:#1fa855;border-radius:999px;padding:3px 10px;text-decoration:none;white-space:nowrap}
   .wa-rem.ok{background:var(--muted)}
+  .upd.fly{background:color-mix(in srgb,#2E5597 8%,var(--paper));border-color:color-mix(in srgb,#2E5597 35%,var(--line));border-inline-start-color:#2E5597}
 </style>
 </head>
 <body>
@@ -92,6 +93,12 @@
     <button type="button" class="kpi" data-f="done"><span>כל האישורים התקבלו</span><strong id="k-done">–</strong></button>
   </div>
   <p class="flt-note" id="flt-note" hidden></p>
+
+  <section class="upd fly" id="fly" hidden aria-labelledby="fly-h">
+    <h2 id="fly-h">✈️ טסים היום</h2>
+    <p class="muted small">לוחצים 📲 – ונפתחת ברכה מוכנה בוואטסאפ.</p>
+    <ul id="fly-list"></ul>
+  </section>
 
   <section class="upd" id="upd" hidden aria-labelledby="upd-h">
     <h2 id="upd-h">📣 עדכונים לשליחה</h2>
@@ -125,9 +132,9 @@
   </section>
 </main>
 
-<script src="data.js?v=20261116e"></script>
-<script src="mission-info.js?v=20261116e"></script>
-<script src="app.js?v=20261116e"></script>
+<script src="data.js?v=20261117a"></script>
+<script src="mission-info.js?v=20261117a"></script>
+<script src="app.js?v=20261117a"></script>
 <script>
 (() => {
 const KEY = "traveler-links";
@@ -278,7 +285,28 @@ function drawUpdates(){
 let FLT = "all";
 const FLT_NAMES = { late: "אישור ממתין מעל שבוע", soon: "יוצאים ב-30 הימים הקרובים", miss: "חסרים טפסים", pass: "דרכון לבדיקה", done: "כל האישורים התקבלו" };
 document.querySelectorAll(".kpi[data-f]").forEach(b => b.onclick = () => { FLT = (FLT === b.dataset.f || b.dataset.f === "all") ? "all" : b.dataset.f; draw(); });
+function drawFly(){
+  const box = document.getElementById("fly"), ul = document.getElementById("fly-list"); ul.innerHTML = "";
+  const today = todayISO();
+  const list = results.filter(r => !r.err && r.d && r.d.mis && r.d.mis.departure === today);
+  box.hidden = !list.length;
+  list.forEach(r => {
+    const t = r.d.mis, li = document.createElement("li");
+    const who = document.createElement("span"); who.className = "who"; who.textContent = t.traveler || r.s.name || "שליח";
+    const what = document.createElement("span"); what.className = "what"; const s = document.createElement("span"); s.textContent = "✈ " + (t.destination || "יציאה לשליחות"); what.append(s);
+    const first = String(t.traveler || "").trim().split(/\s+/)[0];
+    let ph = String(t.phone || "").replace(/\D/g, ""); if(/^0\d{8,9}$/.test(ph)) ph = "972" + ph.slice(1);
+    const sentKey = "fly-sent:" + r.s.csv + ":" + today, sent = !!memGet(sentKey);
+    const wa = document.createElement("a"); wa.className = "wa-rem" + (sent ? " ok" : ""); wa.target = "_blank"; wa.rel = "noopener";
+    wa.href = "https://wa.me/" + (ph.length >= 11 ? ph : "") + "?text=" + encodeURIComponent((first ? `היי ${first}, ` : "") + flightWish(t));
+    wa.textContent = sent ? "✓ נשלח" : "📲 שליחת ברכה";
+    wa.onclick = () => { memSet(sentKey, 1); wa.textContent = "✓ נשלח"; wa.classList.add("ok"); };
+    const act = document.createElement("span"); act.className = "act"; act.append(wa);
+    li.append(who, what, act); ul.append(li);
+  });
+}
 function draw(){
+  drawFly();
   drawUpdates();
   const today = todayISO(), tb = document.getElementById("rows"); tb.innerHTML = "";
   const rows = results.map(r => {

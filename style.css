@@ -353,3 +353,10 @@ h1{font-size:1.6rem;font-weight:700;margin:0;letter-spacing:-.01em}
 .faq-item{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:0 14px;margin-bottom:8px}
 .faq-item summary{cursor:pointer;font-weight:700;padding:12px 0}
 .faq-item p{margin:0 0 12px;color:var(--ink);white-space:pre-line}
+
+/* ===== ברכת יום הטיסה ===== */
+.fly-wish{margin:0 0 14px;padding:16px 18px;border-radius:16px;text-align:center;font-size:1.2rem;font-weight:800;color:#fff;
+  background:linear-gradient(135deg,#2E5597,#3d7bd9);box-shadow:0 6px 18px rgb(46 85 151/.25)}
+.fly-wish[hidden]{display:none}
+.right-card.warn{background:color-mix(in srgb,var(--no) 8%,var(--paper));border:2px solid color-mix(in srgb,var(--no) 55%,var(--line))}
+.right-card.warn strong{color:var(--no);font-size:1.05em}

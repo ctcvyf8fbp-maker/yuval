@@ -93,6 +93,11 @@ function renderPass(trip, steps, current){
   const okDate = trip.departure && /^\d{4}-\d{2}-\d{2}$/.test(trip.departure) && daysBetween(todayISO(), trip.departure) >= 0;
   cb.hidden = !okDate;
   cb.onclick = () => addToCalendar(trip);
+  // ביום הטיסה – ברכה אוטומטית בראש הדף
+  let fw = document.getElementById("fly-wish");
+  const passSec = document.querySelector("section.pass");
+  if(!fw && passSec){ fw = el("div","fly-wish"); fw.id = "fly-wish"; fw.setAttribute("role","status"); passSec.before(fw); }
+  if(fw){ const today = isMission(trip) && trip.departure === todayISO(); fw.hidden = !today; if(today) fw.textContent = flightWish(trip); }
   // הערה אישית מהגיליון (שורה „הערה לשליח”)
   let nb = document.getElementById("trav-note");
   const pass = document.querySelector("section.pass");
@@ -198,6 +203,11 @@ function renderMap(trip, steps, current){
   animId = requestAnimationFrame(tick);
 }
 
+// ===== ברכת יום הטיסה =====
+function flightWish(trip){
+  const fam = familyInfo(trip);
+  return "מדור נסיעות חו״ל מאחל לך" + (fam.n > 1 ? " ולמשפחתך" : "") + " טיסה נעימה ✈️";
+}
 function addToCalendar(trip){
   const d = (trip.departure || "").replace(/-/g, ""); if(!/^\d{8}$/.test(d)) return;
   const nx = new Date(trip.departure); nx.setDate(nx.getDate() + 1);
@@ -518,7 +528,7 @@ function loadBooklet(){
 function buildIndex(){
   const docs = [];
   const add = (src, title, text, link) => docs.push({ src, title, text, link });
-  (typeof RIGHTS !== "undefined" ? RIGHTS : []).forEach(r => add("הזכויות שלך", r.title, r.items.join(" "), "#info"));
+  (typeof RIGHTS !== "undefined" ? RIGHTS : []).forEach(r => add("הזכויות שלך", r.title, r.items.join(" ").replace(/\*\*/g, ""), "#info"));
   (typeof FAQ !== "undefined" && Array.isArray(FAQ) ? FAQ : []).forEach(f => f && f.q && add("שאלות נפוצות", f.q, f.a || "", "#info"));
   (typeof INFO_NOTES !== "undefined" ? INFO_NOTES : []).forEach(n => add("מידע לשליח", n.title, [...(n.before||[]), ...(n.ol||[]), ...(n.after||[])].join(" "), "#info"));
   (typeof ORIENT_NOTES !== "undefined" ? ORIENT_NOTES : []).forEach(n => add("אוריינטציה", n.title, [ORIENT_NOTE || "", ...(n.before||[]), ...(n.ol||[])].join(" "), ""));
@@ -716,8 +726,10 @@ function renderInfo(){
     faq.forEach(f => { const d = el("details","faq-item"); d.append(el("summary","",f.q), el("p","",f.a)); fl.append(d); }); }
   const rl = document.getElementById("rights-list");
   (typeof RIGHTS !== "undefined" ? RIGHTS : []).forEach(r => {
-    const c = el("div","right-card"); c.append(el("h3","", (r.icon ? r.icon + " " : "") + r.title));
-    const ul = el("ul"); r.items.forEach(t => ul.append(el("li","",t))); c.append(ul); rl.append(c);
+    const c = el("div","right-card" + (r.warn ? " warn" : "")); c.append(el("h3","", (r.icon ? r.icon + " " : "") + r.title));
+    const ul = el("ul");
+    r.items.forEach(t => { const li = el("li"); String(t).split(/\*\*/).forEach((part, i) => { if(part) li.append(i % 2 ? el("strong","",part) : document.createTextNode(part)); }); ul.append(li); });
+    c.append(ul); rl.append(c);
   });
 }
 function clLoad(){ try{ return JSON.parse(localStorage.getItem(CL_KEY()) || "[]"); }catch(e){ return []; } }
