@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>מעקב אישורים ליציאה לשליחות</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✈️</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=20261119a">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-180.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="מעקב שליחות">
+  <meta name="theme-color" content="#16243D">
+</head>
+<body>
+  <header class="top">
+    <h1 id="site-title">מעקב אישורים ליציאה לשליחות</h1>
+    <nav class="tabs" id="tabs" aria-label="בחירת נסיעה"></nav>
+  </header>
+
+  <main>
+    <!-- כרטיס עלייה למטוס -->
+    <!-- דגשים בראש לשונית האוריינטציה -->
+    <section class="orient-top" id="orient-top" hidden aria-label="דגשים לאוריינטציה">
+      <p class="orient-note" id="orient-note"></p>
+      <div class="calc" id="calc">
+        <h2>🧮 מחשבון אש״ל ולינה</h2>
+        <div class="calc-grid">
+          <label class="cf wide"><span>מדינה / עיר יעד</span>
+            <input id="c-dest" list="c-dest-list" placeholder="הקלידו מדינה או עיר, למשל: ארה״ב, פריז, Germany" autocomplete="off">
+            <datalist id="c-dest-list"></datalist></label>
+          <label class="cf"><span>תאריך יציאה</span><input id="c-from" type="date"></label>
+          <label class="cf"><span>תאריך חזרה</span><input id="c-to" type="date"></label>
+        </div>
+        <div class="calc-out" id="c-out" aria-live="polite"></div>
+        <p class="calc-sum" id="c-sum" aria-live="polite"></p>
+        <p class="calc-note" id="c-note"></p>
+      </div>
+      <div class="notes-list" id="orient-notes"></div>
+    </section>
+
+    <section class="pass trip-only" aria-label="פרטי הנסיעה">
+      <div class="pass-main">
+        <div class="field">
+          <span class="lbl">שליח/ה</span>
+          <span class="val big" id="traveler"></span>
+        </div>
+        <div class="route">
+          <div class="field">
+            <span class="lbl">יעד</span>
+            <span class="val dest" id="destination"></span>
+          </div>
+          <div class="field">
+            <span class="lbl" id="departure-lbl">יציאה לשליחות</span>
+            <span class="val" id="departure"></span>
+          </div>
+          <div class="field">
+            <span class="lbl">מצב משפחתי</span>
+            <span class="val" id="marital"></span>
+          </div>
+          <div class="field" id="f-spouse" hidden>
+            <span class="lbl">בן/בת זוג</span>
+            <span class="val" id="spouse"></span>
+          </div>
+          <div class="field" id="f-kids" hidden>
+            <span class="lbl">כמות ילדים</span>
+            <span class="val" id="kids"></span>
+          </div>
+        </div>
+        <p class="countdown" id="countdown" hidden></p>
+      </div>
+      <div class="pass-stub">
+        <span class="lbl">אישורים שהתקבלו</span>
+        <span class="count" id="count"></span>
+        <div class="bar" aria-hidden="true"><span id="bar-fill"></span></div>
+        <p class="next" id="next"></p>
+      </div>
+    </section>
+
+    <!-- מפת הטיסה -->
+    <section class="map-wrap trip-only" aria-label="מסלול האישורים">
+      <div class="map-scroll">
+        <svg id="map" viewBox="0 0 1000 240" role="img" aria-labelledby="map-desc">
+          <desc id="map-desc">מסלול טיסה שבו כל נקודה היא אישור, והמטוס עומד בשלב הנוכחי</desc>
+        </svg>
+      </div>
+      <ul class="legend" id="legend"></ul>
+    </section>
+
+    <!-- טפסים למילוי -->
+    <section class="forms" id="forms-section" aria-labelledby="forms-title" hidden>
+      <h2 id="forms-title">📝 מסמכים וטפסים</h2>
+      <p class="forms-hint">ממלאים באתר („מילוי מקוון”), לוחצים „הפקת הטופס” ושולחים בוואטסאפ. טופס שמולא מסומן ✓.</p>
+      <p class="docs-summary" id="docs-summary" hidden></p>
+      <div class="my-folder" id="my-folder" hidden></div>
+      <ul class="forms-list" id="forms-list"></ul>
+    </section>
+
+    <!-- רשימת הסבבים -->
+    <p id="empty-note" class="empty-note trip-only" hidden>עוד לא הוגדרו אישורים ללשונית הזו. כדי להוסיף – ממלאים סטטוס בעמודה שלה בגיליון.</p>
+    <div id="rounds" class="trip-only"></div>
+
+    <!-- לפני הנסיעה – מקדמה (אוריינטציה) -->
+    <section class="after-trip" id="before-trip" hidden aria-labelledby="before-title">
+      <h2 id="before-title">💳 לפני הנסיעה – מקדמה / הקצאה בכרטיס אשראי</h2>
+      <ol class="after-list">
+        <li><strong>טופס מקדמה מזומן / הקצאה בכרטיס אשראי</strong>
+          <div class="form-acts"><a class="fbtn primary" id="adv-online" href="form.html?f=advance">✍️ מילוי מקוון</a><a class="fbtn" href="form-advance.pdf" download>⬇ הורדה</a></div></li>
+        <li><strong>צילום כרטיס האשראי האישי</strong> משני צדדיו.</li>
+        <li><strong>טופס ניהול חשבון.</strong></li>
+      </ol>
+    </section>
+
+    <!-- אחרי הנסיעה (אוריינטציה) -->
+    <section class="after-trip" id="after-trip" hidden aria-labelledby="after-title">
+      <h2 id="after-title">📄 אחרי הנסיעה – התחשבנות</h2>
+      <p>לאחר החזרה מהנסיעה יש לקבוע תור ב-<strong>MY VISIT</strong> ולהביא את המסמכים הבאים:</p>
+      <ol class="after-list">
+        <li><strong>טופס התחשבנות</strong>
+          <div class="form-acts"><a class="fbtn primary" id="settle-online" href="form.html?f=settlement">✍️ מילוי מקוון</a><a class="fbtn" href="form-settlement.pdf" download>⬇ הורדה</a></div></li>
+        <li><strong>קבלת מלון</strong> – במידה והמלון לא שולם מראש, יש לוודא שהמלון מביא קבלה עם: שם על הקבלה, ופירוט מחיר לכל לילה. עלות פר לילה לחדר חייבת לעמוד בקצובה שנקבעה (העלות לא חייבת להיות זהה בכל הלילות). במלון שהוזמן עצמאית – יש לוודא מול המלון את העלות פר לילה לחדר ושהיא לא חורגת מהקצובה.</li>
+        <li><strong>קבלה על תחבורה בארץ</strong>
+          <ul>
+            <li>אין תקרה – יש למצות את האופציה הזולה ביותר בהתאם לזמינות (תחבורה ציבורית ← מונית).</li>
+            <li>אפשר להחנות את הרכב בחנייה מקורה עד <strong>45 ₪ ליום</strong>, על ימי התפקיד בלבד. מי שבוחר חנייה יקרה יותר – משלים מכיסו את ההפרש לכל יום.</li>
+            <li>נוסע שגר במרחק גדול משדה התעופה מתבקש לבחון הגעה בתחבורה ציבורית, באופן מלא או חלקי, משיקולי סבירות ומידתיות. יש לעדכן את קצין הנסיעות על עלויות גבוהות לטובת אישור משרד הביטחון על ההחזר.</li>
+          </ul></li>
+        <li><strong>קבלה על תחבורה בחו״ל</strong> – בנסיעות אוריינטציה יש הגבלה של עד <strong>200 דולר</strong>. גם השכרת רכב נכנסת בתקרה הזו, וכל הוצאה מעבר לתקרה היא על חשבון השליח.</li>
+        <li><strong>אש״ל (ארוחות)</strong> – בטופס ההתחשבנות מצהירים מה קיבלתם ומה לא קיבלתם.</li>
+        <li><strong>צילום כרטיס אשראי</strong> ברור משני הצדדים – <strong>לשלוח בוואטסאפ</strong>.</li>
+        <li><strong>כרטיס הטיסה</strong> שנשלח אליכם בתחילת הנסיעה.</li>
+      </ol>
+    </section>
+
+    <!-- מידע לשליח -->
+    <section class="info mission-only" id="info-section" hidden aria-labelledby="info-title">
+      <h2 id="info-title">📚 מידע לשליח</h2>
+      <div class="search-box" role="search">
+        <label for="q" class="search-lbl">🔍 יש לך שאלה? כתבו כאן</label>
+        <div class="search-row">
+          <input id="q" type="search" placeholder="למשל: כמה לילות מלון? חניה בשדה? ילדים בגיל גיוס" autocomplete="off" enterkeyhint="search">
+          <button type="button" class="fbtn primary" id="q-go">חיפוש</button>
+        </div>
+        <p class="search-hint">החיפוש מציג קטעים מתוך המידע באתר ומתוך חוברת ההכנה לשליחות, עם המקור. הנוסח המחייב – הוראות התכ״ם.</p>
+        <div id="q-results" aria-live="polite"></div>
+      </div>
+      <div class="faq" id="faq" hidden>
+        <h3>❓ שאלות נפוצות</h3>
+        <div id="faq-list"></div>
+      </div>
+      <div class="notes-list" id="notes-list"></div>
+      <div class="info-grid" id="info-list"></div>
+      <details class="a2hs"><summary>📲 איך שמים את האתר במסך הבית של הטלפון</summary>
+        <p><strong>אייפון (Safari):</strong> לוחצים על כפתור השיתוף <span aria-hidden="true">⬆️</span> ← „הוספה למסך הבית” ← „הוסף”.</p>
+        <p><strong>אנדרואיד (Chrome):</strong> לוחצים על ⋮ למעלה ← „הוספה למסך הבית” / „התקנת האפליקציה”.</p>
+        <p>מעכשיו האתר נפתח מהאייקון ✈️ כמו אפליקציה.</p>
+      </details>
+      <p class="takam-note">⚖️ <strong>אין להסתמך על המידע שבכרטיסים בדף הזה</strong> – הוא סיכום כללי בלבד. לפני כל החלטה יש להיכנס <strong>להוראות התכ״ם</strong> ולבדוק את הנוסח העדכני. במקרה של סתירה בין החוברת או הדף הזה לבין הוראות התכ״ם – <strong>הוראות התכ״ם גוברות</strong>.</p>
+    </section>
+
+    <!-- זכויות השליח -->
+    <section class="rights mission-only" id="rights-section" hidden aria-labelledby="rights-title">
+      <h2 id="rights-title">🧭 הזכויות שלך כשליח/ה</h2>
+      <p class="forms-hint">סיכום מתוך הצ׳ק ליסט לפני שליחות. הנוסח המחייב – הוראות התכ״ם.</p>
+      <div class="rights-grid" id="rights-list"></div>
+    </section>
+
+    <!-- צ'ק ליסט -->
+    <section class="checklist mission-only" id="checklist-section" hidden aria-labelledby="cl-title">
+      <h2 id="cl-title">✅ צ׳ק ליסט לשליחות</h2>
+      <p class="forms-hint">מסמנים ✓ על כל משימה שסיימת. הסימונים נשמרים במכשיר שלך. בסוף – חותמים על אישור שסיימת הכול.</p>
+      <p class="cl-status" id="cl-status" hidden></p>
+      <div class="cl-progress"><span id="cl-count"></span><div class="bar" aria-hidden="true"><span id="cl-bar"></span></div></div>
+      <div id="cl-list"></div>
+      <div class="cl-done"><a class="fbtn primary" id="cl-sign" href="form.html?f=checklist">✍️ סיימתי – חתימה על אישור סיום</a></div>
+    </section>
+
+    <!-- ויזה -->
+    <section class="visa" id="visa-section" hidden aria-labelledby="visa-title">
+      <h2 id="visa-title"></h2>
+      <p class="forms-hint" id="visa-sub"></p>
+      <div class="form-acts visa-links">
+        <a class="fbtn primary" id="visa-site" target="_blank" rel="noopener">🌐 לאתר בקשת הוויזה</a>
+        <a class="fbtn" id="visa-pdf" download>⬇ הורדת המדריך (PDF)</a>
+      </div>
+      <label class="visa-ch"><span>קפיצה לפרק</span><select id="visa-chapter"></select></label>
+      <div class="viewer" id="visa-viewer">
+        <figure class="slide"><img id="visa-img" alt=""></figure>
+        <div class="viewer-bar">
+          <button type="button" class="vbtn" id="visa-prev" aria-label="השקופית הקודמת">→</button>
+          <span id="visa-count" aria-live="polite"></span>
+          <button type="button" class="vbtn" id="visa-next" aria-label="השקופית הבאה">←</button>
+          <a class="vzoom" id="visa-zoom" target="_blank" rel="noopener">🔍 הגדלה</a>
+        </div>
+      </div>
+      <div class="thumbs" id="visa-thumbs"></div>
+    </section>
+  </main>
+
+  <footer class="foot"><span id="updated-wrap">עודכן לאחרונה: <span id="updated"></span></span> <span id="sync-state"></span></footer>
+
+  <script src="data.js?v=20261119a"></script>
+  <script src="mission-info.js?v=20261119a"></script>
+  <script src="allowances.js?v=20261119a"></script>
+  <script src="app.js?v=20261119a"></script>
+</body>
+</html>

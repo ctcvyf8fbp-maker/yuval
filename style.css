@@ -360,3 +360,10 @@ h1{font-size:1.6rem;font-weight:700;margin:0;letter-spacing:-.01em}
 .fly-wish[hidden]{display:none}
 .right-card.warn{background:color-mix(in srgb,var(--no) 8%,var(--paper));border:2px solid color-mix(in srgb,var(--no) 55%,var(--line))}
 .right-card.warn strong{color:var(--no);font-size:1.05em}
+
+/* ===== מצגת בעמוד המידע ===== */
+.prep{margin:14px 0 18px}
+.prep h3{margin:0 0 8px;font-size:1.15rem}
+.prep[hidden]{display:none}
+.prep-top{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:10px}
+.prep-top .visa-ch{margin:0;flex:1;min-width:220px}

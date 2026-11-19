@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=20261117a">
+  <link rel="stylesheet" href="style.css?v=20261119b">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-180.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -130,7 +130,7 @@
           </ul></li>
         <li><strong>קבלה על תחבורה בחו״ל</strong> – בנסיעות אוריינטציה יש הגבלה של עד <strong>200 דולר</strong>. גם השכרת רכב נכנסת בתקרה הזו, וכל הוצאה מעבר לתקרה היא על חשבון השליח.</li>
         <li><strong>אש״ל (ארוחות)</strong> – בטופס ההתחשבנות מצהירים מה קיבלתם ומה לא קיבלתם.</li>
-        <li><strong>צילום כרטיס אשראי</strong> ברור משני הצדדים.</li>
+        <li><strong>צילום כרטיס אשראי</strong> ברור משני הצדדים – <strong>לשלוח בוואטסאפ</strong>.</li>
         <li><strong>כרטיס הטיסה</strong> שנשלח אליכם בתחילת הנסיעה.</li>
       </ol>
     </section>
@@ -146,6 +146,22 @@
         </div>
         <p class="search-hint">החיפוש מציג קטעים מתוך המידע באתר ומתוך חוברת ההכנה לשליחות, עם המקור. הנוסח המחייב – הוראות התכ״ם.</p>
         <div id="q-results" aria-live="polite"></div>
+      </div>
+      <div class="prep" id="prep" hidden>
+        <h3 id="prep-title">🎞️ מצגת</h3>
+        <div class="prep-top">
+          <label class="visa-ch"><span>קפיצה לנושא</span><select id="prep-chapter"></select></label>
+          <a class="fbtn" id="prep-pdf" download>⬇ הורדת המצגת (PDF)</a>
+        </div>
+        <div class="viewer" id="prep-viewer">
+          <figure class="slide"><img id="prep-img" alt=""></figure>
+          <div class="viewer-bar">
+            <button type="button" class="vbtn" id="prep-prev" aria-label="השקופית הקודמת">→</button>
+            <span id="prep-count" aria-live="polite"></span>
+            <button type="button" class="vbtn" id="prep-next" aria-label="השקופית הבאה">←</button>
+            <a class="vzoom" id="prep-zoom" target="_blank" rel="noopener">🔍 הגדלה</a>
+          </div>
+        </div>
       </div>
       <div class="faq" id="faq" hidden>
         <h3>❓ שאלות נפוצות</h3>
@@ -202,9 +218,9 @@
 
   <footer class="foot"><span id="updated-wrap">עודכן לאחרונה: <span id="updated"></span></span> <span id="sync-state"></span></footer>
 
-  <script src="data.js?v=20261117a"></script>
-  <script src="mission-info.js?v=20261117a"></script>
-  <script src="allowances.js?v=20261117a"></script>
-  <script src="app.js?v=20261117a"></script>
+  <script src="data.js?v=20261119b"></script>
+  <script src="mission-info.js?v=20261119b"></script>
+  <script src="allowances.js?v=20261119b"></script>
+  <script src="app.js?v=20261119b"></script>
 </body>
 </html>

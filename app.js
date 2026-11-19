@@ -529,6 +529,7 @@ function buildIndex(){
   const docs = [];
   const add = (src, title, text, link) => docs.push({ src, title, text, link });
   (typeof RIGHTS !== "undefined" ? RIGHTS : []).forEach(r => add("הזכויות שלך", r.title, r.items.join(" ").replace(/\*\*/g, ""), "#info"));
+  (typeof PREP !== "undefined" ? PREP.chapters || [] : []).forEach(([p, t]) => add("מצגת: יציאה לשליחות", t, "שקופית " + p + " במצגת שבעמוד המידע לשליח", "#info"));
   (typeof FAQ !== "undefined" && Array.isArray(FAQ) ? FAQ : []).forEach(f => f && f.q && add("שאלות נפוצות", f.q, f.a || "", "#info"));
   (typeof INFO_NOTES !== "undefined" ? INFO_NOTES : []).forEach(n => add("מידע לשליח", n.title, [...(n.before||[]), ...(n.ol||[]), ...(n.after||[])].join(" "), "#info"));
   (typeof ORIENT_NOTES !== "undefined" ? ORIENT_NOTES : []).forEach(n => add("אוריינטציה", n.title, [ORIENT_NOTE || "", ...(n.before||[]), ...(n.ol||[])].join(" "), ""));
@@ -698,6 +699,42 @@ function showSlide(i, scroll){
   if(scroll) document.getElementById("visa-viewer").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+// ===== מצגת „יציאה לשליחות ארוכה” בעמוד המידע =====
+let prepIdx = 1, prepReady = false;
+const psrc = i => `prep-${String(i).padStart(2, "0")}.jpg`;
+function renderPrep(){
+  const box = document.getElementById("prep");
+  if(!box || typeof PREP === "undefined" || !PREP.count){ if(box) box.hidden = true; return; }
+  box.hidden = false;
+  if(!prepReady){
+    prepReady = true;
+    document.getElementById("prep-title").textContent = "🎞️ " + PREP.title;
+    document.getElementById("prep-pdf").href = PREP.pdf;
+    const sel = document.getElementById("prep-chapter");
+    (PREP.chapters || []).forEach(([p, t]) => sel.append(new Option(`${p}. ${t}`, p)));
+    sel.onchange = () => showPrep(+sel.value);
+    document.getElementById("prep-prev").onclick = () => showPrep(prepIdx - 1);
+    document.getElementById("prep-next").onclick = () => showPrep(prepIdx + 1);
+    let sx = null; const fig = document.querySelector("#prep-viewer .slide");
+    fig.addEventListener("touchstart", e => { sx = e.touches[0].clientX; }, { passive: true });
+    fig.addEventListener("touchend", e => { if(sx === null) return; const dx = e.changedTouches[0].clientX - sx; sx = null;
+      if(Math.abs(dx) > 50) showPrep(prepIdx + (dx > 0 ? 1 : -1)); });
+  }
+  showPrep(prepIdx);
+}
+function showPrep(i){
+  const n = PREP.count; i = Math.min(n, Math.max(1, i)); prepIdx = i;
+  const img = document.getElementById("prep-img"); img.src = psrc(i);
+  const ch = (PREP.chapters || []).find(([p]) => p === i);
+  img.alt = `${PREP.title} – שקופית ${i} מתוך ${n}` + (ch ? ": " + ch[1] : "");
+  if(i < n){ const pre = new Image(); pre.src = psrc(i + 1); }
+  document.getElementById("prep-zoom").href = psrc(i);
+  document.getElementById("prep-count").textContent = `${i} מתוך ${n}`;
+  document.getElementById("prep-prev").disabled = i === 1;
+  document.getElementById("prep-next").disabled = i === n;
+  const c2 = [...(PREP.chapters || [])].reverse().find(([p]) => p <= i); document.getElementById("prep-chapter").value = c2 ? c2[0] : 1;
+}
+
 function noteCards(box, list){
   box.innerHTML = "";
   list.forEach(n => {
@@ -719,6 +756,7 @@ function renderInfo(){
     box.append(a);
   });
   noteCards(document.getElementById("notes-list"), typeof INFO_NOTES !== "undefined" ? INFO_NOTES : []);
+  renderPrep();
   // שאלות נפוצות (FAQ ב-data.js)
   const faq = (typeof FAQ !== "undefined" && Array.isArray(FAQ)) ? FAQ.filter(f => f && f.q && f.a) : [];
   const fb = document.getElementById("faq");
