@@ -367,3 +367,7 @@ h1{font-size:1.6rem;font-weight:700;margin:0;letter-spacing:-.01em}
 .prep[hidden]{display:none}
 .prep-top{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:10px}
 .prep-top .visa-ch{margin:0;flex:1;min-width:220px}
+
+/* ===== קישור „מידע לשליח” בלבד (?info) ===== */
+body.info-only #tabs,body.info-only #admin-btn,body.info-only .admin-btn,body.info-only #sync-state{display:none !important}
+body.info-only #info-title{display:none}

@@ -229,6 +229,7 @@ function addToCalendar(trip){
 // ===== „מה חדש מאז הביקור הקודם” – לשליח =====
 let NEW_STEPS = new Set();
 function notifyProgress(){
+  if(INFO_ONLY) return;
   const key = "seen-steps:" + travelerKey(), now = stepSnapshot(TRIPS), prev = memGet(key);
   const ch = stepChanges(prev, now);
   memSet(key, now);
@@ -833,7 +834,9 @@ function specialKind(title){
   return "";
 }
 let view = "trip";   // "trip" = לשונית שליח/נסיעה, "info" = מידע וצ׳ק ליסט
+const INFO_ONLY = /[?&]info(=|&|$)/.test(location.search);
 function render(){
+  if(INFO_ONLY) view = "info";
   const isInfo = view === "info", isForms = view === "forms", isCL = view === "checklist", isVisa = view === "visa";
   const special = isInfo || isForms || isCL || isVisa;
   document.getElementById("visa-section").hidden = !isVisa;
@@ -857,6 +860,7 @@ function render(){
     document.getElementById("site-title").textContent = st;
     const lab = (specialTabs.find(s => s.kind === view) || {}).label || "";
     document.title = `${lab} – ${st}`;
+    if(INFO_ONLY){ document.getElementById("site-title").textContent = "📚 מידע לשליח"; document.title = "מידע לשליח"; }
     return;
   }
   fsec.hidden = true;
@@ -947,6 +951,11 @@ function tripsFromSheet(rows){
   }
   // פרטים שכתובים רק בעמודה של השליחות (הערה, טלפון, משפחה) – תקפים לכל העמודות של אותו שליח
   ["note","phone","marital","kids","spouse","passport"].forEach(f => { const v = (trips.find(t => String(t[f] || "").trim()) || {})[f]; if(v) trips.forEach(t => { if(!String(t[f] || "").trim()) t[f] = v; }); });
+  // יועכ״ל – תמיד השלב האחרון ב„סבב אישורים במערכת”. אם עוד אין לו שורה בגיליון – מופיע כ„ממתין”.
+  // כשמוסיפים בגיליון שורה עם „יועכ״ל” בעמודה C – הסטטוס והתאריך נלקחים משם.
+  trips.forEach(t => { if(specialKind(t.title)) return;
+    const r = t.rounds.find(x => /במערכת/.test(x.name));
+    if(r && !r.steps.some(s => /יועכ/.test(s.role))) r.steps.push({ role: "יועכ״ל", status: "ממתין", date: "" }); });
   // עמודה בגיליון שהכותרת שלה כוללת „מידע” – היא לא שליח: היא לשונית המידע והצ׳ק ליסט
   const special = [];
   trips.forEach(t => { const k = specialKind(t.title); if(k) special.push({ kind: k, label: t.title }); });
@@ -992,6 +1001,8 @@ if(document.getElementById("tabs")){
   const m = location.hash.match(/^#trip(\d+)$/);
 if(m && TRIPS[+m[1]-1]) tripIndex = +m[1]-1;
 if(location.hash === "#info") view = "info";
+// קישור „מידע לשליח” בלבד: ?info – בלי לשוניות, בלי אישורים ובלי פרטי שליח
+if(INFO_ONLY){ view = "info"; document.body.classList.add("info-only"); }
 if(location.hash === "#forms") view = "forms";
 if(location.hash === "#checklist") view = "checklist";
 if(/^#visa/.test(location.hash)) view = "visa";
